@@ -17,7 +17,7 @@ Page {
 
     Connections {
         target: Muistio
-        onLoginSucceeded: pageStack.replaceAbove(null, Qt.resolvedUrl("TasksPage.qml"))
+        onLoginSucceeded: pageStack.replaceAbove(null, Qt.resolvedUrl("NotesPage.qml"))
         onLoginFailed: page.errorMessage = error
     }
 

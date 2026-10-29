@@ -1,52 +1,78 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "components"
+import "mock"
 import "pages"
 
 ApplicationWindow {
     id: app
 
-    function showMain() {
-        if (pageStack.busy) {
-            navigateAgain.restart();
-            return ;
-        }
-        pageStack.replaceAbove(null, Muistio.configured ? notesPage : loginPage);
-    }
+    property alias notes: store
 
-    // Every passing message goes through one notice, so the app speaks the
-    // same way whether it is in front or in the background.
     function showToast(text) {
         if (text !== "")
-            globalNotification.toast(text);
-
+            globalNotification.toast(text)
     }
 
-    initialPage: Muistio.ready ? (Muistio.configured ? notesPage : loginPage) : startPage
+    function mockRefresh() {
+        notes.busy = true
+        mockBusyTimer.restart()
+        showToast(qsTr("This is a mock. Nothing was synced."))
+    }
+
+    function openNote(noteId) {
+        if (!notes.noteById(noteId)) {
+            showToast(qsTr("That note is no longer here."))
+            return
+        }
+        pageStack.push(Qt.resolvedUrl("pages/NotePage.qml"), {
+            "noteId": noteId
+        })
+    }
+
+    function inheritCategory() {
+        return notes.filterKind === "category" ? notes.filterCategory : ""
+    }
+
+    function openNewNote() {
+        activate()
+        pageStack.push(Qt.resolvedUrl("pages/NoteEditPage.qml"), {
+            "inheritCategory": inheritCategory()
+        })
+    }
+
+    function editNote(noteId) {
+        var note = notes.noteById(noteId)
+        if (!note || note.locked)
+            return
+        pushEditor(note)
+    }
+
+    function pushEditor(note) {
+        pageStack.push(Qt.resolvedUrl("pages/NoteEditPage.qml"), {
+            "noteId": note.noteId,
+            "title": note.title,
+            "content": note.content,
+            "category": note.category,
+            "favorite": note.favorite
+        })
+    }
+
+    initialPage: notesPage
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     allowedOrientations: defaultAllowedOrientations
 
+    NotesStore {
+        id: store
+
+        Component.onCompleted: seed()
+    }
+
     Timer {
-        id: navigateAgain
+        id: mockBusyTimer
 
-        interval: 100
-        onTriggered: app.showMain()
-    }
-
-    Component {
-        id: startPage
-
-        StartPage {
-        }
-
-    }
-
-    Component {
-        id: loginPage
-
-        LoginPage {
-        }
-
+        interval: 700
+        onTriggered: notes.busy = false
     }
 
     Component {
@@ -54,26 +80,9 @@ ApplicationWindow {
 
         NotesPage {
         }
-
-    }
-
-    Connections {
-        target: Muistio
-        onReadyChanged: {
-            if (Muistio.ready)
-                app.showMain();
-
-        }
-        onConfiguredChanged: {
-            if (!Muistio.configured)
-                app.showMain();
-
-        }
-        onErrorMessageChanged: app.showToast(Muistio.errorMessage)
     }
 
     MuistioNotification {
         id: globalNotification
     }
-
 }

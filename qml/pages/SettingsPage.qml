@@ -20,6 +20,35 @@ Page {
             }
 
             SectionHeader {
+                text: qsTr("Notes")
+            }
+
+            ComboBox {
+                property bool ready: false
+
+                width: parent.width
+                label: qsTr("Sort")
+                Component.onCompleted: {
+                    currentIndex = app.notes.sortMode === "title" ? 1 : 0
+                    ready = true
+                }
+                onCurrentIndexChanged: {
+                    if (ready && currentIndex >= 0)
+                        app.notes.sortMode = currentIndex === 1 ? "title" : "modified"
+                }
+
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr("Last modified")
+                    }
+
+                    MenuItem {
+                        text: qsTr("Title")
+                    }
+                }
+            }
+
+            SectionHeader {
                 text: qsTr("Connection")
             }
 
@@ -28,7 +57,7 @@ Page {
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 wrapMode: Text.WordWrap
                 color: Theme.secondaryColor
-                text: Muistio.serverUrl
+                text: Muistio.serverUrl !== "" ? Muistio.serverUrl : qsTr("Not signed in")
             }
 
             TextSwitch {
@@ -42,18 +71,17 @@ Page {
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Sign out")
-                onClicked: remorse.execute(qsTr("Signing out"), Muistio.logout)
+                onClicked: remorse.execute(qsTr("Signing out"), function() {
+                    app.showToast(qsTr("This is a mock. Nothing was signed out."))
+                })
             }
-
         }
 
         VerticalScrollDecorator {
         }
-
     }
 
     RemorsePopup {
         id: remorse
     }
-
 }
