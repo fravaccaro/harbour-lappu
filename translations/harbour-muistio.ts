@@ -260,6 +260,14 @@
         <source>This note is empty.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Unpin from cover</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pin to cover</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NotesPage</name>
@@ -313,6 +321,14 @@
     </message>
     <message>
         <source>Pull down to add a note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unpin from cover</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pin to cover</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

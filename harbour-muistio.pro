@@ -52,6 +52,7 @@ DISTFILES += \
     icons/harbour-muistio.svg \
     qml/harbour-muistio.qml \
     qml/components/FilterItem.qml \
+    qml/components/MarkdownToolbar.qml \
     qml/components/MuistioNotification.qml \
     qml/cover/CoverPage.qml \
     qml/mock/NoteFormat.js \

@@ -6,6 +6,7 @@ CoverBackground {
 
     readonly property var win: __silica_applicationwindow_instance
     readonly property var store: win ? win.notes : null
+    readonly property bool pinned: store !== null && store.pinnedNoteId > 0
 
     clip: true
 
@@ -26,7 +27,11 @@ CoverBackground {
             truncationMode: TruncationMode.Fade
             color: Theme.secondaryHighlightColor
             font.pixelSize: Theme.fontSizeMedium
-            text: store ? store.listTitle : qsTr("Muistio")
+            text: {
+                if (cover.pinned)
+                    return store.pinnedTitle
+                return store ? store.listTitle : qsTr("Muistio")
+            }
         }
     }
 
@@ -36,6 +41,7 @@ CoverBackground {
         clip: true
         interactive: false
         spacing: Theme.paddingSmall
+        visible: !cover.pinned
         model: store ? store.visibleNotes : null
 
         anchors {
@@ -58,18 +64,48 @@ CoverBackground {
         }
     }
 
+    Label {
+        id: pinnedBody
+
+        visible: cover.pinned
+        wrapMode: Text.WordWrap
+        font.pixelSize: Theme.fontSizeExtraSmall
+        color: Theme.primaryColor
+        text: cover.pinned ? store.pinnedText : ""
+
+        anchors {
+            top: heading.bottom
+            topMargin: Theme.paddingLarge
+            left: parent.left
+            right: parent.right
+            leftMargin: Theme.paddingLarge
+            rightMargin: Theme.paddingLarge
+        }
+    }
+
     OpacityRampEffect {
         sourceItem: noteList
         direction: 2
         offset: 0.65
         slope: 2
-        enabled: noteList.contentHeight > noteList.height
+        enabled: noteList.visible && noteList.contentHeight > noteList.height
+    }
+
+    // The note runs under the cover actions, so it fades out rather than
+    // ending on a hard line of half-cut text.
+    OpacityRampEffect {
+        sourceItem: pinnedBody
+        direction: 2
+        offset: 0.6
+        slope: 2
+        enabled: pinnedBody.visible
+                 && pinnedBody.height > cover.height - pinnedBody.y - Theme.itemSizeSmall
     }
 
     Label {
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
-        visible: !store || noteList.count === 0
+        visible: !cover.pinned && (!store || noteList.count === 0)
         color: Theme.secondaryColor
         font.pixelSize: Theme.fontSizeExtraSmall
         text: qsTr("No notes")

@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import "../components"
 
 Dialog {
     id: page
@@ -30,6 +31,8 @@ Dialog {
                                    page.category, favoriteSwitch.checked)
 
     SilicaFlickable {
+        id: flick
+
         anchors.fill: parent
         contentHeight: column.height + Theme.paddingLarge
 
@@ -69,13 +72,20 @@ Dialog {
                 checked: page.favorite
             }
 
+            MarkdownToolbar {
+                width: parent.width
+                target: bodyField
+            }
+
             TextArea {
                 id: bodyField
 
                 width: parent.width
+                height: Math.max(implicitHeight, Screen.height / 3)
                 text: page.content
-                label: qsTr("Markdown")
-                placeholderText: qsTr("Markdown")
+                placeholderText: qsTr("Write a note...")
+                wrapMode: TextEdit.Wrap
+                color: Theme.primaryColor
             }
         }
 

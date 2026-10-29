@@ -69,6 +69,11 @@ Page {
                 }
 
                 MenuItem {
+                    text: app.notes.pinnedNoteId === noteId ? qsTr("Unpin from cover") : qsTr("Pin to cover")
+                    onClicked: app.togglePin(noteId)
+                }
+
+                MenuItem {
                     enabled: !locked
                     text: qsTr("Edit")
                     onClicked: app.editNote(noteId)

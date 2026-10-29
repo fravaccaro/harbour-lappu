@@ -12,6 +12,11 @@ QtObject {
     onSearchTextChanged: reloadVisible()
     onSortModeChanged: reloadVisible()
     property int nextId: 9
+    property int pinnedNoteId: 0
+    onPinnedNoteIdChanged: applyPinned()
+    // Kept as plain properties so the cover follows edits to the pinned note.
+    property string pinnedTitle: ""
+    property string pinnedText: ""
     property int favoriteCount: 0
     property int uncategorizedCount: 0
     property string listTitle: qsTr("All")
@@ -202,6 +207,7 @@ QtObject {
         reloadVisible()
         favoriteCount = countFavorites()
         uncategorizedCount = countUncategorized()
+        applyPinned()
     }
 
     function setFilter(kind, category) {
@@ -209,6 +215,25 @@ QtObject {
         filterCategory = category || ""
         listTitle = filterTitle()
         reloadVisible()
+    }
+
+    // Only one note sits on the cover, so pinning another replaces the pin.
+    function pinNote(noteId) {
+        pinnedNoteId = noteId
+    }
+
+    function unpinNote() {
+        pinnedNoteId = 0
+    }
+
+    function pinnedNote() {
+        return pinnedNoteId === 0 ? null : noteById(pinnedNoteId)
+    }
+
+    function applyPinned() {
+        var note = pinnedNote()
+        pinnedTitle = note ? note.title : ""
+        pinnedText = note ? Format.plainText(note.content) : ""
     }
 
     function toggleFavorite(noteId) {
@@ -223,6 +248,8 @@ QtObject {
         var i = indexOfId(noteId)
         if (i < 0)
             return
+        if (noteId === pinnedNoteId)
+            unpinNote()
         allNotes.remove(i)
         refreshLists()
     }

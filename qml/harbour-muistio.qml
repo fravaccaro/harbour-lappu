@@ -41,6 +41,13 @@ ApplicationWindow {
         })
     }
 
+    function togglePin(noteId) {
+        if (notes.pinnedNoteId === noteId)
+            notes.unpinNote()
+        else
+            notes.pinNote(noteId)
+    }
+
     function editNote(noteId) {
         var note = notes.noteById(noteId)
         if (!note || note.locked)
