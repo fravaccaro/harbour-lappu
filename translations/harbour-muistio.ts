@@ -222,7 +222,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Markdown</source>
+        <source>Write a note...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

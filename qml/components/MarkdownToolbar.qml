@@ -140,9 +140,9 @@ Item {
                     ListElement { label: "I"; kind: "italic" }
                     ListElement { label: "U"; kind: "underline" }
                     ListElement { label: "S"; kind: "strike" }
-                    ListElement { label: "\u25e6"; kind: "list" }
-                    ListElement { label: "\ud83d\uddf9"; kind: "task" }
-                    ListElement { label: "[]"; kind: "link" }
+                    ListElement { label: "\ud834\udd18"; kind: "list" }
+                    ListElement { label: "\ud83d\uddf8"; kind: "task" }
+                    ListElement { label: "\ud83d\udd17"; kind: "link" }
                 }
 
                 delegate: markButton
