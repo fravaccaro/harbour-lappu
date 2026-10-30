@@ -6,7 +6,7 @@ CoverBackground {
 
     readonly property var win: __silica_applicationwindow_instance
     readonly property var store: win ? win.notes : null
-    readonly property bool pinned: store !== null && store.pinnedNoteId > 0
+    readonly property bool pinned: Lappu.configured && store !== null && store.pinnedNoteId > 0
 
     clip: true
 
@@ -46,10 +46,12 @@ CoverBackground {
             truncationMode: TruncationMode.Fade
             color: Theme.secondaryHighlightColor
             font.pixelSize: Theme.fontSizeMedium
+            // The store outlives a sign-out, so the name stands in for its
+            // filter title until there is an account to filter.
             text: {
-                if (cover.pinned)
-                    return store.pinnedTitle
-                return store ? store.listTitle : qsTr("Lappu")
+                if (!Lappu.configured || !store)
+                    return qsTr("Lappu")
+                return cover.pinned ? store.pinnedTitle : store.listTitle
             }
         }
     }
@@ -61,7 +63,7 @@ CoverBackground {
         interactive: false
         spacing: Theme.paddingSmall
         visible: !cover.pinned
-        model: store ? store.visibleNotes : null
+        model: Lappu.configured && store ? store.visibleNotes : null
 
         anchors {
             top: heading.bottom
@@ -124,10 +126,10 @@ CoverBackground {
     Label {
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
-        visible: !cover.pinned && (!store || noteList.count === 0)
+        visible: !cover.pinned && (!Lappu.configured || noteList.count === 0)
         color: Theme.secondaryColor
         font.pixelSize: Theme.fontSizeExtraSmall
-        text: qsTr("No notes")
+        text: !Lappu.configured ? qsTr("Not signed in") : qsTr("No notes")
 
         anchors {
             left: parent.left

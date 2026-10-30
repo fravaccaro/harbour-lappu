@@ -5,6 +5,8 @@ import "../components"
 Page {
     id: page
 
+    property bool searchVisible: false
+
     allowedOrientations: Orientation.All
     onStatusChanged: {
         if (status === PageStatus.Active && pageStack.nextPage() === null)
@@ -37,6 +39,11 @@ Page {
             }
 
             MenuItem {
+                text: page.searchVisible ? qsTr("Hide search") : qsTr("Search")
+                onClicked: page.searchVisible = !page.searchVisible
+            }
+
+            MenuItem {
                 text: qsTr("New note")
                 onClicked: app.openNewNote()
             }
@@ -50,9 +57,30 @@ Page {
             }
 
             SearchField {
+                id: searchField
+
                 width: parent.width
+                visible: page.searchVisible
                 placeholderText: qsTr("Search notes")
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
+                EnterKey.iconSource: "image://theme/icon-m-enter-close"
+                EnterKey.onClicked: focus = false
                 onTextChanged: app.notes.searchText = text
+            }
+
+            // Showing the field is a request to type in it, and hiding it is
+            // how a search is called off. The header is a component of its
+            // own, so what reaches for the field has to live in here with it.
+            Connections {
+                target: page
+                onSearchVisibleChanged: {
+                    if (page.searchVisible) {
+                        searchField.forceActiveFocus()
+                        return
+                    }
+                    searchField.text = ""
+                    searchField.focus = false
+                }
             }
         }
 

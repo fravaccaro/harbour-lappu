@@ -107,6 +107,10 @@
         <source>No notes</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Not signed in</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>DetailsDrawer</name>
@@ -336,6 +340,14 @@
     </message>
     <message>
         <source>Pin to cover</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hide search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
