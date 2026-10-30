@@ -5,10 +5,13 @@ import "../notes/NoteFormat.js" as Format
 /*!
     \brief Read-only markdown preview whose task lines are tappable.
 
-    Renders \c content line by line. Nextcloud task lines (\c {- [ ] } and
-    \c {- [x] }) become full-width tap targets, every other line becomes rich
-    text. The component never rewrites the text itself: it reports the index of
-    the tapped line through \c taskClicked so the owner can flip that line.
+    Renders \c content as a run of blocks. Nextcloud task lines (\c {- [ ] }
+    and \c {- [x] }) become full-width tap targets, a GitHub-style table
+    becomes a grid, every other line becomes rich text. The component never
+    rewrites the text itself: it reports the line of the tapped task through
+    \c taskClicked so the owner can flip that line. A table stands for several
+    lines at once, so that number is the line within \c content rather than
+    the row it was drawn in.
 
     Task rows are disabled while \c locked is true.
 
@@ -32,10 +35,10 @@ Column {
     signal linkActivated(string link)
 
     function rebuild() {
-        var lines = String(root.content).split("\n")
+        var rows = Format.previewBlocks(root.content)
         lineModel.clear()
-        for (var i = 0; i < lines.length; ++i)
-            lineModel.append(Format.previewLine(lines[i]))
+        for (var i = 0; i < rows.length; ++i)
+            lineModel.append(rows[i])
     }
 
     onContentChanged: root.rebuild()
@@ -56,7 +59,7 @@ Column {
                 height: Math.max(Theme.itemSizeSmall, taskLabel.height + 2 * Theme.paddingSmall)
                 visible: kind === "task"
                 enabled: !root.locked
-                onClicked: root.taskClicked(index)
+                onClicked: root.taskClicked(model.lineIndex)
 
                 Label {
                     id: checkGlyph
@@ -91,6 +94,22 @@ Column {
                 linkColor: Theme.highlightColor
                 text: html
                 onLinkActivated: root.linkActivated(link)
+            }
+
+            // Loaded rather than hidden, unlike the rows above: a grid is a
+            // heavier thing to build than a label, and a note of a hundred
+            // lines would otherwise carry a hundred of them.
+            Loader {
+                width: root.width
+                active: kind === "table"
+
+                sourceComponent: Component {
+                    MarkdownTable {
+                        width: root.width
+                        content: block
+                        onLinkActivated: root.linkActivated(link)
+                    }
+                }
             }
 
             Item {

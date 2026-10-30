@@ -5,7 +5,9 @@
     The bar does not own the note. It only wraps or prefixes the current
     selection of \c target. An empty selection inserts the markers and leaves
     the caret between them. Heading buttons replace an existing ATX prefix
-    rather than stacking hashes.
+    rather than stacking hashes. The table button is the one that writes
+    several lines: it lays down an empty two-column table on lines of its own
+    and hands back the first column name selected, ready to be typed over.
 
     \qml
     MarkdownToolbar {
@@ -125,8 +127,37 @@ Item {
             prefixLine("- [ ] ")
         else if (kind === "link")
             wrap("[", "]()")
+        else if (kind === "table")
+            insertTable()
         else if (kind.length === 2 && kind.charAt(0) === "h")
             setHeading(Number(kind.charAt(1)))
+    }
+
+    // The name of a column the writer is expected to replace, which is why it
+    // is handed back selected rather than merely written.
+    function columnName() {
+        return qsTr("Column")
+    }
+
+    function tableSkeleton() {
+        return "| " + columnName() + " | " + columnName() + " |\n| --- | --- |\n|  |  |\n"
+    }
+
+    // Past the leading "| " of the first header cell.
+    function insertTable() {
+        if (!target)
+            return
+        restore()
+        var at = insertBlock(tableSkeleton()) + 2
+        target.select(at, at + columnName().length)
+    }
+
+    // Where the block landed. A table is a block, so it begins on a line of
+    // its own however the caret was placed.
+    function insertBlock(chunk) {
+        var lead = savedStart > 0 && target.text.charAt(savedStart - 1) !== "\n" ? "\n" : ""
+        splice(savedStart, savedEnd, lead + chunk)
+        return savedStart + lead.length
     }
 
     height: Theme.itemSizeSmall * 2
@@ -166,6 +197,7 @@ Item {
                     ListElement { label: "H4"; kind: "h4" }
                     ListElement { label: "H5"; kind: "h5" }
                     ListElement { label: "H6"; kind: "h6" }
+                    ListElement { label: "\u25a6"; kind: "table" }
                 }
 
                 delegate: markButton

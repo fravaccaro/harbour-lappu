@@ -102,7 +102,7 @@ This document is a living contract. Keeping it accurate is part of the implement
 | `src/lappu/types.h` | Plain data structs (`LocalNote`) |
 | `qml/pages/*` | Silica pages |
 | `qml/notes/*` | Notes view model (`NotesStore.qml`) and markdown helpers (`NoteFormat.js`) |
-| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the markdown bar, the edit history, the note body, one side of a conflict (`ConflictVersion.qml`) |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the markdown bar, the edit history, the note body, a markdown table (`MarkdownTable.qml`), one side of a conflict (`ConflictVersion.qml`) |
 | `qml/cover/*` | Cover page |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe, and LinkHandler modules |
 | `docs/*` | The documentation site, built by Jekyll from `_config.yml`; `README.md` is its home page |
@@ -123,6 +123,8 @@ Nothing bounds a request but `HttpClient::watchForStall()`. Qt 5.6 has no transf
 A refused password is not an ordinary error. `NotesApi::reportStatus()` splits `401` off onto `unauthorized()`, and `Session::onUnauthorized()` stops the timer and drops the password so the app returns to the sign-in page. It clears nothing else: the cache and its `dirty` rows stay, so a fresh sign-in sends them. Unlike every other API error it is reported whether or not the user asked for the sync, because being sent back to sign in needs a reason.
 
 A note has no title of its own. The server names it after the first line of the content, and `Session` works the same name out locally so the pages can show it before the next pull confirms it. An unsynced new note borrows a negative id until the server names it. That id identifies the note like any other, and only `0` stands for no note at all: `Session::saveNote()` starts a new note for `0` alone, and what decides between `POST` and `PUT` is whether the id is a server id, never whether an ETag was stored.
+
+A rendered row is not a line of the note. `NoteFormat.previewBlocks()` hands `NoteBody` one row per line except for a table, which is one row standing for all the lines it was written on, so every row carries the `lineIndex` it began at and `taskClicked` reports that rather than the row. `NotesStore.flipLine()` indexes the content by line, and a row number would tick the wrong box under any table. A table is told from prose by the row of dashes directly beneath its header, and `MarkdownTable` reads the markdown again where it is drawn, so the row carries the block itself and nothing has to agree on a model of cells.
 
 `qml/notes/NotesStore.qml` is the QML-side view of the synced notes: it owns the filtering, search, sort, category and cover state, and is filled through `ingest()` from `Notes.notes()`. It writes nothing itself; every edit is handed to `Lappu`. The two pieces of that state the user expects to outlast a restart — the sort order and the pinned note — are bindings onto `Lappu.sortMode` and `Lappu.coverNoteId`, which `Config` keeps in `settings.conf`, so neither may be assigned imperatively.
 

@@ -60,6 +60,7 @@ DISTFILES += \
     qml/components/FilterItem.qml \
     qml/components/LappuNotification.qml \
     qml/components/LappuSupportDialog.qml \
+    qml/components/MarkdownTable.qml \
     qml/components/MarkdownToolbar.qml \
     qml/components/NoteBody.qml \
     qml/cover/CoverPage.qml \

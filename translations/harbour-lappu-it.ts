@@ -312,6 +312,13 @@
     </message>
 </context>
 <context>
+    <name>MarkdownToolbar</name>
+    <message>
+        <source>Column</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>NoteEditPage</name>
     <message>
         <source>Add</source>

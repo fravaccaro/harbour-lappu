@@ -29,7 +29,8 @@ The SailfishOS Community Team is on Liberapay:
 <a href="docs/screenshots/screenshot1.png"><img width="33%" style="float: left;" src="docs/screenshots/screenshot1.png" alt="Notes" /></a> <a href="docs/screenshots/screenshot2.png"><img width="33%" style="float: left;" src="docs/screenshots/screenshot2.png" alt="Categories" /></a> <a href="docs/screenshots/screenshot3.png"><img width="33%" style="float: left;" src="docs/screenshots/screenshot3.png" alt="Editing" /></a>
 <br style="clear: both; height:5px;" />
 
-- Write notes in Markdown, with a bar for emphasis, headings, lists, task lines and links, and undo and redo.
+- Write notes in Markdown, with a bar for emphasis, headings, lists, task lines, links and tables, and undo and redo.
+- Read a table as a grid rather than a row of pipes.
 - Browse by category, favourites, or everything at once, and search the title and body of every note.
 - Tick a task line straight from the note, without opening the editor.
 - Edit while offline: a note written with no server in reach is kept and sent by the next sync.

@@ -25,7 +25,7 @@ nav_order: 1
 | `qml/pages/ConflictPage.qml` | The two versions of a note that changed on both sides, and the three answers to it |
 | `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category and cover state |
 | `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, and the subset of HTML a Silica `Label` draws |
-| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar, the edit history, the note body, one side of a conflict |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar, the edit history, the note body, a Markdown table, one side of a conflict |
 | `qml/cover/*` | The cover page and its glyph |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe and LinkHandler modules |
 
@@ -75,6 +75,18 @@ A passing message has one route: `app.showToast()` in `qml/harbour-lappu.qml` ha
 Something the user is owed but that is not an error travels on `notice()`, a plain signal, instead. `errorMessage` is a property, and its `if (error == m_error) return;` guard would hold back the second of two identical notices; it also reads as a failure, which a refused write is not. Like `unauthorized`, a notice is said whether or not the sync was asked for, because a change the user can see needs a reason.
 
 A failed sign-in is the exception: `loginFailed` reaches the sign-in pages, which say so in place, because the reason belongs to the form the user is looking at. That is why `onLoginFailed()` in `session.cpp` does not also set `errorMessage`. A sign-in that simply runs out of time takes the same route: `LoginFlow::onDeadline()` cancels the poll and fails with a reason.
+
+## Drawing a note
+
+`NoteFormat.previewBlocks()` turns the content into the rows `NoteBody` draws. Most rows are one line, but a table is a single row standing for every line it was written on, so **a row is not a line** and each one carries the `lineIndex` it began at. `taskClicked` reports that number rather than the row, because `NotesStore.flipLine()` indexes the content by line and a row number would tick the wrong box under any table.
+
+What makes a table a table is the row of dashes directly beneath its header, with one cell per column. That test is the whole of it, and it is deliberately strict: a sentence carrying a stray `|` has to keep reading as a sentence. A cell may hold inline Markdown, and `cellHtml()` escapes it first, since a note may have angle brackets of its own; a cell keeps its links whole, unlike a task line, whose row is itself the tap target.
+
+The row carries the Markdown of the block rather than a model of cells, and `MarkdownTable` parses it again where it is drawn. Nothing between the two has to agree on a shape, and the component can be handed any block at all: it draws nothing for one that is not a table.
+
+Columns are measured, which QML offers no declarative way to do. `MarkdownTable.remeasure()` runs on a change of content or width and assigns `columnWidths`; the measuring is done in the header's **bold** so a column cannot clip the name above it, by a hidden `Label` rather than a `TextMetrics`, which keeps the ruler in the very font the cells are drawn in. No column is allowed past the width of the note, so one long cell wraps instead of pushing the rest out of reach, and the grid flicks sideways when the columns together want more room than the page has. `NoteBody` puts the grid behind a `Loader`, unlike its other rows, since a note of a hundred lines should not build a hundred of them.
+
+List excerpts and the cover have no room for a grid, so `stripMarkdown()` drops the row of dashes and turns a row's pipes into spaces. It only does that to a line fenced by pipes, which again leaves prose alone.
 
 ## Links
 

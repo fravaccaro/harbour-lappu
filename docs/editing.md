@@ -31,8 +31,19 @@ The bar above the text applies Markdown to the selection, or, with nothing selec
 | Task | `- [ ] ` at the start of the line |
 | Link | `[label]()`, with the cursor left in the brackets |
 | H1 - H6 | `#` to `######` at the start of the line |
+| ▦ | an empty two-column table |
 
 A heading button **replaces** whatever heading the line already had rather than adding more hashes, so tapping H2 on an H1 line makes it an H2.
+
+The table button is the one that writes more than markers. It lays down a header row, the row of dashes under it and one empty row, always on lines of its own, and leaves the first column name selected so typing renames it:
+
+```
+| Column | Column |
+| --- | --- |
+|  |  |
+```
+
+Add a row by writing another line of the same shape, and a column by adding a cell to every row, the dashes included. Writing `:---`, `---:` or `:---:` in the row of dashes puts that column's text left, right or centre.
 
 ## Undo and redo
 
@@ -47,6 +58,10 @@ The note page draws the Markdown rather than showing the markers: headings are s
 Tapping a link does not hand it straight to the browser. Because a note may have been written anywhere and synced in, the link is shown to you first, with the address in full and the choice to open it, copy it or share it.
 
 A **task line** - `- [ ] something` - is drawn with a checkbox, and tapping the row ticks or unticks it there and then, without opening the editor. The whole row is the tap target, so a link inside a task line keeps its label but is not followed.
+
+A **table** is drawn as a grid with its header in bold, not as the pipes it was written with. What makes a table a table is the row of dashes directly under the header, which is why a sentence with a stray `|` in it is left as the sentence it is. Each column is as wide as its widest cell, and when the columns together want more room than the screen has, the grid can be dragged sideways; the rest of the note stays where it is. A link in a cell is a link, and is offered the same way as any other.
+
+In the notes list and on the cover, where there is no room for a grid, a table reads as its cells with the pipes taken out.
 
 A note the server marks read-only says so and cannot be edited. An empty note says that too, rather than showing a blank page.
 

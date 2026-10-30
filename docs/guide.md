@@ -22,7 +22,7 @@ Lappu does not use the Nextcloud account in the Sailfish OS settings. That accou
 
 * **[Signing in](signin)** - the server address, the sign-in page of the server, and what Lappu keeps afterwards
 * **[Notes and categories](notes)** - the list, the All, Favorites and Uncategorized views, searching, and the cover
-* **[Writing a note](editing)** - the title, the Markdown bar, undo and redo, task lines and categories
+* **[Writing a note](editing)** - the title, the Markdown bar, undo and redo, task lines, tables and categories
 * **[Sync, files and permissions](files)** - when the notes are refreshed, what happens offline, where the copy is kept, and why the app asks for each permission
 
 ## Supporting the app
