@@ -137,6 +137,7 @@ private:
     void onUpdated(const LocalNote &note);
     void onDeleted(qint64 id);
     void onConflict(const LocalNote &remote);
+    void onRefused(const QString &error);
     void settleOrAsk(const LocalNote &mine, const LocalNote &theirs);
     int indexOfConflict(qint64 noteId) const;
     bool takeConflict(qint64 noteId, QPair<LocalNote, LocalNote> *pair);

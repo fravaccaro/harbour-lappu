@@ -76,6 +76,13 @@ QString statusError(int status)
         return QObject::tr("The Notes app is not enabled on the server.");
     if (status == 412)
         return QObject::tr("The note changed on the server, which did not say how.");
+    // The Notes app answers 423 for a file Nextcloud has locked, after trying
+    // five times itself. A user lock has no expiry, so the one thing the message
+    // must carry is the word the server means: the file is locked, and only
+    // unlocking it there will do. Nothing is wrong with the edit, which waits.
+    if (status == 423)
+        return QObject::tr("The note is locked on the server. The change is still "
+                           "waiting and will be sent again.");
 
     return QObject::tr("The server refused the change (%1).").arg(status);
 }
@@ -209,7 +216,7 @@ void NotesApi::handleWrite(Operation operation, int status, const QByteArray &bo
     }
 
     if (!writeSucceeded(status)) {
-        reportStatus(status);
+        reportRefusal(status);
         return;
     }
 
@@ -241,11 +248,24 @@ void NotesApi::reportConflict(const QByteArray &body)
     // Without an id there is no note to settle the edit against, which leaves
     // nothing to do but say the write was refused.
     if (remote.id <= 0) {
-        reportStatus(412);
+        reportRefusal(412);
         return;
     }
 
     emit conflicted(remote);
+}
+
+// A refusal is about the one note that was written, so the rest of what is
+// owed is still worth offering. A password the server will not take is the
+// exception: it is about the account, and nothing else owed would fare better.
+void NotesApi::reportRefusal(int status)
+{
+    if (status == 401) {
+        emit unauthorized(statusError(status));
+        return;
+    }
+
+    emit refused(statusError(status));
 }
 
 void NotesApi::reportStatus(int status)

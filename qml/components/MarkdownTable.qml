@@ -159,7 +159,9 @@ Item {
                                     font.bold: rowBlock.rowIndex === 0
                                     color: Theme.primaryColor
                                     linkColor: Theme.highlightColor
-                                    text: Format.cellHtml(root.cell(rowBlock.rowIndex, index))
+                                    // A cell is not a tap target, so unlike a
+                                    // task line it keeps its links whole.
+                                    text: Format.lineToHtml(root.cell(rowBlock.rowIndex, index))
                                     onLinkActivated: root.linkActivated(link)
                                 }
                             }

@@ -49,7 +49,7 @@ Dialog {
 
             DialogHeader {
                 acceptText: page.noteId === 0 ? qsTr("Add") : qsTr("Save")
-                title: page.noteId === 0 ? qsTr("New note") : qsTr("Note")
+                title: page.noteId === 0 ? qsTr("New note") : qsTr("Edit note")
             }
 
             ValueButton {

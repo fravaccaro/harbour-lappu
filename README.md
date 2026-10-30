@@ -30,7 +30,7 @@ The SailfishOS Community Team is on Liberapay:
 <br style="clear: both; height:5px;" />
 
 - Write notes in Markdown, with a bar for emphasis, headings, lists, task lines, links and tables, and undo and redo.
-- Read a table as a grid rather than a row of pipes.
+- Read a table as a grid, a quote with a bar beside it and a code block as code, rather than as the markers they were written with.
 - Browse by category, favourites, or everything at once, and search the title and body of every note.
 - Tick a task line straight from the note, without opening the editor.
 - Edit while offline: a note written with no server in reach is kept and sent by the next sync.

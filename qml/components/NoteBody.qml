@@ -5,13 +5,16 @@ import "../notes/NoteFormat.js" as Format
 /*!
     \brief Read-only markdown preview whose task lines are tappable.
 
-    Renders \c content as a run of blocks. Nextcloud task lines (\c {- [ ] }
-    and \c {- [x] }) become full-width tap targets, a GitHub-style table
-    becomes a grid, every other line becomes rich text. The component never
-    rewrites the text itself: it reports the line of the tapped task through
-    \c taskClicked so the owner can flip that line. A table stands for several
-    lines at once, so that number is the line within \c content rather than
-    the row it was drawn in.
+    Renders \c content as a run of blocks. A task line - any of \c {- [ ] },
+    \c {* [x] } or \c {+ [ ] } - becomes a full-width tap target, a heading is
+    set in its own size, a quote gets a bar beside it, a fenced code block is
+    drawn as code and a GitHub-style table as a grid; every other line becomes
+    rich text. A nested item is indented as it was written.
+
+    The component never rewrites the text itself: it reports the line of the
+    tapped task through \c taskClicked so the owner can flip that line. A
+    table or a code block stands for several lines at once, so that number is
+    the line within \c content rather than the row it was drawn in.
 
     Task rows are disabled while \c locked is true.
 
@@ -41,6 +44,14 @@ Column {
             lineModel.append(rows[i])
     }
 
+    // A heading is told apart by size as much as by weight. Past the second
+    // level there is no size left to give one, so the rest read as bold.
+    function headingSize(level) {
+        if (level === 1)
+            return Theme.fontSizeExtraLarge
+        return level === 2 ? Theme.fontSizeLarge : Theme.fontSizeMedium
+    }
+
     onContentChanged: root.rebuild()
     Component.onCompleted: root.rebuild()
 
@@ -64,7 +75,7 @@ Column {
                 Label {
                     id: checkGlyph
 
-                    x: Theme.horizontalPageMargin
+                    x: Theme.horizontalPageMargin + indent * Theme.paddingLarge
                     anchors.verticalCenter: parent.verticalCenter
                     color: taskRow.highlighted ? Theme.highlightColor : Theme.primaryColor
                     text: done ? "\u2611" : "\u2610"
@@ -84,16 +95,53 @@ Column {
                 }
             }
 
+            // Prose, a bullet and a heading are one label: a heading differs
+            // only in the weight and size it is set in.
             Label {
-                x: Theme.horizontalPageMargin
-                width: parent.width - 2 * Theme.horizontalPageMargin
-                visible: kind === "text"
+                x: Theme.horizontalPageMargin + indent * Theme.paddingLarge
+                width: parent.width - x - Theme.horizontalPageMargin
+                visible: kind === "text" || kind === "heading"
                 wrapMode: Text.WordWrap
                 textFormat: Text.RichText
+                font.bold: kind === "heading"
+                font.pixelSize: kind === "heading" ? root.headingSize(level)
+                                                   : Theme.fontSizeMedium
                 color: Theme.primaryColor
                 linkColor: Theme.highlightColor
                 text: html
                 onLinkActivated: root.linkActivated(link)
+            }
+
+            // A quote is marked by a bar beside it rather than by the > it was
+            // written with. The row is exactly as tall as its text, so the
+            // bars of a quote running over several lines join into one.
+            Item {
+                width: parent.width
+                height: quoteText.height
+                visible: kind === "quote"
+
+                Rectangle {
+                    id: quoteBar
+
+                    x: Theme.horizontalPageMargin + indent * Theme.paddingLarge
+                    width: Math.round(Theme.paddingSmall / 3)
+                    height: parent.height
+                    color: Theme.secondaryColor
+                    opacity: 0.6
+                }
+
+                Label {
+                    id: quoteText
+
+                    x: quoteBar.x + quoteBar.width + Theme.paddingMedium
+                    width: parent.width - x - Theme.horizontalPageMargin
+                    wrapMode: Text.WordWrap
+                    textFormat: Text.RichText
+                    color: Theme.secondaryColor
+                    linkColor: Theme.highlightColor
+                    text: html
+                    onLinkActivated: root.linkActivated(link)
+                }
             }
 
             // Loaded rather than hidden, unlike the rows above: a grid is a
@@ -108,6 +156,18 @@ Column {
                         width: root.width
                         content: block
                         onLinkActivated: root.linkActivated(link)
+                    }
+                }
+            }
+
+            Loader {
+                width: root.width
+                active: kind === "code"
+
+                sourceComponent: Component {
+                    MarkdownCode {
+                        width: root.width
+                        content: block
                     }
                 }
             }

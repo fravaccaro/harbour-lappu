@@ -97,6 +97,7 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(&m_api, &NotesApi::failed, this, &Session::onApiFailed);
     connect(&m_api, &NotesApi::unauthorized, this, &Session::onUnauthorized);
     connect(&m_api, &NotesApi::conflicted, this, &Session::onConflict);
+    connect(&m_api, &NotesApi::refused, this, &Session::onRefused);
     connect(m_notes, &NotesModel::changed, this, &Session::notesChanged);
     connect(m_config, &Config::readyChanged, this, &Session::readyChanged);
     connect(m_config, &Config::configuredChanged, this, &Session::onConfiguredChanged);
@@ -576,6 +577,20 @@ void Session::resolveKeepBoth(int noteId)
     // was just added to being the one that carries it; with nothing in
     // flight it starts a run and finds the same row in the cache.
     pushDirty();
+}
+
+// A write the server refused by status says nothing against the server itself,
+// so the run carries on as it does after a conflict: the note stays owed, the
+// next one owed is offered, and nothing is thrown away. A locked note is the
+// ordinary reason, and a lock a user placed is held until it is lifted on the
+// server, so the row waits however long that takes rather than being retried
+// into anything: there is nothing the app could do about it from here.
+void Session::onRefused(const QString &error)
+{
+    if (m_announce)
+        setError(error);
+
+    pushNext();
 }
 
 // The rest of the run is abandoned: whatever was owed stays owed, and is

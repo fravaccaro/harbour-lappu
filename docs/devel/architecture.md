@@ -25,7 +25,7 @@ nav_order: 1
 | `qml/pages/ConflictPage.qml` | The two versions of a note that changed on both sides, and the three answers to it |
 | `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category and cover state |
 | `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, and the subset of HTML a Silica `Label` draws |
-| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar, the edit history, the note body, a Markdown table, one side of a conflict |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar, the edit history, the note body, a Markdown table, a code block, one side of a conflict |
 | `qml/cover/*` | The cover page and its glyph |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe and LinkHandler modules |
 
@@ -46,6 +46,17 @@ A `PUT` is **conditional**. `NotesApi::updateNote()` sends the stored ETag as `I
 A refused write answers `412` with the server's whole note as the body, which `NotesApi::reportConflict()` parses and reports on `conflicted()` rather than `failed()`: the server is healthy and nothing is lost, so `Session::onConflict()` ends in `pushNext()` like a success and leaves `m_pushed` alone. It settles the note by itself where it can - a row that is gone or already clean, a row marked `deleted` whose `DELETE` will go out unconditionally, or two sides that agree on content, category and favourite - and otherwise records the pair in `m_conflicts` and says so through `notice()`. `pushNext()` skips any id in that list, or every run would earn the same `412` again and add a second pair.
 
 `m_conflicts` is held in memory alone. The local side of a pair is the `dirty` row in the cache, so an app closed before the user answers loses only the question, and the next run's `412` asks it again. The three resolvers each settle the original row: `resolveKeepMine()` adopts the server's ETag through `NotesCache::setEtag()` and leaves the row `dirty` for another conditional write, `resolveKeepTheirs()` calls `markClean()` with the server's note, and `resolveKeepBoth()` writes the local text to a fresh negative id through `m_cache.upsertLocal()` - never through `store()`, which would re-enter the push - and `markClean()`s the original with the server's note. A branch that left the original `dirty` with its stale ETag would fork another copy on every sync, so settling it is what the feature rests on. The cover keeps its pin on the original id: that is the note the user pinned, and the server's version is the one that goes on holding it.
+
+A write refused by any other status takes a third route. `NotesApi::reportRefusal()` reports it on `refused()` rather than `failed()`, because a server that answers with a status of its own is plainly working: `Session::onRefused()` says the reason if the sync was asked for and then calls `pushNext()`, so the refusal costs that one note its turn and not the whole queue. Nothing is thrown away either - the row stays `dirty` and is offered again by the next run. `401` is the exception and still leaves on `unauthorized()`, since it is about the account rather than the note and nothing else owed would fare any better.
+
+The status worth naming is **423**. The Notes app answers it for a locked file, through `\OCP\Lock\LockedException`, and only after `Util::retryIfLocked()` has tried five times itself; read-only is **403**, by way of `NoteNotWritableException`.
+
+Two kinds of lock arrive as the same status, and they differ in whether waiting helps. A transactional lock is the one Nextcloud takes for the length of a write, and it expires. A `ManuallyLockedException` from the `files_lock` app is one a user placed - the **Lock file** entry in the Files app - and it has no expiry at all: it stands until somebody unlocks the file, and until then no client can write to it. The message therefore says the note is *locked* rather than in use, because that is the word that leads the user to the Files app; and the row keeps waiting rather than being retried harder, since there is nothing the app can do about a lock from this side. The server names the holder in its log:
+
+```
+ManuallyLockedException "files/Notes/Home/Weekly meal plan.md" is locked,
+existing lock on file: files_lock/f989125b-...
+```
 
 Two paths lead into the push, and they differ in how loudly they fail:
 
@@ -78,15 +89,27 @@ A failed sign-in is the exception: `loginFailed` reaches the sign-in pages, whic
 
 ## Drawing a note
 
-`NoteFormat.previewBlocks()` turns the content into the rows `NoteBody` draws. Most rows are one line, but a table is a single row standing for every line it was written on, so **a row is not a line** and each one carries the `lineIndex` it began at. `taskClicked` reports that number rather than the row, because `NotesStore.flipLine()` indexes the content by line and a row number would tick the wrong box under any table.
+`NoteFormat.previewBlocks()` turns the content into the rows `NoteBody` draws. Most rows are one line, but a table and a fenced code block are each a single row standing for every line they were written on, so **a row is not a line** and each one carries the `lineIndex` it began at. `taskClicked` reports that number rather than the row, because `NotesStore.flipLine()` indexes the content by line and a row number would tick the wrong box under any block.
 
-What makes a table a table is the row of dashes directly beneath its header, with one cell per column. That test is the whole of it, and it is deliberately strict: a sentence carrying a stray `|` has to keep reading as a sentence. A cell may hold inline Markdown, and `cellHtml()` escapes it first, since a note may have angle brackets of its own; a cell keeps its links whole, unlike a task line, whose row is itself the tap target.
+`blockAt()` asks about a fence before a table. Inside a fence nothing is Markdown: a row of pipes is code, a hash is a hash, and `MarkdownCode` draws the lines as `Text.PlainText`, which is both why nothing needs escaping there and why nothing can be read by mistake. An unclosed fence takes the rest of the note, as it does everywhere else.
+
+Inside a line the same rule holds one level down. `richText()` splits the backquoted spans out first and marks up only what lies between them, so the asterisks of a snippet are not read as emphasis:
+
+```js
+var parts = String(t).split(/(`[^`]+`)/)
+```
+
+A line is then known by what it begins with, and the order of those questions matters: a task before a bullet, since a task is also a bullet, and a quote before either, since a quote may hold one. What marks a task is the brackets rather than the bullet — `-`, `*` and `+` all open a list item, which is what the server's own renderer accepts — and `NotesStore.flipTaskLine()` replaces only the brackets, so the bullet a note was written with survives a tick.
+
+A heading row carries its `level` and a nested row its `indent`; neither arrives pre-marked, because size, weight and offset belong to the drawing. That is also why a bullet is a `text` row with a glyph in front of it rather than a kind of its own.
+
+What makes a table a table is the row of dashes directly beneath its header, with one cell per column. That test is the whole of it, and it is deliberately strict: a sentence carrying a stray `|` has to keep reading as a sentence. A cell may hold inline Markdown, and `lineToHtml()` escapes it first, since a note may have angle brackets of its own; a cell keeps its links whole, unlike a task line, whose row is itself the tap target.
 
 The row carries the Markdown of the block rather than a model of cells, and `MarkdownTable` parses it again where it is drawn. Nothing between the two has to agree on a shape, and the component can be handed any block at all: it draws nothing for one that is not a table.
 
 Columns are measured, which QML offers no declarative way to do. `MarkdownTable.remeasure()` runs on a change of content or width and assigns `columnWidths`; the measuring is done in the header's **bold** so a column cannot clip the name above it, by a hidden `Label` rather than a `TextMetrics`, which keeps the ruler in the very font the cells are drawn in. No column is allowed past the width of the note, so one long cell wraps instead of pushing the rest out of reach, and the grid flicks sideways when the columns together want more room than the page has. `NoteBody` puts the grid behind a `Loader`, unlike its other rows, since a note of a hundred lines should not build a hundred of them.
 
-List excerpts and the cover have no room for a grid, so `stripMarkdown()` drops the row of dashes and turns a row's pipes into spaces. It only does that to a line fenced by pipes, which again leaves prose alone.
+List excerpts and the cover have no room for any of this, so `stripMarkdown()` takes the markers out: `stripBlocks()` for what marks a whole line - the dashes of a table, a fence, a `>`, a bullet, a task's brackets - and `stripSpans()` for what marks a run of text inside one. A table row gives up its pipes only when the line is fenced by them, which again leaves prose alone.
 
 ## Links
 

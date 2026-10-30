@@ -754,6 +754,10 @@
         <source>%1 (my version)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>The note is locked on the server. The change is still waiting and will be sent again.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Session</name>

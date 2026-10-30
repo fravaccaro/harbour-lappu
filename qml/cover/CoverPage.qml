@@ -90,6 +90,7 @@ CoverBackground {
     Label {
         id: pinnedBody
 
+        clip: true
         visible: cover.pinned
         wrapMode: Text.WordWrap
         font.pixelSize: Theme.fontSizeExtraSmall
@@ -103,6 +104,10 @@ CoverBackground {
             right: parent.right
             leftMargin: Theme.paddingLarge
             rightMargin: Theme.paddingLarge
+            // Leave room for the cover actions so the note does not run behind
+            // them, the way the list above stops short of them.
+            bottom: parent.bottom
+            bottomMargin: Theme.itemSizeSmall
         }
     }
 
@@ -114,15 +119,15 @@ CoverBackground {
         enabled: noteList.visible && noteList.contentHeight > noteList.height
     }
 
-    // The note runs under the cover actions, so it fades out rather than
-    // ending on a hard line of half-cut text.
+    // A note longer than the cover fades out rather than ending on a hard line
+    // of half-cut text. The label is bounded, so what tells there is more of it
+    // is the height the text asked for against the height it was given.
     OpacityRampEffect {
         sourceItem: pinnedBody
         direction: 2
-        offset: 0.6
+        offset: 0.65
         slope: 2
-        enabled: pinnedBody.visible
-                 && pinnedBody.height > cover.height - pinnedBody.y - Theme.itemSizeSmall
+        enabled: pinnedBody.visible && pinnedBody.implicitHeight > pinnedBody.height
     }
 
     Label {

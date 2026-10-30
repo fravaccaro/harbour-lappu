@@ -52,6 +52,10 @@ signals:
     // apart from failed() because nothing is wrong with the server and nothing
     // is lost: the edit is only unsettled until it is said which side to keep.
     void conflicted(const LocalNote &remote);
+    // A write the server answered with a status of its own. It travels apart
+    // from failed() because the server is plainly well: whatever else is owed
+    // can still be offered, and the note stays owed for the next run.
+    void refused(const QString &error);
 
 private:
     void onFinished(int status, const QByteArray &body);
@@ -61,6 +65,7 @@ private:
     void handleWrite(Operation operation, int status, const QByteArray &body);
     void reportWritten(Operation operation, const QByteArray &body);
     void reportConflict(const QByteArray &body);
+    void reportRefusal(int status);
     void reportStatus(int status);
 
     HttpClient m_http;

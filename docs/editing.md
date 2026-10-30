@@ -53,15 +53,23 @@ Typing is gathered into steps rather than recorded letter by letter, so one undo
 
 ## Reading a note
 
-The note page draws the Markdown rather than showing the markers: headings are set in bold, emphasis and strikethrough as written, bullets as bullets, and a link as a link.
+The note page draws the Markdown rather than showing the markers: emphasis and strikethrough as written, bullets as bullets, and a link as a link.
+
+A **heading** is set in its own size as well as in bold, so `#` is larger than `##`, and `###` and below read as bold at the size of the text around them.
+
+A **quote** - a line opening with `>` - is set in the dimmer text colour with a bar down its left side instead of the `>`. Consecutive quoted lines share one unbroken bar, and a quote written `>>` is indented a step further.
+
+**Code** is left exactly as it was typed. A span between backquotes, `` `like this` ``, is set in a fixed-pitch font, and nothing inside it is read as Markdown, so asterisks in a snippet stay asterisks. A block fenced by ``` lines is drawn on a faint panel in the same font, with its lines unwrapped: where a line of code ends is part of what it says, so a line wider than the screen is reached by dragging the panel sideways rather than by folding it.
+
+A **nested** list item or task is indented the way it was written, two spaces to a step.
 
 Tapping a link does not hand it straight to the browser. Because a note may have been written anywhere and synced in, the link is shown to you first, with the address in full and the choice to open it, copy it or share it.
 
-A **task line** - `- [ ] something` - is drawn with a checkbox, and tapping the row ticks or unticks it there and then, without opening the editor. The whole row is the tap target, so a link inside a task line keeps its label but is not followed.
+A **task line** is drawn with a checkbox, and tapping the row ticks or unticks it there and then, without opening the editor. The whole row is the tap target, so a link inside a task line keeps its label but is not followed. What marks a task is the brackets, not the bullet in front of them: `- [ ] something`, `* [ ] something` and `+ [ ] something` are all tasks, and ticking one writes back the bullet it was written with. The same three characters all start a plain bullet.
 
 A **table** is drawn as a grid with its header in bold, not as the pipes it was written with. What makes a table a table is the row of dashes directly under the header, which is why a sentence with a stray `|` in it is left as the sentence it is. Each column is as wide as its widest cell, and when the columns together want more room than the screen has, the grid can be dragged sideways; the rest of the note stays where it is. A link in a cell is a link, and is offered the same way as any other.
 
-In the notes list and on the cover, where there is no room for a grid, a table reads as its cells with the pipes taken out.
+In the notes list and on the cover, where there is no room for any of this, the markers are simply taken out: a table reads as its cells, a quote as its text, and a code block without its fences.
 
 A note the server marks read-only says so and cannot be edited. An empty note says that too, rather than showing a blank page.
 

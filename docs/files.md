@@ -33,6 +33,14 @@ A note created offline is listed and can be opened and edited like any other; it
 
 A network that accepts the connection but never answers - a café or hotel Wi-Fi waiting for you to agree to its terms is the usual culprit - is given about half a minute of silence before the refresh is abandoned and said to have failed. A slow answer is not cut off: the wait only runs out while nothing at all is arriving.
 
+## When the server will not take a note
+
+A refusal that names one note costs that note its turn and nothing more: the rest of what is owed still goes out in the same refresh, and the refused note stays owed for the next one. Nothing you wrote is thrown away by a refusal, whatever its reason.
+
+**The note is locked on the server** is the one worth recognising. Nextcloud lets a file be locked on purpose - the **Lock file** entry in the Files app - and a lock placed that way does not expire. While it stands, nothing can write to that note: not Lappu, not the web page, not the desktop client. The edit waits on the phone, and goes out by itself on the first refresh after the file is unlocked in Nextcloud, so there is nothing to redo here. The same message can also mean the server was briefly busy writing the file, which passes on its own, so it is worth one more refresh before going looking for a padlock.
+
+**The note is read-only on the server** is a different thing, and it is about permission rather than a lock: a note shared with you to read, or one whose folder you cannot write to. Lappu will not let you edit a note it already knows is read-only.
+
 ## When the same note changed twice
 
 An edit sent to the server carries the **version of the note it was made from**, and the server refuses it if that is not the version it holds - which is exactly the case where someone else, or another device, changed the same note in the meantime. Nothing is lost by the refusal: the note stops being offered, the refresh carries on with everything else, and the notes page grows a row at the top counting the notes that are waiting to be settled.
