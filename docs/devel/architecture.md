@@ -13,18 +13,18 @@ nav_order: 1
 |---|---|
 | `src/lappu/config.*` | Server URL, user name, TLS preference, the sort and sync settings and the pinned note, in `~/.config/org.frapps/harbour-lappu/settings.conf` |
 | `src/lappu/secretsstore.*` | The app password in a device-lock collection of Sailfish Secrets |
-| `src/lappu/loginflow.*` | Nextcloud login flow v2: ask for a login page, then poll until the server hands over an app password |
+| `src/lappu/loginflow.*` | Nextcloud login flow v2: ask for a login page, then poll until the server hands over an app password or twenty minutes pass |
 | `src/lappu/httpclient.*` | `QNetworkAccessManager` wrapper: basic auth, custom methods, TLS preference |
 | `src/lappu/notesapi.*` | Nextcloud Notes API v1 client under `/index.php/apps/notes/api/v1/notes` |
 | `src/lappu/notescache.*` | SQLite copy of the notes, in `notes.sqlite` |
-| `src/lappu/notesmodel.*` | The notes, as a list model |
+| `src/lappu/notesmodel.*` | Holds the notes of the last pull, and hands them to QML as plain rows through `notes()` |
 | `src/lappu/session.*` | QML-facing controller: login, sync, save, favourite, delete |
-| `src/lappu/url.*` | Server URL normalisation and href joining |
+| `src/lappu/url.*` | Server URL normalisation |
 | `src/lappu/types.h` | Plain data structs (`LocalNote`) |
 | `qml/pages/*` | Silica UI |
 | `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category and cover state |
 | `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, and the subset of HTML a Silica `Label` draws |
-| `qml/components/*` | Shared QML: the notification wrapper, the Markdown bar, the edit history, the note body |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar, the edit history, the note body |
 | `qml/cover/*` | The cover page and its glyph |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe and LinkHandler modules |
 
@@ -38,9 +38,9 @@ nav_order: 1
 
 ## Sync rules
 
-`Session::sync()` **sends what is owed before it pulls**, so a note edited on the phone is the one that stands rather than being overwritten by the older copy coming back. `pushNext()` drains `m_pending` one note at a time, choosing the verb from the row itself: a `deleted` row is a `DELETE`, a row with no ETag has never reached the server and is a `POST`, anything else is a `PUT`.
+`Session::sync()` **sends what is owed before it pulls**, so a note edited on the phone is the one that stands rather than being overwritten by the older copy coming back. `pushNext()` drains `m_pending` one note at a time, choosing the verb from the row itself: a `deleted` row is a `DELETE`, a row whose id is not a server id yet is a `POST`, anything else is a `PUT`.
 
-Conflicts are **last write wins**. No `If-Match` is sent, so the server does not reject a note that changed on both sides. The stored ETag is used only to tell a new note from one the server already has.
+Conflicts are **last write wins**. No `If-Match` is sent, so the server does not reject a note that changed on both sides. The ETag the server sends is kept with the note so that a conditional write can be added later, which is the only way to notice such a conflict; until then nothing is decided by it, and in particular it does not say whether the server knows the note.
 
 Two paths lead into the push, and they differ in how loudly they fail:
 
@@ -61,11 +61,17 @@ The server names a note after the first line of its content. `noteTitle()` in `s
 
 A note that has not reached the server borrows a **negative id** until the server names it. That id is what the cover may be holding, so `onCreated()` remaps it: if `coverNoteId` is the local id being replaced, it is rewritten to the id the server gave. Without that, pinning a brand-new note would leave the cover blank after its first sync.
 
+Such an id is an ordinary id everywhere else, and treating it as a stand-in for "no note" is a mistake worth guarding against. Only `0` means no note: `saveNote()` starts a new note for `0` alone, so that editing an unsent one finds its row instead of forging another, and the cover counts any non-zero id as a pin.
+
 ## Messages to the user
 
 A passing message has one route: `app.showToast()` in `qml/harbour-lappu.qml` hands it to the single `LappuNotification`, which publishes a transient notice. Anything the session reports through `errorMessage` arrives that way, as does a note that is no longer there. No page carries its own copy of `errorMessage`.
 
-A failed sign-in is the exception: `loginFailed` reaches the sign-in pages, which say so in place, because the reason belongs to the form the user is looking at. That is why `onLoginFailed()` in `session.cpp` does not also set `errorMessage`.
+A failed sign-in is the exception: `loginFailed` reaches the sign-in pages, which say so in place, because the reason belongs to the form the user is looking at. That is why `onLoginFailed()` in `session.cpp` does not also set `errorMessage`. A sign-in that simply runs out of time takes the same route: `LoginFlow::onDeadline()` cancels the poll and fails with a reason.
+
+## Links
+
+No link is handed to the browser by the app. `Opal.LinkHandler` shows it first, which matters most for the links inside a note, since those came from the server rather than from the app. `NoteBody` only re-emits `linkActivated`, so the page that holds it decides, and both the page and the component's own example call `LinkHandler.openOrCopyUrl()`.
 
 ## Sandbox layout
 

@@ -98,7 +98,6 @@ void HttpClient::send(const QByteArray &method, const QUrl &url,
         reply = m_manager.sendCustomRequest(request, method, buffer);
         buffer->setParent(reply);
     }
-    reply->setProperty("requestUrl", url);
     connect(reply, &QNetworkReply::finished, this, &HttpClient::onFinished);
     watchForStall(reply);
     if (m_ignoreSsl) {
@@ -139,7 +138,5 @@ void HttpClient::onFinished()
         return;
     }
 
-    emit finished(status, reply->readAll(),
-                  QString::fromLatin1(reply->rawHeader("ETag")),
-                  reply->property("requestUrl").toUrl());
+    emit finished(status, reply->readAll());
 }

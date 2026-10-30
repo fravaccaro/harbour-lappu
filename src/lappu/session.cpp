@@ -25,6 +25,14 @@ QString noteTitle(const QString &content)
     return QObject::tr("New note");
 }
 
+// A note the server has never seen, which is the only kind worth offering it
+// as a new one. The server numbers its notes from one, so the temporary id a
+// note borrows until then is what tells the two apart.
+bool isLocalOnly(const LocalNote &note)
+{
+    return note.id <= 0;
+}
+
 }
 
 Session::Session(Config *config, NotesModel *notes, QObject *parent)
@@ -53,6 +61,7 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(m_config, &Config::configuredChanged, this, &Session::onConfiguredChanged);
     connect(m_config, &Config::secretsErrorChanged, this, &Session::secretsErrorChanged);
     connect(m_config, &Config::serverUrlChanged, this, &Session::serverUrlChanged);
+    connect(m_config, &Config::usernameChanged, this, &Session::usernameChanged);
     connect(m_config, &Config::ignoreSslErrorsChanged, this, &Session::ignoreSslErrorsChanged);
     connect(m_config, &Config::serverUrlChanged, this, &Session::applyApiSettings);
     connect(m_config, &Config::usernameChanged, this, &Session::applyApiSettings);
@@ -91,6 +100,11 @@ QString Session::secretsError() const
 QString Session::serverUrl() const
 {
     return m_config->serverUrl();
+}
+
+QString Session::username() const
+{
+    return m_config->username();
 }
 
 bool Session::ignoreSslErrors() const
@@ -305,7 +319,7 @@ void Session::pushNext()
     const LocalNote note = m_pending.takeFirst();
     if (note.deleted)
         m_api.deleteNote(note.id);
-    else if (note.etag.isEmpty())
+    else if (isLocalOnly(note))
         m_api.createNote(note);
     else
         m_api.updateNote(note);
@@ -410,7 +424,10 @@ void Session::store(const LocalNote &note)
 void Session::saveNote(int noteId, const QString &content, const QString &category,
                        bool favorite)
 {
-    LocalNote note = noteId > 0 ? m_cache.note(noteId) : LocalNote();
+    // Only an id of 0 asks for a new note. A note still waiting to be sent
+    // carries a negative id, and editing it has to find that row rather than
+    // start another one, or every save would leave a copy behind.
+    LocalNote note = noteId != 0 ? m_cache.note(noteId) : LocalNote();
     if (note.readOnly)
         return;
 
@@ -443,7 +460,7 @@ void Session::deleteNote(int noteId)
 
     // A note the server never saw can go at once; the rest must be deleted
     // there too, so it is only marked here.
-    if (note.etag.isEmpty())
+    if (isLocalOnly(note))
         m_cache.remove(note.id);
     else
         m_cache.markDeleted(note.id);

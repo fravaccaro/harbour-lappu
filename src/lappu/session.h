@@ -23,6 +23,8 @@ class Session : public QObject
     Q_PROPERTY(QString secretsError READ secretsError NOTIFY secretsErrorChanged)
     Q_PROPERTY(QString loginUrl READ loginUrl NOTIFY loginUrlChanged)
     Q_PROPERTY(QString serverUrl READ serverUrl NOTIFY serverUrlChanged)
+    // The account the app password belongs to, as the server named it.
+    Q_PROPERTY(QString username READ username NOTIFY usernameChanged)
     Q_PROPERTY(bool ignoreSslErrors READ ignoreSslErrors WRITE setIgnoreSslErrors
                NOTIFY ignoreSslErrorsChanged)
     Q_PROPERTY(bool syncOnStart READ syncOnStart WRITE setSyncOnStart NOTIFY syncOnStartChanged)
@@ -43,6 +45,7 @@ public:
     QString secretsError() const;
     QString loginUrl() const { return m_loginUrl; }
     QString serverUrl() const;
+    QString username() const;
     bool ignoreSslErrors() const;
     void setIgnoreSslErrors(bool ignore);
     bool syncOnStart() const;
@@ -66,8 +69,9 @@ public:
     // Sends what is owed to the server, then pulls the whole account and keeps
     // the answer on the device.
     Q_INVOKABLE void sync();
-    // An id of 0 or less writes a new note. The title follows the first line
-    // of the content, as it does on the server.
+    // An id of 0 writes a new note; any other id edits that note, including the
+    // negative one a note borrows while it waits to be sent. The title follows
+    // the first line of the content, as it does on the server.
     Q_INVOKABLE void saveNote(int noteId, const QString &content, const QString &category,
                               bool favorite);
     Q_INVOKABLE void setFavorite(int noteId, bool favorite);
@@ -81,6 +85,7 @@ signals:
     void secretsErrorChanged();
     void loginUrlChanged();
     void serverUrlChanged();
+    void usernameChanged();
     void ignoreSslErrorsChanged();
     void syncOnStartChanged();
     void syncIntervalChanged();

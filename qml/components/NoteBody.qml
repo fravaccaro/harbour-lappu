@@ -18,7 +18,7 @@ import "../notes/NoteFormat.js" as Format
         content: note.content
         locked: note.locked
         onTaskClicked: store.toggleTask(note.noteId, lineIndex)
-        onLinkActivated: Qt.openUrlExternally(link)
+        onLinkActivated: L.LinkHandler.openOrCopyUrl(link)
     }
     \endcode
 */

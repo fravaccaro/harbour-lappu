@@ -13,6 +13,10 @@ Once the server grants access it creates an app password named Lappu, and Lappu 
 
 The app password is kept in **Sailfish Secrets**, in a collection locked with the device lock, not in a plain file.
 
+Afterwards the settings page names both the server and the account the password belongs to, which is worth a look if you keep more than one account on the same server.
+
+A sign-in left unfinished does not wait forever. The server stops accepting the attempt after twenty minutes, so Lappu gives up at the same point and says so rather than waiting on a page that can no longer succeed.
+
 ## When the password stops working
 
 A password the server no longer accepts - usually one revoked on the server, or an account whose access has changed - takes you back to the sign-in page with the reason shown. The server address is still filled in, so signing in again is a matter of tapping **Sign in** and letting the server's page take over.

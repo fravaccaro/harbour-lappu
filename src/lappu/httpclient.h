@@ -27,8 +27,7 @@ public:
               const Headers &headers = Headers());
 
 signals:
-    void finished(int status, const QByteArray &body, const QString &etag,
-                  const QUrl &url);
+    void finished(int status, const QByteArray &body);
     void failed(const QString &error);
 
 private:

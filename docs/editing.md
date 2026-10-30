@@ -44,6 +44,8 @@ Typing is gathered into steps rather than recorded letter by letter, so one undo
 
 The note page draws the Markdown rather than showing the markers: headings are set in bold, emphasis and strikethrough as written, bullets as bullets, and a link as a link.
 
+Tapping a link does not hand it straight to the browser. Because a note may have been written anywhere and synced in, the link is shown to you first, with the address in full and the choice to open it, copy it or share it.
+
 A **task line** - `- [ ] something` - is drawn with a checkbox, and tapping the row ticks or unticks it there and then, without opening the editor. The whole row is the tap target, so a link inside a task line keeps its label but is not followed.
 
 A note the server marks read-only says so and cannot be edited. An empty note says that too, rather than showing a blank page.

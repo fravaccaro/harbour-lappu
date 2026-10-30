@@ -137,7 +137,7 @@ void NotesApi::deleteNote(qint64 id)
     send("DELETE", notePath(id), QByteArray());
 }
 
-void NotesApi::onFinished(int status, const QByteArray &body, const QString &, const QUrl &)
+void NotesApi::onFinished(int status, const QByteArray &body)
 {
     const Operation operation = m_operation;
     m_operation = Idle;
@@ -175,6 +175,14 @@ void NotesApi::handleWrite(Operation operation, int status, const QByteArray &bo
     }
 
     const LocalNote note = noteFrom(QJsonDocument::fromJson(body).object());
+    // Without an id there is nothing to settle the note against, and taking the
+    // answer as it stands would leave the note looking new for good: every sync
+    // from then on would offer it again as another copy.
+    if (note.id <= 0) {
+        emit failed(tr("The server did not say which note it saved."));
+        return;
+    }
+
     if (operation == Create)
         emit created(m_pendingId, note);
     else

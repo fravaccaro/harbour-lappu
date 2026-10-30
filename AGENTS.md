@@ -94,15 +94,15 @@ This document is a living contract. Keeping it accurate is part of the implement
 | `src/lappu/secretsstore.*` | App password in a device-lock Sailfish Secrets collection |
 | `src/lappu/loginflow.*` | Nextcloud login flow v2 |
 | `src/lappu/httpclient.*` | `QNetworkAccessManager` wrapper |
-| `src/lappu/url.*` | URL path helpers |
+| `src/lappu/url.*` | Server URL normalisation |
 | `src/lappu/session.*` | QML-facing controller |
 | `src/lappu/notesapi.*` | Nextcloud Notes API v1 client |
 | `src/lappu/notescache.*` | SQLite cache of the last pull |
-| `src/lappu/notesmodel.*` | Notes list model |
+| `src/lappu/notesmodel.*` | Holds the notes of the last pull; `notes()` hands them to QML as plain rows. Not a list model, despite the name: no view binds to it |
 | `src/lappu/types.h` | Plain data structs (`LocalNote`) |
 | `qml/pages/*` | Silica pages |
 | `qml/notes/*` | Notes view model (`NotesStore.qml`) and markdown helpers (`NoteFormat.js`) |
-| `qml/components/*` | Shared QML such as the notification wrapper |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the markdown bar, the edit history, the note body |
 | `qml/cover/*` | Cover page |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe, and LinkHandler modules |
 | `docs/*` | The documentation site, built by Jekyll from `_config.yml`; `README.md` is its home page |
@@ -112,11 +112,15 @@ Networking stays in C++. Pages bind to `Lappu` and `Notes`.
 
 Syncing notes is implemented in both directions. `Session` is the only writer: `saveNote`, `setFavorite` and `deleteNote` write to `NotesCache` straight away, marking the row `dirty` (or `deleted`), then offer it to the server. `Session::sync()` sends what is owed first and pulls afterwards, so a note edited on the phone is the one that stands. A note written while offline keeps its `dirty` row, survives a restart, and is sent again by the next sync; a flush the user did not ask for stays quiet about an unreachable server. Conflicts are last-write-wins: no `If-Match` is sent.
 
+A link is never opened straight from the app. Every one goes through `Opal.LinkHandler`, including the links inside a note, which arrive from the server and so are shown to the user before anything is followed.
+
+`LoginFlow` bounds its polling with `m_deadline`, because the poll endpoint answers 404 both while a token waits for approval and after it has expired. The deadline matches the twenty minutes Nextcloud keeps a login flow v2 token, so the attempt fails with a reason instead of polling for as long as the page is open.
+
 Nothing bounds a request but `HttpClient::watchForStall()`. Qt 5.6 has no transfer timeout, and `Session` clears `m_busy` only when a reply arrives, so a request that hung would leave the app busy for good and every later `sync()` would return at its own `m_busy` guard. The watchdog is a `QTimer` parented to the reply, restarted by each progress signal, so it cuts off only a transfer that has stopped moving and leaves a slow one alone. Nothing else in the app aborts a reply, which is why `OperationCanceledError` is reported as the server having stopped answering.
 
 A refused password is not an ordinary error. `NotesApi::reportStatus()` splits `401` off onto `unauthorized()`, and `Session::onUnauthorized()` stops the timer and drops the password so the app returns to the sign-in page. It clears nothing else: the cache and its `dirty` rows stay, so a fresh sign-in sends them. Unlike every other API error it is reported whether or not the user asked for the sync, because being sent back to sign in needs a reason.
 
-A note has no title of its own. The server names it after the first line of the content, and `Session` works the same name out locally so the pages can show it before the next pull confirms it. An unsynced new note borrows a negative id until the server names it.
+A note has no title of its own. The server names it after the first line of the content, and `Session` works the same name out locally so the pages can show it before the next pull confirms it. An unsynced new note borrows a negative id until the server names it. That id identifies the note like any other, and only `0` stands for no note at all: `Session::saveNote()` starts a new note for `0` alone, and what decides between `POST` and `PUT` is whether the id is a server id, never whether an ETag was stored.
 
 `qml/notes/NotesStore.qml` is the QML-side view of the synced notes: it owns the filtering, search, sort, category and cover state, and is filled through `ingest()` from `Notes.notes()`. It writes nothing itself; every edit is handed to `Lappu`. The two pieces of that state the user expects to outlast a restart — the sort order and the pinned note — are bindings onto `Lappu.sortMode` and `Lappu.coverNoteId`, which `Config` keeps in `settings.conf`, so neither may be assigned imperatively.
 

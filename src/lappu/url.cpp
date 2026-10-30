@@ -17,35 +17,4 @@ QString normalizeServer(const QString &input)
     return url;
 }
 
-QUrl join(const QUrl &base, const QString &href)
-{
-    if (href.isEmpty())
-        return base;
-
-    const QUrl absolute(href);
-    if (absolute.isValid() && !absolute.scheme().isEmpty())
-        return absolute;
-
-    QUrl relative;
-    relative.setPath(href);
-    return base.resolved(relative);
-}
-
-QString origin(const QUrl &url)
-{
-    QUrl root;
-    root.setScheme(url.scheme());
-    root.setHost(url.host());
-    root.setPort(url.port());
-    return root.toString();
-}
-
-QString pathWithSlash(const QString &path)
-{
-    if (path.isEmpty() || path.endsWith(QLatin1Char('/')))
-        return path;
-
-    return path + QLatin1Char('/');
-}
-
 }

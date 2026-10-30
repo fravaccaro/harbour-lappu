@@ -135,6 +135,65 @@
     </message>
 </context>
 <context>
+    <name>LappuSupportDialog</name>
+    <message>
+        <source>Hi there!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Thank you for using Lappu. If it keeps your notes where you want them, maybe you can give a little back?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Thank you for your support!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Donate via Liberapay</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Send a tip, once or every month.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Help with translations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bring Lappu to your language on Transifex.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Report issues on GitHub</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tell me what went wrong, or what is missing.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Why support this app?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lappu is free software under the GPLv3, written in spare time next to other projects.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Support keeps it working with new Nextcloud releases and new versions of Sailfish OS.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Other ways to help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Report what breaks, suggest what is missing, or tell other Nextcloud users about the app.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>LicenseListPart</name>
     <message>
         <source>License text</source>
@@ -153,6 +212,10 @@
     </message>
     <message>
         <source>The server did not return a password.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The sign-in attempt took too long. Start again.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -277,6 +340,10 @@
     <name>NotesApi</name>
     <message>
         <source>Enter a server address.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The server did not say which note it saved.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -682,6 +749,10 @@
     </message>
     <message>
         <source>Only while Lappu is running.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Signed in as %1</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -25,6 +25,10 @@ Lappu does not use the Nextcloud account in the Sailfish OS settings. That accou
 * **[Writing a note](editing)** - the title, the Markdown bar, undo and redo, task lines and categories
 * **[Sync, files and permissions](files)** - when the notes are refreshed, what happens offline, where the copy is kept, and why the app asks for each permission
 
+## Supporting the app
+
+Once you have used Lappu for a while it asks, once, whether you would like to give something back: a tip, a translation, or a bug report. Dismissing it is an answer, and it waits a long time before asking again.
+
 ## Further help
 
 * [Report an issue](https://github.com/fravaccaro/harbour-lappu/issues)

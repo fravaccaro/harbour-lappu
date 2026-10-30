@@ -6,7 +6,9 @@ CoverBackground {
 
     readonly property var win: __silica_applicationwindow_instance
     readonly property var store: win ? win.notes : null
-    readonly property bool pinned: Lappu.configured && store !== null && store.pinnedNoteId > 0
+    // A note still waiting to be sent carries a negative id, and is as pinnable
+    // as any other: only 0 means nothing is pinned.
+    readonly property bool pinned: Lappu.configured && store !== null && store.pinnedNoteId !== 0
 
     clip: true
 

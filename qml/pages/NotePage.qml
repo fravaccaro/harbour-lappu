@@ -1,3 +1,4 @@
+import Opal.LinkHandler 1.0 as L
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "../components"
@@ -110,7 +111,11 @@ Page {
                 content: page.content
                 locked: page.locked
                 onTaskClicked: page.toggleTask(lineIndex)
-                onLinkActivated: Qt.openUrlExternally(link)
+                // A link in a note came from the server, so it is offered
+                // rather than opened, the way every other link in the app is.
+                // No title is passed: the markdown label is not carried by
+                // onLinkActivated, and the note's own title would be a lie.
+                onLinkActivated: L.LinkHandler.openOrCopyUrl(link)
             }
 
             Label {

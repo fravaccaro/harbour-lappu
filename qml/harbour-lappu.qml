@@ -1,3 +1,4 @@
+import Opal.SupportMe 1.0
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "components"
@@ -130,5 +131,14 @@ ApplicationWindow {
 
     LappuNotification {
         id: globalNotification
+    }
+
+    // Asks for support once the app has been used for a while, and not again
+    // for a long time after the answer.
+    AskForSupport {
+        contents: Component {
+            LappuSupportDialog {
+            }
+        }
     }
 }

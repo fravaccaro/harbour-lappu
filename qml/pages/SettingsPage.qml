@@ -118,6 +118,16 @@ Page {
                 text: Lappu.serverUrl !== "" ? Lappu.serverUrl : qsTr("Not signed in")
             }
 
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                visible: Lappu.username !== ""
+                truncationMode: TruncationMode.Fade
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.secondaryColor
+                text: qsTr("Signed in as %1").arg(Lappu.username)
+            }
+
             TextSwitch {
                 width: parent.width
                 text: qsTr("Ignore certificate errors")

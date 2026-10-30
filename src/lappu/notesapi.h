@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QString>
-#include <QUrl>
 #include <QVector>
 
 #include "httpclient.h"
@@ -50,8 +49,7 @@ signals:
     void unauthorized(const QString &error);
 
 private:
-    void onFinished(int status, const QByteArray &body, const QString &etag,
-                    const QUrl &url);
+    void onFinished(int status, const QByteArray &body);
     void onFailed(const QString &error);
     void send(const QByteArray &method, const QString &path, const QByteArray &body);
     void handleWrite(Operation operation, int status, const QByteArray &body);

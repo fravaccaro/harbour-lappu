@@ -15,6 +15,8 @@ Source0:    %{name}-%{version}.tar.bz2
 Requires:   sailfishsilica-qt5 >= 0.10.9
 Requires:   sailfish-components-webview-qt5
 Requires:   nemo-qml-plugin-notifications-qt5
+# Opal.SupportMe remembers whether it has asked through Nemo.Configuration.
+Requires:   nemo-qml-plugin-configuration-qt5
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(sailfishsecrets)
 BuildRequires:  pkgconfig(Qt5Core)

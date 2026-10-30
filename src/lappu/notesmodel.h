@@ -1,33 +1,21 @@
 #ifndef LAPPU_NOTESMODEL_H
 #define LAPPU_NOTESMODEL_H
 
-#include <QAbstractListModel>
-#include <QHash>
+#include <QObject>
 #include <QVariantList>
 #include <QVector>
 
 #include "types.h"
 
-class NotesModel : public QAbstractListModel
+// Holds the notes of the last pull for QML to take a copy of. Despite the name
+// it is not a list model: no view binds to it, because the QML note store owns
+// the filtering and sorting and needs the notes as plain rows to do it.
+class NotesModel : public QObject
 {
     Q_OBJECT
 
 public:
-    enum Roles {
-        IdRole = Qt::UserRole + 1,
-        TitleRole,
-        ContentRole,
-        CategoryRole,
-        FavoriteRole,
-        ReadOnlyRole,
-        ModifiedRole
-    };
-
     explicit NotesModel(QObject *parent = nullptr);
-
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex &index, int role) const override;
-    QHash<int, QByteArray> roleNames() const override;
 
     void setNotes(const QVector<LocalNote> &notes);
     void reload();

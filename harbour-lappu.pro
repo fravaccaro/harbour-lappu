@@ -58,6 +58,7 @@ DISTFILES += \
     qml/components/EditHistory.qml \
     qml/components/FilterItem.qml \
     qml/components/LappuNotification.qml \
+    qml/components/LappuSupportDialog.qml \
     qml/components/MarkdownToolbar.qml \
     qml/components/NoteBody.qml \
     qml/cover/CoverPage.qml \
