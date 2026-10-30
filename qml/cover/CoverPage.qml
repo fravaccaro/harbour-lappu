@@ -10,6 +10,25 @@ CoverBackground {
 
     clip: true
 
+    HighlightImage {
+        source: Qt.resolvedUrl("cover-note.png")
+        color: Theme.primaryColor
+        // The sheet is taller than it is wide, so unlike the sibling apps'
+        // glyphs its height is what decides how much of the cover it takes.
+        sourceSize.height: cover.height * 0.6
+        // The same alpha reads much heavier as a dark glyph on a light ambience.
+        opacity: Theme.colorScheme === Theme.LightOnDark ? 0.13 : 0.08
+
+        // Only the foot and the outer edge are cut off: the folded corner is
+        // what makes the shape readable, so it stays whole in the corner.
+        anchors {
+            right: parent.right
+            rightMargin: -width * 0.08
+            bottom: parent.bottom
+            bottomMargin: -height * 0.04
+        }
+    }
+
     Column {
         id: heading
 
