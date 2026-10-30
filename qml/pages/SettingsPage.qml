@@ -72,7 +72,7 @@ Page {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Sign out")
                 onClicked: remorse.execute(qsTr("Signing out"), function() {
-                    app.showToast(qsTr("This is a mock. Nothing was signed out."))
+                    Muistio.logout()
                 })
             }
         }

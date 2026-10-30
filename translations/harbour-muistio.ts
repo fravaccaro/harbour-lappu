@@ -611,10 +611,6 @@
         <source>Not signed in</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>This is a mock. Nothing was signed out.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>StartPage</name>

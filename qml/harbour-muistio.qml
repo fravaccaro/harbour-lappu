@@ -9,6 +9,14 @@ ApplicationWindow {
 
     property alias notes: store
 
+    function showMain() {
+        if (pageStack.busy) {
+            navigateAgain.restart()
+            return
+        }
+        pageStack.replaceAbove(null, Muistio.configured ? notesPage : loginPage)
+    }
+
     function showToast(text) {
         if (text !== "")
             globalNotification.toast(text)
@@ -34,7 +42,10 @@ ApplicationWindow {
         return notes.filterKind === "category" ? notes.filterCategory : ""
     }
 
+    // Reachable from the cover, which can be tapped before anyone has signed in.
     function openNewNote() {
+        if (!Muistio.configured)
+            return
         activate()
         pageStack.push(Qt.resolvedUrl("pages/NoteEditPage.qml"), {
             "inheritCategory": inheritCategory()
@@ -65,7 +76,7 @@ ApplicationWindow {
         })
     }
 
-    initialPage: notesPage
+    initialPage: Muistio.ready ? (Muistio.configured ? notesPage : loginPage) : startPage
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     allowedOrientations: defaultAllowedOrientations
 
@@ -82,11 +93,45 @@ ApplicationWindow {
         onTriggered: notes.busy = false
     }
 
+    Timer {
+        id: navigateAgain
+
+        interval: 100
+        onTriggered: app.showMain()
+    }
+
+    Component {
+        id: startPage
+
+        StartPage {
+        }
+    }
+
+    Component {
+        id: loginPage
+
+        LoginPage {
+        }
+    }
+
     Component {
         id: notesPage
 
         NotesPage {
         }
+    }
+
+    Connections {
+        target: Muistio
+        onReadyChanged: {
+            if (Muistio.ready)
+                app.showMain()
+        }
+        onConfiguredChanged: {
+            if (!Muistio.configured)
+                app.showMain()
+        }
+        onErrorMessageChanged: app.showToast(Muistio.errorMessage)
     }
 
     MuistioNotification {
