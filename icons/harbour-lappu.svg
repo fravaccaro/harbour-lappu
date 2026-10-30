@@ -6,28 +6,40 @@
   <defs>
     <path id="leaf" d="M84.277,0.3H43C19.417,0.3,0.3,19.418,0.3,43v41.277c0,0.786,0.637,1.423,1.423,1.423H43c23.583,0,42.7-19.118,42.7-42.7V1.723C85.7,0.937,85.063,0.3,84.277,0.3z"/>
 
-    <!-- Nextcloud blue, hue 201, dark at the blunt corner and lighter towards
-         the point, along the diagonal the template gradients use. -->
+    <!-- Indigo, hue 224, dark at the blunt corner and lighter towards the
+         point, along the diagonal the template gradients use. Askare takes
+         Nextcloud's own blue, so this sits beside it rather than on it. -->
     <linearGradient id="body" gradientUnits="userSpaceOnUse"
                     x1="0.7169" y1="85.2831" x2="85.2831" y2="0.7169">
-      <stop offset="0" stop-color="#005a8c"/>
-      <stop offset="1" stop-color="#19a0e5"/>
+      <stop offset="0" stop-color="#00258c"/>
+      <stop offset="1" stop-color="#1a50e6"/>
     </linearGradient>
 
-    <!-- A tick drawn as one mitred stroke, so both arms end on a clean bevel
-         and the turn at the bottom comes to a point. Stroked rather than
-         outlined, so the two arms keep the same weight at every size. -->
-    <path id="tick" d="M6,34L34,62L100,4" fill="none" stroke="#ffffff"
-          stroke-width="19" stroke-linecap="butt" stroke-linejoin="miter"/>
+    <!-- A note sheet on a 104 x 128 box, so its centre is at 52,64. The
+         top-right corner is cut on the diagonal, which is what reads as a
+         turned-down fold. -->
+    <path id="sheet" d="M0,0H72L104,32V128H0Z"/>
+
+    <!-- The written lines are cut out rather than drawn, so the sheet keeps
+         reading as one piece of paper. The last line is short, the way a last
+         line is. -->
+    <mask id="lines" maskUnits="userSpaceOnUse" x="-10" y="-10" width="124" height="148">
+      <rect x="-10" y="-10" width="124" height="148" fill="#ffffff"/>
+      <path d="M20,60H84" stroke="#000000" stroke-width="12"/>
+      <path d="M20,86H84" stroke="#000000" stroke-width="12"/>
+      <path d="M20,112H60" stroke="#000000" stroke-width="12"/>
+    </mask>
   </defs>
 
   <use xlink:href="#leaf" fill="url(#body)"/>
 
-  <!-- The stroked tick measures 107 x 78 about its centre at 52.78,35.94, so
-       this lands that centre on 43,43 of the icon at half the leaf's width.
-       Named, so that the cover glyph can be exported from this one tick
-       instead of a second copy of the same geometry. -->
-  <g id="glyph" transform="translate(18.35 26.22) scale(0.467)">
-    <use xlink:href="#tick"/>
+  <!-- 52,64 of the sheet lands on 43,43 of the icon. The sheet is portrait, so
+       it is scaled to about the height the sibling apps give their glyphs
+       rather than to their width. Named, so that the cover glyph can be
+       exported from this one sheet instead of a second copy of the geometry. -->
+  <g id="glyph" transform="translate(23.5 19) scale(0.375)">
+    <g mask="url(#lines)">
+      <use xlink:href="#sheet" fill="#ffffff"/>
+    </g>
   </g>
 </svg>

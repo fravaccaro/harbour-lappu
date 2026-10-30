@@ -12,7 +12,7 @@ QtObject {
     onSearchTextChanged: reloadVisible()
     onSortModeChanged: reloadVisible()
     // The session keeps the pin, so it is still there after a restart.
-    property int pinnedNoteId: Muistio.coverNoteId
+    property int pinnedNoteId: Lappu.coverNoteId
     onPinnedNoteIdChanged: applyPinned()
     // Kept as plain properties so the cover follows edits to the pinned note.
     property string pinnedTitle: ""
@@ -215,11 +215,11 @@ QtObject {
 
     // Only one note sits on the cover, so pinning another replaces the pin.
     function pinNote(noteId) {
-        Muistio.coverNoteId = noteId
+        Lappu.coverNoteId = noteId
     }
 
     function unpinNote() {
-        Muistio.coverNoteId = 0
+        Lappu.coverNoteId = 0
     }
 
     function pinnedNote() {
@@ -266,18 +266,18 @@ QtObject {
     function toggleFavorite(noteId) {
         var note = noteById(noteId)
         if (note)
-            Muistio.setFavorite(noteId, !note.favorite)
+            Lappu.setFavorite(noteId, !note.favorite)
     }
 
     function removeNote(noteId) {
         if (noteId === pinnedNoteId)
             unpinNote()
 
-        Muistio.deleteNote(noteId)
+        Lappu.deleteNote(noteId)
     }
 
     function saveNote(noteId, content, category, favorite) {
-        Muistio.saveNote(noteId, content, category, favorite)
+        Lappu.saveNote(noteId, content, category, favorite)
     }
 
     // Takes the notes the session keeps, each already keyed the way the rows

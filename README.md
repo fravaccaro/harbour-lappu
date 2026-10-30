@@ -1,8 +1,8 @@
-# Muistio
+# Lappu
 
 A Nextcloud Notes client for Sailfish OS.
 
-Muistio signs in through a Nextcloud server's own login page (login flow v2),
+Lappu signs in through a Nextcloud server's own login page (login flow v2),
 saves the generated app password in the device-lock Sailfish Secrets storage,
 and keeps your notes on the device. It is a sibling to
 [Askare](https://github.com/fravaccaro/harbour-askare), the Nextcloud tasks

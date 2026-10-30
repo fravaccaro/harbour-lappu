@@ -1,5 +1,5 @@
-#ifndef MUISTIO_CONFIG_H
-#define MUISTIO_CONFIG_H
+#ifndef LAPPU_CONFIG_H
+#define LAPPU_CONFIG_H
 
 #include <QObject>
 #include <QSettings>

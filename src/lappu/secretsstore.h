@@ -1,5 +1,5 @@
-#ifndef MUISTIO_SECRETSSTORE_H
-#define MUISTIO_SECRETSSTORE_H
+#ifndef LAPPU_SECRETSSTORE_H
+#define LAPPU_SECRETSSTORE_H
 
 #include <functional>
 

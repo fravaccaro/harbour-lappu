@@ -1,5 +1,5 @@
-#ifndef MUISTIO_NOTESMODEL_H
-#define MUISTIO_NOTESMODEL_H
+#ifndef LAPPU_NOTESMODEL_H
+#define LAPPU_NOTESMODEL_H
 
 #include <QAbstractListModel>
 #include <QHash>

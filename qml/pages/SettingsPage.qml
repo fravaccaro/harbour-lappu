@@ -66,16 +66,16 @@ Page {
             TextSwitch {
                 width: parent.width
                 text: qsTr("Refresh when the app starts")
-                checked: Muistio.syncOnStart
-                onCheckedChanged: Muistio.syncOnStart = checked
+                checked: Lappu.syncOnStart
+                onCheckedChanged: Lappu.syncOnStart = checked
             }
 
             TextSwitch {
                 width: parent.width
                 text: qsTr("Refresh after saving a note")
                 description: qsTr("Fetches server changes once the note has been sent.")
-                checked: Muistio.syncAfterPush
-                onCheckedChanged: Muistio.syncAfterPush = checked
+                checked: Lappu.syncAfterPush
+                onCheckedChanged: Lappu.syncAfterPush = checked
             }
 
             ComboBox {
@@ -85,14 +85,14 @@ Page {
 
                 width: parent.width
                 label: qsTr("Automatic refresh")
-                description: qsTr("Only while Muistio is running.")
+                description: qsTr("Only while Lappu is running.")
                 Component.onCompleted: {
-                    currentIndex = page.intervalIndex(Muistio.syncInterval)
+                    currentIndex = page.intervalIndex(Lappu.syncInterval)
                     ready = true
                 }
                 onCurrentIndexChanged: {
                     if (ready && currentIndex >= 0)
-                        Muistio.syncInterval = page.intervals[currentIndex]
+                        Lappu.syncInterval = page.intervals[currentIndex]
                 }
 
                 menu: ContextMenu {
@@ -115,22 +115,22 @@ Page {
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 wrapMode: Text.WordWrap
                 color: Theme.secondaryColor
-                text: Muistio.serverUrl !== "" ? Muistio.serverUrl : qsTr("Not signed in")
+                text: Lappu.serverUrl !== "" ? Lappu.serverUrl : qsTr("Not signed in")
             }
 
             TextSwitch {
                 width: parent.width
                 text: qsTr("Ignore certificate errors")
                 description: qsTr("Only for a server with a self-signed certificate on your own network.")
-                checked: Muistio.ignoreSslErrors
-                onCheckedChanged: Muistio.ignoreSslErrors = checked
+                checked: Lappu.ignoreSslErrors
+                onCheckedChanged: Lappu.ignoreSslErrors = checked
             }
 
             Button {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Sign out")
                 onClicked: remorse.execute(qsTr("Signing out"), function() {
-                    Muistio.logout()
+                    Lappu.logout()
                 })
             }
         }

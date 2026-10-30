@@ -57,7 +57,7 @@ bool NotesCache::open()
         return true;
 
     m_db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"),
-                                     QStringLiteral("muistio-notes"));
+                                     QStringLiteral("lappu-notes"));
     m_db.setDatabaseName(databasePath());
     if (!m_db.open())
         return false;

@@ -1,5 +1,5 @@
-#ifndef MUISTIO_NOTESCACHE_H
-#define MUISTIO_NOTESCACHE_H
+#ifndef LAPPU_NOTESCACHE_H
+#define LAPPU_NOTESCACHE_H
 
 #include <QObject>
 #include <QSqlDatabase>

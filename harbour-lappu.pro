@@ -1,4 +1,4 @@
-TARGET = harbour-muistio
+TARGET = harbour-lappu
 
 CONFIG += sailfishapp sailfishapp_i18n c++11
 QT += network sql
@@ -20,27 +20,27 @@ CONFIG(debug, debug|release): DEFINES += QT_QML_DEBUG
 
 SOURCES += \
     src/main.cpp \
-    src/muistio/config.cpp \
-    src/muistio/httpclient.cpp \
-    src/muistio/loginflow.cpp \
-    src/muistio/notesapi.cpp \
-    src/muistio/notescache.cpp \
-    src/muistio/notesmodel.cpp \
-    src/muistio/secretsstore.cpp \
-    src/muistio/session.cpp \
-    src/muistio/url.cpp
+    src/lappu/config.cpp \
+    src/lappu/httpclient.cpp \
+    src/lappu/loginflow.cpp \
+    src/lappu/notesapi.cpp \
+    src/lappu/notescache.cpp \
+    src/lappu/notesmodel.cpp \
+    src/lappu/secretsstore.cpp \
+    src/lappu/session.cpp \
+    src/lappu/url.cpp
 
 HEADERS += \
-    src/muistio/config.h \
-    src/muistio/httpclient.h \
-    src/muistio/loginflow.h \
-    src/muistio/notesapi.h \
-    src/muistio/notescache.h \
-    src/muistio/notesmodel.h \
-    src/muistio/secretsstore.h \
-    src/muistio/session.h \
-    src/muistio/types.h \
-    src/muistio/url.h
+    src/lappu/config.h \
+    src/lappu/httpclient.h \
+    src/lappu/loginflow.h \
+    src/lappu/notesapi.h \
+    src/lappu/notescache.h \
+    src/lappu/notesmodel.h \
+    src/lappu/secretsstore.h \
+    src/lappu/session.h \
+    src/lappu/types.h \
+    src/lappu/url.h
 
 SAILFISHAPP_ICONS = 86x86 108x108 128x128 172x172
 
@@ -49,16 +49,16 @@ appicon.path = /usr/share/$${TARGET}
 INSTALLS += appicon
 
 TRANSLATIONS += \
-    translations/harbour-muistio-it.ts
+    translations/harbour-lappu-it.ts
 
 DISTFILES += \
-    harbour-muistio.desktop \
-    icons/harbour-muistio.svg \
-    qml/harbour-muistio.qml \
+    harbour-lappu.desktop \
+    icons/harbour-lappu.svg \
+    qml/harbour-lappu.qml \
     qml/components/EditHistory.qml \
     qml/components/FilterItem.qml \
+    qml/components/LappuNotification.qml \
     qml/components/MarkdownToolbar.qml \
-    qml/components/MuistioNotification.qml \
     qml/components/NoteBody.qml \
     qml/cover/CoverPage.qml \
     qml/notes/NoteFormat.js \
@@ -74,4 +74,4 @@ DISTFILES += \
     qml/pages/StartPage.qml \
     qml/pages/TranslationsPage.qml \
     qml/pages/WebLoginPage.qml \
-    translations/harbour-muistio.ts
+    translations/harbour-lappu.ts

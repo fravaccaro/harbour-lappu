@@ -88,32 +88,32 @@ This document is a living contract. Keeping it accurate is part of the implement
 
 | Path | Purpose |
 |---|---|
-| `src/muistio/config.*` | Server URL, user name, TLS preference |
-| `src/muistio/secretsstore.*` | App password in a device-lock Sailfish Secrets collection |
-| `src/muistio/loginflow.*` | Nextcloud login flow v2 |
-| `src/muistio/httpclient.*` | `QNetworkAccessManager` wrapper |
-| `src/muistio/url.*` | URL path helpers |
-| `src/muistio/session.*` | QML-facing controller |
-| `src/muistio/notesapi.*` | Nextcloud Notes API v1 client |
-| `src/muistio/notescache.*` | SQLite cache of the last pull |
-| `src/muistio/notesmodel.*` | Notes list model |
-| `src/muistio/types.h` | Plain data structs (`LocalNote`) |
+| `src/lappu/config.*` | Server URL, user name, TLS preference |
+| `src/lappu/secretsstore.*` | App password in a device-lock Sailfish Secrets collection |
+| `src/lappu/loginflow.*` | Nextcloud login flow v2 |
+| `src/lappu/httpclient.*` | `QNetworkAccessManager` wrapper |
+| `src/lappu/url.*` | URL path helpers |
+| `src/lappu/session.*` | QML-facing controller |
+| `src/lappu/notesapi.*` | Nextcloud Notes API v1 client |
+| `src/lappu/notescache.*` | SQLite cache of the last pull |
+| `src/lappu/notesmodel.*` | Notes list model |
+| `src/lappu/types.h` | Plain data structs (`LocalNote`) |
 | `qml/pages/*` | Silica pages |
 | `qml/notes/*` | Notes view model (`NotesStore.qml`) and markdown helpers (`NoteFormat.js`) |
 | `qml/components/*` | Shared QML such as the notification wrapper |
 | `qml/cover/*` | Cover page |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe, and LinkHandler modules |
 
-Networking stays in C++. Pages bind to `Muistio` and `Notes`.
+Networking stays in C++. Pages bind to `Lappu` and `Notes`.
 
 Syncing notes is implemented in both directions. `Session` is the only writer: `saveNote`, `setFavorite` and `deleteNote` write to `NotesCache` straight away, marking the row `dirty` (or `deleted`), then offer it to the server. `Session::sync()` sends what is owed first and pulls afterwards, so a note edited on the phone is the one that stands. A note written while offline keeps its `dirty` row, survives a restart, and is sent again by the next sync; a flush the user did not ask for stays quiet about an unreachable server. Conflicts are last-write-wins: no `If-Match` is sent.
 
 A note has no title of its own. The server names it after the first line of the content, and `Session` works the same name out locally so the pages can show it before the next pull confirms it. An unsynced new note borrows a negative id until the server names it.
 
-`qml/notes/NotesStore.qml` is the QML-side view of the synced notes: it owns the filtering, search, sort, category and cover state, and is filled through `ingest()` from `Notes.notes()`. It writes nothing itself; every edit is handed to `Muistio`.
+`qml/notes/NotesStore.qml` is the QML-side view of the synced notes: it owns the filtering, search, sort, category and cover state, and is filled through `ingest()` from `Notes.notes()`. It writes nothing itself; every edit is handed to `Lappu`.
 
 Sailjail private directories follow `OrganizationName` / `ApplicationName`:
 
-- `~/.config/org.frapps/harbour-muistio`
-- `~/.local/share/org.frapps/harbour-muistio`
-- `~/.cache/org.frapps/harbour-muistio`
+- `~/.config/org.frapps/harbour-lappu`
+- `~/.local/share/org.frapps/harbour-lappu`
+- `~/.cache/org.frapps/harbour-lappu`

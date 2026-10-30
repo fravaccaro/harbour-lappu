@@ -1,5 +1,5 @@
-#ifndef MUISTIO_URL_H
-#define MUISTIO_URL_H
+#ifndef LAPPU_URL_H
+#define LAPPU_URL_H
 
 #include <QString>
 #include <QUrl>

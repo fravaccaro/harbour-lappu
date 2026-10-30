@@ -1,16 +1,16 @@
 [Desktop Entry]
 Type=Application
 X-Nemo-Application-Type=silica-qt5
-Icon=harbour-muistio
-Exec=harbour-muistio
-Name=Muistio
+Icon=harbour-lappu
+Exec=harbour-lappu
+Name=Lappu
 Comment=Nextcloud notes
 Comment[it]=Note Nextcloud
 
 [X-Sailjail]
 OrganizationName=org.frapps
-ApplicationName=harbour-muistio
+ApplicationName=harbour-lappu
 Permissions=Internet;Secrets;WebView
 
 [X-HarbourBackup]
-BackupPathList=.config/org.frapps/harbour-muistio/:.local/share/org.frapps/harbour-muistio/
+BackupPathList=.config/org.frapps/harbour-lappu/:.local/share/org.frapps/harbour-lappu/

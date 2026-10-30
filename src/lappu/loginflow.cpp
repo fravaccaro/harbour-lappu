@@ -28,7 +28,7 @@ LoginFlow::LoginFlow(QObject *parent)
     , m_starting(false)
     , m_active(false)
 {
-    m_http.setUserAgent(QStringLiteral("Muistio"));
+    m_http.setUserAgent(QStringLiteral("Lappu"));
     m_timer.setInterval(2000);
     connect(&m_http, &HttpClient::finished, this, &LoginFlow::onHttpFinished);
     connect(&m_http, &HttpClient::failed, this, &LoginFlow::onHttpFailed);

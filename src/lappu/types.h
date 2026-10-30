@@ -1,5 +1,5 @@
-#ifndef MUISTIO_TYPES_H
-#define MUISTIO_TYPES_H
+#ifndef LAPPU_TYPES_H
+#define LAPPU_TYPES_H
 
 #include <QString>
 

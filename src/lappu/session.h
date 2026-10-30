@@ -1,5 +1,5 @@
-#ifndef MUISTIO_SESSION_H
-#define MUISTIO_SESSION_H
+#ifndef LAPPU_SESSION_H
+#define LAPPU_SESSION_H
 
 #include <QObject>
 #include <QString>

@@ -12,7 +12,7 @@ namespace {
 
 using namespace Sailfish::Secrets;
 
-const QString CollectionName = QStringLiteral("muistio");
+const QString CollectionName = QStringLiteral("lappu");
 const QString SecretName = QStringLiteral("app-password");
 
 template <typename Request, typename Handler>

@@ -14,7 +14,7 @@ ApplicationWindow {
             navigateAgain.restart()
             return
         }
-        pageStack.replaceAbove(null, Muistio.configured ? notesPage : loginPage)
+        pageStack.replaceAbove(null, Lappu.configured ? notesPage : loginPage)
     }
 
     function showToast(text) {
@@ -23,7 +23,7 @@ ApplicationWindow {
     }
 
     function syncNotes() {
-        Muistio.sync()
+        Lappu.sync()
     }
 
     function openNote(noteId) {
@@ -42,7 +42,7 @@ ApplicationWindow {
 
     // Reachable from the cover, which can be tapped before anyone has signed in.
     function openNewNote() {
-        if (!Muistio.configured)
+        if (!Lappu.configured)
             return
         activate()
         pageStack.push(Qt.resolvedUrl("pages/NoteEditPage.qml"), {
@@ -73,7 +73,7 @@ ApplicationWindow {
         })
     }
 
-    initialPage: Muistio.ready ? (Muistio.configured ? notesPage : loginPage) : startPage
+    initialPage: Lappu.ready ? (Lappu.configured ? notesPage : loginPage) : startPage
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
     allowedOrientations: defaultAllowedOrientations
 
@@ -114,21 +114,21 @@ ApplicationWindow {
     }
 
     Connections {
-        target: Muistio
+        target: Lappu
         onReadyChanged: {
-            if (Muistio.ready)
+            if (Lappu.ready)
                 app.showMain()
         }
         onConfiguredChanged: {
-            if (!Muistio.configured)
+            if (!Lappu.configured)
                 app.showMain()
         }
         onNotesChanged: app.notes.ingest(Notes.notes())
-        onBusyChanged: app.notes.busy = Muistio.busy
-        onErrorMessageChanged: app.showToast(Muistio.errorMessage)
+        onBusyChanged: app.notes.busy = Lappu.busy
+        onErrorMessageChanged: app.showToast(Lappu.errorMessage)
     }
 
-    MuistioNotification {
+    LappuNotification {
         id: globalNotification
     }
 }

@@ -1,5 +1,5 @@
 /*!
-    \qmltype MuistioNotification
+    \qmltype LappuNotification
     \brief The one transient notice the app speaks through.
 
     Publishing is a single call, so every passing message - a failed sync, a
@@ -10,7 +10,7 @@
     category definitions, and this package ships none.
 
     \qml
-    MuistioNotification {
+    LappuNotification {
         id: globalNotification
     }
 
@@ -28,7 +28,7 @@ Notification {
         publish();
     }
 
-    appName: "Muistio"
-    appIcon: "harbour-muistio"
+    appName: "Lappu"
+    appIcon: "harbour-lappu"
     urgency: Notification.Low
 }

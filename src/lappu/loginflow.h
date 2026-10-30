@@ -1,5 +1,5 @@
-#ifndef MUISTIO_LOGINFLOW_H
-#define MUISTIO_LOGINFLOW_H
+#ifndef LAPPU_LOGINFLOW_H
+#define LAPPU_LOGINFLOW_H
 
 #include <QObject>
 #include <QString>

@@ -14,7 +14,7 @@ installroot/
 .sfdk/
 .qmake.stash
 Makefile
-harbour-askare
+harbour-lappu
 moc_*.cpp
 moc_*.h
 moc_predefs.h

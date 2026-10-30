@@ -1,5 +1,5 @@
-#ifndef MUISTIO_HTTPCLIENT_H
-#define MUISTIO_HTTPCLIENT_H
+#ifndef LAPPU_HTTPCLIENT_H
+#define LAPPU_HTTPCLIENT_H
 
 #include <QByteArray>
 #include <QNetworkAccessManager>

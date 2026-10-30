@@ -30,7 +30,7 @@ CoverBackground {
             text: {
                 if (cover.pinned)
                     return store.pinnedTitle
-                return store ? store.listTitle : qsTr("Muistio")
+                return store ? store.listTitle : qsTr("Lappu")
             }
         }
     }
@@ -120,7 +120,7 @@ CoverBackground {
 
     CoverActionList {
         // Neither action has anywhere to go before anyone has signed in.
-        enabled: Muistio.configured
+        enabled: Lappu.configured
 
         CoverAction {
             iconSource: "image://theme/icon-cover-new"

@@ -28,7 +28,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Muistio is not affiliated with Nextcloud GmbH.</source>
+        <source>Lappu is not affiliated with Nextcloud GmbH.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -100,7 +100,7 @@
 <context>
     <name>CoverPage</name>
     <message>
-        <source>Muistio</source>
+        <source>Lappu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -155,11 +155,11 @@
 <context>
     <name>LoginPage</name>
     <message>
-        <source>Muistio</source>
+        <source>Lappu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Muistio connects to a Nextcloud server that you already run.</source>
+        <source>Lappu connects to a Nextcloud server that you already run.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -183,7 +183,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The server opens inside the app. Sign in as you would in a browser. Muistio will save the password the server creates.</source>
+        <source>The server opens inside the app. Sign in as you would in a browser. Lappu will save the password the server creates.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -665,7 +665,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Only while Muistio is running.</source>
+        <source>Only while Lappu is running.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -717,12 +717,12 @@
 <context>
     <name>WebLoginPage</name>
     <message>
-        <source>Sign in as you would in a browser. Muistio will save the password the server creates.</source>
+        <source>Sign in as you would in a browser. Lappu will save the password the server creates.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>harbour-muistio</name>
+    <name>harbour-lappu</name>
     <message>
         <source>That note is no longer here.</source>
         <translation type="unfinished"></translation>

@@ -73,7 +73,7 @@ NotesApi::NotesApi(QObject *parent)
     , m_operation(Idle)
     , m_pendingId(0)
 {
-    m_http.setUserAgent(QStringLiteral("Muistio"));
+    m_http.setUserAgent(QStringLiteral("Lappu"));
     connect(&m_http, &HttpClient::finished, this, &NotesApi::onFinished);
     connect(&m_http, &HttpClient::failed, this, &NotesApi::onFailed);
 }

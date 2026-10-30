@@ -12,20 +12,20 @@
 
 #include <sailfishapp.h>
 
-#include "muistio/config.h"
-#include "muistio/notesmodel.h"
-#include "muistio/session.h"
+#include "lappu/config.h"
+#include "lappu/notesmodel.h"
+#include "lappu/session.h"
 
 int main(int argc, char *argv[])
 {
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     app->setOrganizationName(QStringLiteral("org.frapps"));
     app->setOrganizationDomain(QStringLiteral("frapps.org"));
-    app->setApplicationName(QStringLiteral("harbour-muistio"));
+    app->setApplicationName(QStringLiteral("harbour-lappu"));
     app->setApplicationVersion(QStringLiteral(APP_VERSION));
 
     QScopedPointer<QTranslator> translator(new QTranslator);
-    if (translator->load(QLocale(), QStringLiteral("harbour-muistio"), QStringLiteral("-"),
+    if (translator->load(QLocale(), QStringLiteral("harbour-lappu"), QStringLiteral("-"),
                          SailfishApp::pathTo(QStringLiteral("translations")).toLocalFile())) {
         app->installTranslator(translator.data());
     }
@@ -41,10 +41,10 @@ int main(int argc, char *argv[])
     view->engine()->addImportPath(SailfishApp::pathTo(QStringLiteral("qml/modules")).toString());
 
     QQmlContext *context = view->rootContext();
-    context->setContextProperty(QStringLiteral("Muistio"), &session);
+    context->setContextProperty(QStringLiteral("Lappu"), &session);
     context->setContextProperty(QStringLiteral("Notes"), &notes);
 
-    view->setSource(SailfishApp::pathTo(QStringLiteral("qml/harbour-muistio.qml")));
+    view->setSource(SailfishApp::pathTo(QStringLiteral("qml/harbour-lappu.qml")));
     view->show();
     return app->exec();
 }

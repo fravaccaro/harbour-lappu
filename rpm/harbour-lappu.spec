@@ -1,4 +1,4 @@
-Name:       harbour-muistio
+Name:       harbour-lappu
 
 # The bundled Opal modules carry qmldir files, from which rpmbuild would
 # generate `Provides: qml(Opal.About)` and friends. Harbour forbids an
@@ -10,7 +10,7 @@ Summary:    Nextcloud notes for Sailfish OS
 Version:    0.1.0
 Release:    1
 License:    GPLv3
-URL:        https://github.com/fravaccaro/harbour-muistio
+URL:        https://github.com/fravaccaro/harbour-lappu
 Source0:    %{name}-%{version}.tar.bz2
 Requires:   sailfishsilica-qt5 >= 0.10.9
 Requires:   sailfish-components-webview-qt5
@@ -25,22 +25,22 @@ BuildRequires:  desktop-file-utils
 BuildRequires:  qt5-qttools-linguist
 
 %description
-Muistio lists and edits Nextcloud notes. Sign in through the server's own
+Lappu lists and edits Nextcloud notes. Sign in through the server's own
 page, then keep the notes on the device and sync them by hand.
 
 %if 0%{?_chum}
-Title: Muistio
+Title: Lappu
 Type: desktop-application
 DeveloperName: fravaccaro
 Categories:
  - Office
  - Network
 Custom:
-  Repo: https://github.com/fravaccaro/harbour-muistio
-PackageIcon: https://raw.githubusercontent.com/fravaccaro/harbour-muistio/main/icons/172x172/harbour-muistio.png
+  Repo: https://github.com/fravaccaro/harbour-lappu
+PackageIcon: https://raw.githubusercontent.com/fravaccaro/harbour-lappu/main/icons/172x172/harbour-lappu.png
 Links:
-  Homepage: https://github.com/fravaccaro/harbour-muistio
-  Bugtracker: https://github.com/fravaccaro/harbour-muistio/issues
+  Homepage: https://github.com/fravaccaro/harbour-lappu
+  Bugtracker: https://github.com/fravaccaro/harbour-lappu/issues
 %endif
 
 %prep

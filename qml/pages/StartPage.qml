@@ -4,7 +4,7 @@ import Sailfish.Silica 1.0
 Page {
     id: page
 
-    readonly property bool stalled: !Muistio.ready && Muistio.secretsError !== ""
+    readonly property bool stalled: !Lappu.ready && Lappu.secretsError !== ""
 
     allowedOrientations: Orientation.All
 
@@ -37,13 +37,13 @@ Page {
             horizontalAlignment: Text.AlignHCenter
             font.pixelSize: Theme.fontSizeExtraSmall
             color: Theme.secondaryColor
-            text: Muistio.secretsError
+            text: Lappu.secretsError
         }
 
         Button {
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("Try again")
-            onClicked: Muistio.reloadSecrets()
+            onClicked: Lappu.reloadSecrets()
         }
 
     }

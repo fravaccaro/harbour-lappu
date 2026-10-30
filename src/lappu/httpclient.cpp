@@ -29,7 +29,7 @@ QString networkError(QNetworkReply *reply)
 
 HttpClient::HttpClient(QObject *parent)
     : QObject(parent)
-    , m_userAgent(QStringLiteral("Muistio"))
+    , m_userAgent(QStringLiteral("Lappu"))
     , m_ignoreSsl(false)
 {
 }

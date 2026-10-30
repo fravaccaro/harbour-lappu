@@ -6,13 +6,13 @@ A.AboutPageBase {
     id: page
 
     allowedOrientations: S.Orientation.All
-    appName: "Muistio"
+    appName: "Lappu"
     appIcon: Qt.resolvedUrl("../../appicon.png")
     appVersion: Qt.application.version
     description: qsTr("A Nextcloud Notes client for Sailfish OS.")
     authors: ["fravaccaro"]
-    homepageUrl: "https://fravaccaro.com/harbour-muistio/"
-    sourcesUrl: "https://github.com/fravaccaro/harbour-muistio"
+    homepageUrl: "https://fravaccaro.com/harbour-lappu/"
+    sourcesUrl: "https://github.com/fravaccaro/harbour-lappu"
     donations.text: donations.defaultTextCoffee
     donations.services: [
         A.DonationService {
@@ -27,7 +27,7 @@ A.AboutPageBase {
             buttons: [
                 A.InfoButton {
                     text: qsTr("Report an issue")
-                    onClicked: openOrCopyUrl("https://github.com/fravaccaro/harbour-muistio/issues", text)
+                    onClicked: openOrCopyUrl("https://github.com/fravaccaro/harbour-lappu/issues", text)
                 }
             ]
         },
@@ -43,7 +43,7 @@ A.AboutPageBase {
         },
         A.InfoSection {
             title: "Nextcloud"
-            text: qsTr("Muistio is not affiliated with Nextcloud GmbH.")
+            text: qsTr("Lappu is not affiliated with Nextcloud GmbH.")
             buttons: [
                 A.InfoButton {
                     text: qsTr("About Nextcloud Notes")

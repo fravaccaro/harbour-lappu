@@ -1,5 +1,5 @@
-#ifndef MUISTIO_NOTESAPI_H
-#define MUISTIO_NOTESAPI_H
+#ifndef LAPPU_NOTESAPI_H
+#define LAPPU_NOTESAPI_H
 
 #include <QObject>
 #include <QString>

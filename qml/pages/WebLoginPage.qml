@@ -10,13 +10,13 @@ Page {
 
     allowedOrientations: Orientation.All
     Component.onDestruction: {
-        if (!Muistio.configured)
-            Muistio.cancelLogin();
+        if (!Lappu.configured)
+            Lappu.cancelLogin();
 
     }
 
     Connections {
-        target: Muistio
+        target: Lappu
         onLoginSucceeded: pageStack.replaceAbove(null, Qt.resolvedUrl("NotesPage.qml"))
         onLoginFailed: page.errorMessage = error
     }
@@ -39,7 +39,7 @@ Page {
     Rectangle {
         anchors.fill: webview
         color: Theme.overlayBackgroundColor
-        visible: Muistio.configured
+        visible: Lappu.configured
     }
 
     Column {
@@ -59,7 +59,7 @@ Page {
             wrapMode: Text.WordWrap
             font.pixelSize: Theme.fontSizeExtraSmall
             color: page.errorMessage !== "" ? Theme.errorColor : Theme.secondaryColor
-            text: page.errorMessage !== "" ? page.errorMessage : qsTr("Sign in as you would in a browser. Muistio will save the password the server creates.")
+            text: page.errorMessage !== "" ? page.errorMessage : qsTr("Sign in as you would in a browser. Lappu will save the password the server creates.")
         }
 
         Item {
@@ -72,7 +72,7 @@ Page {
     BusyIndicator {
         anchors.centerIn: parent
         size: BusyIndicatorSize.Large
-        running: Muistio.configured
+        running: Lappu.configured
     }
 
 }

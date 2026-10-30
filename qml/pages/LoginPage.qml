@@ -8,13 +8,13 @@ Page {
 
     function beginLogin() {
         page.errorMessage = "";
-        Muistio.startLogin(serverField.text);
+        Lappu.startLogin(serverField.text);
     }
 
     allowedOrientations: Orientation.All
 
     Connections {
-        target: Muistio
+        target: Lappu
         onLoginUrlReady: pageStack.push(Qt.resolvedUrl("WebLoginPage.qml"), {
             "loginUrl": url
         })
@@ -32,7 +32,7 @@ Page {
             spacing: Theme.paddingMedium
 
             PageHeader {
-                title: qsTr("Muistio")
+                title: qsTr("Lappu")
             }
 
             Image {
@@ -49,14 +49,14 @@ Page {
                 wrapMode: Text.WordWrap
                 color: Theme.secondaryHighlightColor
                 font.pixelSize: Theme.fontSizeSmall
-                text: qsTr("Muistio connects to a Nextcloud server that you already run.")
+                text: qsTr("Lappu connects to a Nextcloud server that you already run.")
             }
 
             TextField {
                 id: serverField
 
                 width: parent.width
-                text: Muistio.serverUrl
+                text: Lappu.serverUrl
                 label: qsTr("Server address")
                 placeholderText: qsTr("https://cloud.example.org")
                 inputMethodHints: Qt.ImhUrlCharactersOnly | Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
@@ -68,8 +68,8 @@ Page {
                 width: parent.width
                 text: qsTr("Ignore certificate errors")
                 description: qsTr("Only for a server with a self-signed certificate on your own network.")
-                checked: Muistio.ignoreSslErrors
-                onCheckedChanged: Muistio.ignoreSslErrors = checked
+                checked: Lappu.ignoreSslErrors
+                onCheckedChanged: Lappu.ignoreSslErrors = checked
             }
 
             Label {
@@ -95,7 +95,7 @@ Page {
                 wrapMode: Text.WordWrap
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeExtraSmall
-                text: qsTr("The server opens inside the app. Sign in as you would in a browser. Muistio will save the password the server creates.")
+                text: qsTr("The server opens inside the app. Sign in as you would in a browser. Lappu will save the password the server creates.")
             }
 
         }
@@ -108,7 +108,7 @@ Page {
     BusyIndicator {
         anchors.centerIn: parent
         size: BusyIndicatorSize.Large
-        running: Muistio.busy
+        running: Lappu.busy
     }
 
 }
