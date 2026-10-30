@@ -1,30 +1,72 @@
+---
+layout: default
+title: Home
+nav_order: 1
+description: "A Nextcloud Notes client for Sailfish OS"
+permalink: /
+---
+
 # Lappu
 
-A Nextcloud Notes client for Sailfish OS.
+Lappu is a native [Nextcloud Notes](https://apps.nextcloud.com/apps/notes) client for Sailfish OS. It talks to a Nextcloud server that you already run, and keeps a copy of the notes on the device so they can be read and written while the server is out of reach.
 
-Lappu signs in through a Nextcloud server's own login page (login flow v2),
-saves the generated app password in the device-lock Sailfish Secrets storage,
-and keeps your notes on the device. It is a sibling to
-[Askare](https://github.com/fravaccaro/harbour-askare), the Nextcloud tasks
-client it shares its plumbing with.
+Lappu does not use the Nextcloud account in the Sailfish OS settings. That account syncs the calendar and the files, not the notes, so this app signs in on its own.
 
-> **Status:** early scaffold. The login flow, secure password storage, and the
-> UI shell are in place; the Notes sync layer is not implemented yet, so the
-> notes list is empty.
+It is a sibling to [Askare](https://github.com/fravaccaro/harbour-askare), the Nextcloud Tasks client it shares its plumbing with.
 
-## Building
+[![GitHub license](https://img.shields.io/github/license/fravaccaro/harbour-lappu.svg)](https://github.com/fravaccaro/harbour-lappu/blob/main/LICENSE) [![GitHub issues](https://img.shields.io/github/issues/fravaccaro/harbour-lappu.svg)](https://github.com/fravaccaro/harbour-lappu/issues) [![GitHub releases](https://img.shields.io/github/release/fravaccaro/harbour-lappu.svg)](https://github.com/fravaccaro/harbour-lappu/releases/latest)
 
-Built with qmake against the Sailfish OS Qt 5.6 toolchain:
+## Donate
 
-```sh
-~/SailfishOS/bin/sfdk build
-```
+The SailfishOS Community Team is on Liberapay:
 
-## Layout
+[![Liberapay receiving](https://img.shields.io/liberapay/receives/SailfishOScommunityTeam?logo=liberapay&label=SailfishOSCommunity)](https://liberapay.com/SailfishOScommunityTeam)
 
-See [`AGENTS.md`](AGENTS.md) for the project layout and engineering
-conventions.
+[![Liberapay receiving](https://img.shields.io/liberapay/receives/fravaccaro?logo=liberapay&label=fravaccaro)](https://liberapay.com/fravaccaro)
 
-## License
+## Features
 
-GPL-3.0-only.
+<a href="docs/screenshots/screenshot1.png"><img width="33%" style="float: left;" src="docs/screenshots/screenshot1.png" alt="Notes" /></a> <a href="docs/screenshots/screenshot2.png"><img width="33%" style="float: left;" src="docs/screenshots/screenshot2.png" alt="Categories" /></a> <a href="docs/screenshots/screenshot3.png"><img width="33%" style="float: left;" src="docs/screenshots/screenshot3.png" alt="Editing" /></a>
+<br style="clear: both; height:5px;" />
+
+- Write notes in Markdown, with a bar for emphasis, headings, lists, task lines and links, and undo and redo.
+- Browse by category, favourites, or everything at once, and search the title and body of every note.
+- Tick a task line straight from the note, without opening the editor.
+- Edit while offline: a note written with no server in reach is kept and sent by the next sync.
+- Keep one note on the cover, where it survives a restart.
+
+## Requirements
+
+- Sailfish OS 5.0 or newer
+- A reachable Nextcloud server with the Notes app
+
+## Using Lappu
+
+[Using Lappu](docs/guide.md) - signing in, finding your way around the notes, writing them, and how and when they sync.
+
+## Download
+
+RPMs are attached to the [GitHub releases](https://github.com/fravaccaro/harbour-lappu/releases/latest).
+
+## Developers
+
+[Developers](docs/devel/) - architecture, building, deploying and packaging (maintainers and contributors).
+
+## Translate
+
+Request a new language or contribute on the [Transifex project page](https://explore.transifex.com/fravaccaro/lappu).
+
+## Credits
+
+- [Nextcloud Notes](https://apps.nextcloud.com/apps/notes), the server app whose notes this client reads and writes.
+- [Opal](https://github.com/Pretty-SFOS/opal) QML modules (About, SupportMe, LinkHandler) by [Mirian Margiani](https://github.com/Pretty-SFOS/opal-about).
+- Thanks to all translators and testers.
+
+## AI disclosure
+
+- **Cursor-assisted work.** Lappu is developed with [Cursor](https://cursor.com) as an IDE with AI assistance, for tasks such as scaffolding, documentation, translation upkeep and RPM packaging. Output is reviewed and edited by the maintainer before commit.
+- **Not a substitute for testing.** AI suggestions do not replace testing on Sailfish OS hardware, reading the code, or applying your own knowledge. Generated changes are treated like any other patch: understand it, test it, then ship it.
+
+## Licence
+
+[GPL-3.0-only](https://github.com/fravaccaro/harbour-lappu/blob/main/LICENSE)

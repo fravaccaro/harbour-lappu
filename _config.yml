@@ -1,0 +1,11 @@
+remote_theme: pmarsceill/just-the-docs
+title: Lappu
+description: A Nextcloud Notes client for Sailfish OS
+baseurl: "/harbour-lappu"
+exclude: ["icons/", "landing/", "qml/", "rpm/", "RPMS/", "src/", "translations/", "LICENSE", "AGENTS.md", "*.desktop", "*.pro", "*.o", "Makefile", "harbour-lappu"]
+
+url: "https://fravaccaro.com"
+search_enabled: true
+aux_links:
+    "Lappu on GitHub":
+      - "//github.com/fravaccaro/harbour-lappu"

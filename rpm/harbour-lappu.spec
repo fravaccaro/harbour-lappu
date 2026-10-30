@@ -26,7 +26,9 @@ BuildRequires:  qt5-qttools-linguist
 
 %description
 Lappu lists and edits Nextcloud notes. Sign in through the server's own
-page, then keep the notes on the device and sync them by hand.
+page, write in Markdown, browse by category and search, and keep a copy on
+the device so the notes can be read and written while the server is out of
+reach.
 
 %if 0%{?_chum}
 Title: Lappu

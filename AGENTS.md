@@ -77,10 +77,12 @@ Shared UI elements must live in the designated design system / component library
 This document is a living contract. Keeping it accurate is part of the implementation definition of done.
 
 - **Synchronized updates:** When refactoring directory layouts, changing project dependencies, deprecating utilities, or establishing new UI patterns, update this file in the exact same commit or pull request.
+- **User-facing documentation:** A change the user can see belongs in `docs/` in the same commit. `docs/guide.md` and its children describe the app as it behaves, so a new setting, page or gesture is not finished until the page that covers it says so.
 - **Agent Verification Step:** Before concluding any task, verify:
  1. Did I introduce any duplicate logic?
  2. Are all new QML components properly isolated and placed in the component library?
  3. Does the implementation violate any convention stated in this file?
+ 4. Does any page under `docs/` now describe behaviour that changed?
 
 ---
 
@@ -103,6 +105,8 @@ This document is a living contract. Keeping it accurate is part of the implement
 | `qml/components/*` | Shared QML such as the notification wrapper |
 | `qml/cover/*` | Cover page |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe, and LinkHandler modules |
+| `docs/*` | The documentation site, built by Jekyll from `_config.yml`; `README.md` is its home page |
+| `landing/*` | The marketing page, kept out of the Jekyll build and mirrored in the portfolio site |
 
 Networking stays in C++. Pages bind to `Lappu` and `Notes`.
 
