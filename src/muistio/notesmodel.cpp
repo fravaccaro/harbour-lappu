@@ -7,7 +7,7 @@ namespace {
 QVariantMap mapOf(const LocalNote &note)
 {
     QVariantMap map;
-    map.insert(QStringLiteral("noteId"), note.id.toLongLong());
+    map.insert(QStringLiteral("noteId"), note.id);
     map.insert(QStringLiteral("title"), note.title);
     map.insert(QStringLiteral("content"), note.content);
     map.insert(QStringLiteral("category"), note.category);

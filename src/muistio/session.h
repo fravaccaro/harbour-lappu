@@ -43,9 +43,15 @@ public:
     Q_INVOKABLE void cancelLogin();
     Q_INVOKABLE void logout();
     Q_INVOKABLE void reloadSecrets();
-    // Pulls the whole account from the Notes API and keeps the answer on the
-    // device.
+    // Sends what is owed to the server, then pulls the whole account and keeps
+    // the answer on the device.
     Q_INVOKABLE void sync();
+    // An id of 0 or less writes a new note. The title follows the first line
+    // of the content, as it does on the server.
+    Q_INVOKABLE void saveNote(int noteId, const QString &content, const QString &category,
+                              bool favorite);
+    Q_INVOKABLE void setFavorite(int noteId, bool favorite);
+    Q_INVOKABLE void deleteNote(int noteId);
 
 signals:
     void readyChanged();
@@ -73,15 +79,31 @@ private:
     void onLoginFailed(const QString &error);
     void onNotesReady(const QVector<LocalNote> &notes);
     void onApiFailed(const QString &error);
+    void onCreated(qint64 localId, const LocalNote &note);
+    void onUpdated(const LocalNote &note);
+    void onDeleted(qint64 id);
+    void store(const LocalNote &note);
+    void pushDirty();
+    void pushNext();
+    void queueDrained();
+    void fetchNotes();
 
     Config *m_config;
     NotesModel *m_notes;
     LoginFlow m_login;
     NotesApi m_api;
     NotesCache m_cache;
+    // What is still owed to the server in this run.
+    QVector<LocalNote> m_pending;
     QString m_loginUrl;
     QString m_error;
     bool m_busy;
+    // Whether a pull follows once the queue has drained.
+    bool m_pullAfter;
+    // A flush the user did not ask for keeps quiet about a server that cannot
+    // be reached; the note simply stays owed.
+    bool m_announce;
+    int m_pushed;
 };
 
 #endif

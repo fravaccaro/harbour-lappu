@@ -99,15 +99,18 @@ This document is a living contract. Keeping it accurate is part of the implement
 | `src/muistio/notesmodel.*` | Notes list model |
 | `src/muistio/types.h` | Plain data structs (`LocalNote`) |
 | `qml/pages/*` | Silica pages |
+| `qml/notes/*` | Notes view model (`NotesStore.qml`) and markdown helpers (`NoteFormat.js`) |
 | `qml/components/*` | Shared QML such as the notification wrapper |
 | `qml/cover/*` | Cover page |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe, and LinkHandler modules |
 
 Networking stays in C++. Pages bind to `Muistio` and `Notes`.
 
-Pulling notes is implemented: `Session::sync()` asks `NotesApi` for the whole account, `NotesCache` keeps the answer so the pages have notes before the server replies, and `NotesModel` hands them to QML. Pushing changes back (new, edited, deleted, favourite) is not implemented yet, so edits made in the app live only until the next pull.
+Syncing notes is implemented in both directions. `Session` is the only writer: `saveNote`, `setFavorite` and `deleteNote` write to `NotesCache` straight away, marking the row `dirty` (or `deleted`), then offer it to the server. `Session::sync()` sends what is owed first and pulls afterwards, so a note edited on the phone is the one that stands. A note written while offline keeps its `dirty` row, survives a restart, and is sent again by the next sync; a flush the user did not ask for stays quiet about an unreachable server. Conflicts are last-write-wins: no `If-Match` is sent.
 
-`qml/mock/NotesStore.qml` is no longer dummy data: it is the QML-side view of the pulled notes and owns the filtering, search, sort, category and cover state. It is filled through `ingest()` from `Notes.notes()`.
+A note has no title of its own. The server names it after the first line of the content, and `Session` works the same name out locally so the pages can show it before the next pull confirms it. An unsynced new note borrows a negative id until the server names it.
+
+`qml/notes/NotesStore.qml` is the QML-side view of the synced notes: it owns the filtering, search, sort, category and cover state, and is filled through `ingest()` from `Notes.notes()`. It writes nothing itself; every edit is handed to `Muistio`.
 
 Sailjail private directories follow `OrganizationName` / `ApplicationName`:
 

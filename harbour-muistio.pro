@@ -61,8 +61,8 @@ DISTFILES += \
     qml/components/MuistioNotification.qml \
     qml/components/NoteBody.qml \
     qml/cover/CoverPage.qml \
-    qml/mock/NoteFormat.js \
-    qml/mock/NotesStore.qml \
+    qml/notes/NoteFormat.js \
+    qml/notes/NotesStore.qml \
     qml/pages/AboutPage.qml \
     qml/pages/CategoriesPage.qml \
     qml/pages/CategoryPickerPage.qml \

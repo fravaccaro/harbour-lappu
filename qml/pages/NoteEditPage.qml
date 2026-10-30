@@ -6,7 +6,6 @@ Dialog {
     id: page
 
     property int noteId: 0
-    property string title
     property string content
     property string category
     property bool favorite: false
@@ -28,8 +27,8 @@ Dialog {
         editHistory.reset(bodyField.text, bodyField.cursorPosition)
     }
     canAccept: true
-    onAccepted: app.notes.saveNote(page.noteId, titleField.text, bodyField.text,
-                                   page.category, favoriteSwitch.checked)
+    onAccepted: app.notes.saveNote(page.noteId, bodyField.text, page.category,
+                                   favoriteSwitch.checked)
 
     EditHistory {
         id: editHistory
@@ -51,17 +50,6 @@ Dialog {
             DialogHeader {
                 acceptText: page.noteId === 0 ? qsTr("Add") : qsTr("Save")
                 title: page.noteId === 0 ? qsTr("New note") : qsTr("Note")
-            }
-
-            TextField {
-                id: titleField
-
-                width: parent.width
-                text: page.title
-                label: qsTr("Title")
-                placeholderText: qsTr("New note")
-                EnterKey.iconSource: "image://theme/icon-m-enter-next"
-                EnterKey.onClicked: bodyField.forceActiveFocus()
             }
 
             ValueButton {
@@ -107,6 +95,7 @@ Dialog {
                 width: parent.width
                 height: Math.max(implicitHeight, Screen.height / 3)
                 text: page.content
+                label: qsTr("The first line is the title")
                 placeholderText: qsTr("Write a note...")
                 wrapMode: TextEdit.Wrap
                 color: Theme.primaryColor

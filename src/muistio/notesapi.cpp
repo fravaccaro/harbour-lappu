@@ -8,10 +8,20 @@
 
 namespace {
 
+QString notesPath()
+{
+    return QStringLiteral("/index.php/apps/notes/api/v1/notes");
+}
+
+QString notePath(qint64 id)
+{
+    return notesPath() + QLatin1Char('/') + QString::number(id);
+}
+
 LocalNote noteFrom(const QJsonObject &object)
 {
     LocalNote note;
-    note.id = QString::number(object.value(QStringLiteral("id")).toInt());
+    note.id = object.value(QStringLiteral("id")).toInt();
     note.etag = object.value(QStringLiteral("etag")).toString();
     note.title = object.value(QStringLiteral("title")).toString();
     note.content = object.value(QStringLiteral("content")).toString();
@@ -33,21 +43,35 @@ QVector<LocalNote> notesFrom(const QByteArray &body)
     return notes;
 }
 
+// Only these are the caller's to set: the server works the title out from the
+// content and stamps the note itself.
+QByteArray bodyFor(const LocalNote &note)
+{
+    QJsonObject object;
+    object.insert(QStringLiteral("content"), note.content);
+    object.insert(QStringLiteral("category"), note.category);
+    object.insert(QStringLiteral("favorite"), note.favorite);
+    return QJsonDocument(object).toJson(QJsonDocument::Compact);
+}
+
 QString statusError(int status)
 {
     if (status == 401)
         return QObject::tr("The server refused the password. Sign in again.");
+    if (status == 403)
+        return QObject::tr("The note is read-only on the server.");
     if (status == 404)
         return QObject::tr("The Notes app is not enabled on the server.");
 
-    return QObject::tr("The server did not send the notes (%1).").arg(status);
+    return QObject::tr("The server refused the change (%1).").arg(status);
 }
 
 }
 
 NotesApi::NotesApi(QObject *parent)
     : QObject(parent)
-    , m_fetching(false)
+    , m_operation(Idle)
+    , m_pendingId(0)
 {
     m_http.setUserAgent(QStringLiteral("Muistio"));
     connect(&m_http, &HttpClient::finished, this, &NotesApi::onFinished);
@@ -69,26 +93,62 @@ void NotesApi::setIgnoreSslErrors(bool ignore)
     m_http.setIgnoreSslErrors(ignore);
 }
 
-void NotesApi::fetchNotes()
+void NotesApi::send(const QByteArray &method, const QString &path, const QByteArray &body)
 {
     if (m_server.isEmpty()) {
+        m_operation = Idle;
         emit failed(tr("Enter a server address."));
         return;
     }
 
-    m_fetching = true;
     HttpClient::Headers headers;
     headers.append(qMakePair(QByteArray("Accept"), QByteArray("application/json")));
-    const QUrl url(m_server + QStringLiteral("/index.php/apps/notes/api/v1/notes"));
-    m_http.send("GET", url, QByteArray(), headers);
+    if (!body.isEmpty()) {
+        headers.append(qMakePair(QByteArray("Content-Type"),
+                                 QByteArray("application/json")));
+    }
+    m_http.send(method, QUrl(m_server + path), body, headers);
+}
+
+void NotesApi::fetchNotes()
+{
+    m_operation = FetchList;
+    send("GET", notesPath(), QByteArray());
+}
+
+void NotesApi::createNote(const LocalNote &note)
+{
+    m_operation = Create;
+    m_pendingId = note.id;
+    send("POST", notesPath(), bodyFor(note));
+}
+
+void NotesApi::updateNote(const LocalNote &note)
+{
+    m_operation = Update;
+    m_pendingId = note.id;
+    send("PUT", notePath(note.id), bodyFor(note));
+}
+
+void NotesApi::deleteNote(qint64 id)
+{
+    m_operation = Delete;
+    m_pendingId = id;
+    send("DELETE", notePath(id), QByteArray());
 }
 
 void NotesApi::onFinished(int status, const QByteArray &body, const QString &, const QUrl &)
 {
-    if (!m_fetching)
+    const Operation operation = m_operation;
+    m_operation = Idle;
+    if (operation == Idle)
         return;
 
-    m_fetching = false;
+    if (operation != FetchList) {
+        handleWrite(operation, status, body);
+        return;
+    }
+
     if (status != 200) {
         emit failed(statusError(status));
         return;
@@ -97,11 +157,32 @@ void NotesApi::onFinished(int status, const QByteArray &body, const QString &, c
     emit notesReady(notesFrom(body));
 }
 
+void NotesApi::handleWrite(Operation operation, int status, const QByteArray &body)
+{
+    // A note the server no longer has needs nothing further from us, whichever
+    // of the two we were asking for.
+    if (operation == Delete && (status == 200 || status == 404)) {
+        emit deleted(m_pendingId);
+        return;
+    }
+
+    if (status != 200 && status != 201) {
+        if (operation == Update && status == 404)
+            emit deleted(m_pendingId);
+        else
+            emit failed(statusError(status));
+        return;
+    }
+
+    const LocalNote note = noteFrom(QJsonDocument::fromJson(body).object());
+    if (operation == Create)
+        emit created(m_pendingId, note);
+    else
+        emit updated(note);
+}
+
 void NotesApi::onFailed(const QString &error)
 {
-    if (!m_fetching)
-        return;
-
-    m_fetching = false;
+    m_operation = Idle;
     emit failed(error);
 }

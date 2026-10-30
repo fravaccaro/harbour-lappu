@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import "components"
-import "mock"
+import "notes"
 import "pages"
 
 ApplicationWindow {
@@ -67,7 +67,6 @@ ApplicationWindow {
     function pushEditor(note) {
         pageStack.push(Qt.resolvedUrl("pages/NoteEditPage.qml"), {
             "noteId": note.noteId,
-            "title": note.title,
             "content": note.content,
             "category": note.category,
             "favorite": note.favorite

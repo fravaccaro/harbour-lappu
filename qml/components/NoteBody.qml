@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../mock/NoteFormat.js" as Format
+import "../notes/NoteFormat.js" as Format
 
 /*!
     \brief Read-only markdown preview whose task lines are tappable.

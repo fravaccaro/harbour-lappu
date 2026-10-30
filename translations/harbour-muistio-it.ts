@@ -206,10 +206,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Title</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Category</source>
         <translation type="unfinished"></translation>
     </message>
@@ -223,6 +219,10 @@
     </message>
     <message>
         <source>Write a note...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The first line is the title</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -381,10 +381,6 @@
             <numerusform></numerusform>
             <numerusform></numerusform>
         </translation>
-    </message>
-    <message>
-        <source>New note</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -585,7 +581,15 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The server did not send the notes (%1).</source>
+        <source>The note is read-only on the server.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The server refused the change (%1).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New note</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

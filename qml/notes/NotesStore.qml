@@ -11,7 +11,6 @@ QtObject {
     property bool busy: false
     onSearchTextChanged: reloadVisible()
     onSortModeChanged: reloadVisible()
-    property int nextId: 9
     property int pinnedNoteId: 0
     onPinnedNoteIdChanged: applyPinned()
     // Kept as plain properties so the cover follows edits to the pinned note.
@@ -233,15 +232,12 @@ QtObject {
     }
 
     function toggleTask(noteId, lineIndex) {
-        var i = indexOfId(noteId)
-        if (i < 0 || allNotes.get(i).locked)
+        var note = noteById(noteId)
+        if (!note || note.locked)
             return
-        var content = flipLine(allNotes.get(i).content, lineIndex)
-        if (content === null)
-            return
-        allNotes.setProperty(i, "content", content)
-        allNotes.setProperty(i, "modified", Math.floor(Date.now() / 1000))
-        refreshLists()
+        var content = flipLine(note.content, lineIndex)
+        if (content !== null)
+            saveNote(noteId, content, note.category, note.favorite)
     }
 
     // Returns null when that line carries no task marker, so the caller can
@@ -264,71 +260,32 @@ QtObject {
         return String(line).replace(/\[[ xX]\]/, task.done ? "[ ]" : "[x]")
     }
 
+    // The session owns the notes, so an edit is handed to it and comes back
+    // through ingest(); nothing is written into allNotes here.
     function toggleFavorite(noteId) {
-        var i = indexOfId(noteId)
-        if (i < 0)
-            return
-        allNotes.setProperty(i, "favorite", !allNotes.get(i).favorite)
-        refreshLists()
+        var note = noteById(noteId)
+        if (note)
+            Muistio.setFavorite(noteId, !note.favorite)
     }
 
     function removeNote(noteId) {
-        var i = indexOfId(noteId)
-        if (i < 0)
-            return
         if (noteId === pinnedNoteId)
             unpinNote()
-        allNotes.remove(i)
-        refreshLists()
+
+        Muistio.deleteNote(noteId)
     }
 
-    function saveNote(noteId, title, content, category, favorite) {
-        var fields = noteFields(noteId, title, content, category, favorite)
-        var i = indexOfId(noteId)
-        if (i < 0)
-            allNotes.append(fields)
-        else
-            replaceNote(i, fields)
-        refreshLists()
-        return fields.noteId
+    function saveNote(noteId, content, category, favorite) {
+        Muistio.saveNote(noteId, content, category, favorite)
     }
 
-    function noteFields(noteId, title, content, category, favorite) {
-        var id = noteId > 0 ? noteId : nextId++
-        return {
-            "noteId": id,
-            "title": title.trim() === "" ? qsTr("New note") : title.trim(),
-            "content": content,
-            "category": category,
-            "favorite": favorite,
-            "modified": Math.floor(Date.now() / 1000),
-            "locked": false
-        }
-    }
-
-    function replaceNote(index, fields) {
-        fields.locked = allNotes.get(index).locked
-        allNotes.set(index, fields)
-    }
-
-    // Takes the notes the session pulled, each already keyed the way the rows
+    // Takes the notes the session keeps, each already keyed the way the rows
     // of allNotes are named.
     function ingest(list) {
         allNotes.clear()
         for (var i = 0; i < list.length; ++i)
             allNotes.append(list[i])
 
-        nextId = freeId()
         refreshLists()
-    }
-
-    // A note written here lives only until the next pull, but it still needs
-    // an id of its own while it does.
-    function freeId() {
-        var top = 0
-        for (var i = 0; i < allNotes.count; ++i)
-            top = Math.max(top, allNotes.get(i).noteId)
-
-        return top + 1
     }
 }
