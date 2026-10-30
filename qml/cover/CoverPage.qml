@@ -126,7 +126,7 @@ CoverBackground {
 
         CoverAction {
             iconSource: "image://theme/icon-cover-sync"
-            onTriggered: win.mockRefresh()
+            onTriggered: win.syncNotes()
         }
     }
 }

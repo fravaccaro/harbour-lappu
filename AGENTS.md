@@ -94,6 +94,8 @@ This document is a living contract. Keeping it accurate is part of the implement
 | `src/muistio/httpclient.*` | `QNetworkAccessManager` wrapper |
 | `src/muistio/url.*` | URL path helpers |
 | `src/muistio/session.*` | QML-facing controller |
+| `src/muistio/notesapi.*` | Nextcloud Notes API v1 client |
+| `src/muistio/notescache.*` | SQLite cache of the last pull |
 | `src/muistio/notesmodel.*` | Notes list model |
 | `src/muistio/types.h` | Plain data structs (`LocalNote`) |
 | `qml/pages/*` | Silica pages |
@@ -103,7 +105,9 @@ This document is a living contract. Keeping it accurate is part of the implement
 
 Networking stays in C++. Pages bind to `Muistio` and `Notes`.
 
-The Notes sync layer (Notes API client, local store) is not implemented yet: the scaffold ships the login flow, an empty `NotesModel`, and the pages that bind to it.
+Pulling notes is implemented: `Session::sync()` asks `NotesApi` for the whole account, `NotesCache` keeps the answer so the pages have notes before the server replies, and `NotesModel` hands them to QML. Pushing changes back (new, edited, deleted, favourite) is not implemented yet, so edits made in the app live only until the next pull.
+
+`qml/mock/NotesStore.qml` is no longer dummy data: it is the QML-side view of the pulled notes and owns the filtering, search, sort, category and cover state. It is filled through `ingest()` from `Notes.notes()`.
 
 Sailjail private directories follow `OrganizationName` / `ApplicationName`:
 

@@ -33,7 +33,7 @@ Page {
 
             MenuItem {
                 text: qsTr("Refresh")
-                onClicked: app.mockRefresh()
+                onClicked: app.syncNotes()
             }
 
             MenuItem {

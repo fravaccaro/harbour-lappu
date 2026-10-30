@@ -74,7 +74,9 @@ void HttpClient::send(const QByteArray &method, const QUrl &url,
     }
 
     QNetworkReply *reply = 0;
-    if (method == "PUT") {
+    if (method == "GET") {
+        reply = m_manager.get(request);
+    } else if (method == "PUT") {
         reply = m_manager.put(request, body);
     } else if (method == "DELETE") {
         reply = m_manager.deleteResource(request);

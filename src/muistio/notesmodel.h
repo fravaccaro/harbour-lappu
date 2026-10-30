@@ -3,6 +3,7 @@
 
 #include <QAbstractListModel>
 #include <QHash>
+#include <QVariantList>
 #include <QVector>
 
 #include "types.h"
@@ -15,8 +16,10 @@ public:
     enum Roles {
         IdRole = Qt::UserRole + 1,
         TitleRole,
+        ContentRole,
         CategoryRole,
         FavoriteRole,
+        ReadOnlyRole,
         ModifiedRole
     };
 
@@ -26,9 +29,15 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    // The notes store arrives with the Notes API; until then this empties the
-    // model so the list page can already bind to it.
+    void setNotes(const QVector<LocalNote> &notes);
     void reload();
+
+    // Every note as a plain map, keyed the way the QML note store names its
+    // fields, so a page can keep its own filtered view of the same notes.
+    Q_INVOKABLE QVariantList notes() const;
+
+signals:
+    void changed();
 
 private:
     QVector<LocalNote> m_notes;

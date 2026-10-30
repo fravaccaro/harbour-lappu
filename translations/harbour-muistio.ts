@@ -270,6 +270,13 @@
     </message>
 </context>
 <context>
+    <name>NotesApi</name>
+    <message>
+        <source>Enter a server address.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>NotesPage</name>
     <message>
         <source>About</source>
@@ -564,6 +571,18 @@
         <source>The server refused the login (%1).</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>The server refused the password. Sign in again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The Notes app is not enabled on the server.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The server did not send the notes (%1).</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsPage</name>
@@ -666,10 +685,6 @@
 </context>
 <context>
     <name>harbour-muistio</name>
-    <message>
-        <source>This is a mock. Nothing was synced.</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>That note is no longer here.</source>
         <translation type="unfinished"></translation>

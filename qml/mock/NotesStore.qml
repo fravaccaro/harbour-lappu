@@ -311,45 +311,24 @@ QtObject {
         allNotes.set(index, fields)
     }
 
-    function addDummy(noteId, title, category, favorite, ageSec, locked, content) {
-        allNotes.append({
-            "noteId": noteId,
-            "title": title,
-            "content": content,
-            "category": category,
-            "favorite": favorite,
-            "modified": Math.floor(Date.now() / 1000) - ageSec,
-            "locked": locked
-        })
-    }
+    // Takes the notes the session pulled, each already keyed the way the rows
+    // of allNotes are named.
+    function ingest(list) {
+        allNotes.clear()
+        for (var i = 0; i < list.length; ++i)
+            allNotes.append(list[i])
 
-    function seedWork() {
-        addDummy(1, "Sprint notes", "Work", true, 20 * 60, false,
-                 "# Sprint notes\n\n- Ship the login flow\n- **Do not** wire sync yet\n- Read the Notes API v1 doc")
-        addDummy(3, "Standup 28 Oct", "Work/Meetings", false, 26 * 3600, false,
-                 "## Standup\n\nYesterday: scaffold.\nToday: UI mock.\nBlockers: none.")
-        addDummy(6, "Shared handbook", "Work", false, 12 * 86400, true,
-                 "This folder was shared with you as view-only.\n\nPlease leave the wording as it is.")
-    }
-
-    function seedHome() {
-        addDummy(2, "Shopping", "", true, 2 * 3600, false,
-                 "- [ ] Bread\n- [x] Oat milk\n- [ ] Lemons\n- [ ] **Focaccia flour**")
-        addDummy(4, "Focaccia", "Recipes", false, 3 * 86400, false,
-                 "# Focaccia\n\n500g flour, 400ml water, 10g salt.\n\nSee [the Notes app](https://apps.nextcloud.com/apps/notes).")
-        addDummy(5, "Wifi codes", "", false, 8 * 86400, false,
-                 "Home: sea-biscuit-4\nGuest: ask at the desk")
-        addDummy(7, "Tomato sauce", "Recipes", false, 30 * 86400, false,
-                 "Onion, garlic, tomatoes. Simmer *slowly*.")
-        addDummy(8, "Packing list", "", false, 5 * 60, false,
-                 "Passport, charger, headphones.")
-    }
-
-    function seed() {
-        if (allNotes.count > 0)
-            return
-        seedWork()
-        seedHome()
+        nextId = freeId()
         refreshLists()
+    }
+
+    // A note written here lives only until the next pull, but it still needs
+    // an id of its own while it does.
+    function freeId() {
+        var top = 0
+        for (var i = 0; i < allNotes.count; ++i)
+            top = Math.max(top, allNotes.get(i).noteId)
+
+        return top + 1
     }
 }

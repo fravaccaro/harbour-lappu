@@ -22,10 +22,8 @@ ApplicationWindow {
             globalNotification.toast(text)
     }
 
-    function mockRefresh() {
-        notes.busy = true
-        mockBusyTimer.restart()
-        showToast(qsTr("This is a mock. Nothing was synced."))
+    function syncNotes() {
+        Muistio.sync()
     }
 
     function openNote(noteId) {
@@ -83,14 +81,9 @@ ApplicationWindow {
     NotesStore {
         id: store
 
-        Component.onCompleted: seed()
-    }
-
-    Timer {
-        id: mockBusyTimer
-
-        interval: 700
-        onTriggered: notes.busy = false
+        // The session fills its model before the window loads, so the notes
+        // from the last pull are already there to take.
+        Component.onCompleted: ingest(Notes.notes())
     }
 
     Timer {
@@ -131,6 +124,8 @@ ApplicationWindow {
             if (!Muistio.configured)
                 app.showMain()
         }
+        onNotesChanged: app.notes.ingest(Notes.notes())
+        onBusyChanged: app.notes.busy = Muistio.busy
         onErrorMessageChanged: app.showToast(Muistio.errorMessage)
     }
 

@@ -11,11 +11,19 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(&m_login, &LoginFlow::loginUrlReady, this, &Session::onLoginUrl);
     connect(&m_login, &LoginFlow::finished, this, &Session::onLoggedIn);
     connect(&m_login, &LoginFlow::failed, this, &Session::onLoginFailed);
+    connect(&m_api, &NotesApi::notesReady, this, &Session::onNotesReady);
+    connect(&m_api, &NotesApi::failed, this, &Session::onApiFailed);
+    connect(m_notes, &NotesModel::changed, this, &Session::notesChanged);
     connect(m_config, &Config::readyChanged, this, &Session::readyChanged);
     connect(m_config, &Config::configuredChanged, this, &Session::onConfiguredChanged);
     connect(m_config, &Config::secretsErrorChanged, this, &Session::secretsErrorChanged);
     connect(m_config, &Config::serverUrlChanged, this, &Session::serverUrlChanged);
     connect(m_config, &Config::ignoreSslErrorsChanged, this, &Session::ignoreSslErrorsChanged);
+    connect(m_config, &Config::serverUrlChanged, this, &Session::applyApiSettings);
+    connect(m_config, &Config::usernameChanged, this, &Session::applyApiSettings);
+    connect(m_config, &Config::passwordChanged, this, &Session::applyApiSettings);
+    connect(m_config, &Config::ignoreSslErrorsChanged, this, &Session::applyApiSettings);
+    m_cache.open();
     if (m_config->isReady() && m_config->isConfigured())
         applyCredentials();
 }
@@ -68,15 +76,26 @@ void Session::setError(const QString &error)
     emit errorMessageChanged();
 }
 
+// The cache answers first, so the pages show the notes from the last pull
+// while the server is still being asked.
 void Session::reloadModels()
 {
-    m_notes->reload();
-    emit notesChanged();
+    m_notes->setNotes(m_cache.notes());
+}
+
+void Session::applyApiSettings()
+{
+    m_api.setServer(m_config->serverUrl());
+    m_api.setCredentials(m_config->username(), m_config->password());
+    m_api.setIgnoreSslErrors(m_config->ignoreSslErrors());
 }
 
 void Session::applyCredentials()
 {
+    applyApiSettings();
     reloadModels();
+    if (m_config->syncOnStart())
+        sync();
 }
 
 void Session::onConfiguredChanged()
@@ -108,7 +127,8 @@ void Session::logout()
 {
     cancelLogin();
     m_config->clearCredentials();
-    reloadModels();
+    m_cache.clear();
+    m_notes->reload();
 }
 
 void Session::reloadSecrets()
@@ -121,7 +141,22 @@ void Session::sync()
     if (!m_config->isConfigured() || m_busy)
         return;
 
+    setError(QString());
+    setBusy(true);
+    m_api.fetchNotes();
+}
+
+void Session::onNotesReady(const QVector<LocalNote> &notes)
+{
+    setBusy(false);
+    m_cache.replaceAll(notes);
     reloadModels();
+}
+
+void Session::onApiFailed(const QString &error)
+{
+    setBusy(false);
+    setError(error);
 }
 
 void Session::onLoginUrl(const QString &url)

@@ -13,11 +13,14 @@ struct LocalNote
     QString category;
     QString etag;
     bool favorite;
+    // Shared with the account as view-only, so the pages refuse to edit it.
+    bool readOnly;
     // Seconds since the epoch, as the Notes API reports the last change.
     qint64 modified;
 
     LocalNote()
         : favorite(false)
+        , readOnly(false)
         , modified(0)
     {
     }

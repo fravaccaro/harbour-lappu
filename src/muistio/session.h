@@ -7,6 +7,9 @@
 
 #include "config.h"
 #include "loginflow.h"
+#include "notesapi.h"
+#include "notescache.h"
+#include "types.h"
 
 class NotesModel;
 
@@ -40,7 +43,8 @@ public:
     Q_INVOKABLE void cancelLogin();
     Q_INVOKABLE void logout();
     Q_INVOKABLE void reloadSecrets();
-    // A placeholder until the Notes API lands: it only refreshes the model.
+    // Pulls the whole account from the Notes API and keeps the answer on the
+    // device.
     Q_INVOKABLE void sync();
 
 signals:
@@ -61,15 +65,20 @@ private:
     void setBusy(bool busy);
     void setError(const QString &error);
     void applyCredentials();
+    void applyApiSettings();
     void reloadModels();
     void onConfiguredChanged();
     void onLoginUrl(const QString &url);
     void onLoggedIn(const QString &server, const QString &user, const QString &password);
     void onLoginFailed(const QString &error);
+    void onNotesReady(const QVector<LocalNote> &notes);
+    void onApiFailed(const QString &error);
 
     Config *m_config;
     NotesModel *m_notes;
     LoginFlow m_login;
+    NotesApi m_api;
+    NotesCache m_cache;
     QString m_loginUrl;
     QString m_error;
     bool m_busy;

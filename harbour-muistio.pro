@@ -1,7 +1,7 @@
 TARGET = harbour-muistio
 
 CONFIG += sailfishapp sailfishapp_i18n c++11
-QT += network
+QT += network sql
 
 # sailfishapp.prf pulls in link_pkgconfig and resolves PKGCONFIG afterwards, so
 # requesting link_pkgconfig here instead would drop -lsailfishapp from the link.
@@ -23,6 +23,8 @@ SOURCES += \
     src/muistio/config.cpp \
     src/muistio/httpclient.cpp \
     src/muistio/loginflow.cpp \
+    src/muistio/notesapi.cpp \
+    src/muistio/notescache.cpp \
     src/muistio/notesmodel.cpp \
     src/muistio/secretsstore.cpp \
     src/muistio/session.cpp \
@@ -32,6 +34,8 @@ HEADERS += \
     src/muistio/config.h \
     src/muistio/httpclient.h \
     src/muistio/loginflow.h \
+    src/muistio/notesapi.h \
+    src/muistio/notescache.h \
     src/muistio/notesmodel.h \
     src/muistio/secretsstore.h \
     src/muistio/session.h \
