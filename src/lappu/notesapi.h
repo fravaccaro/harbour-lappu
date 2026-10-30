@@ -45,6 +45,9 @@ signals:
     void updated(const LocalNote &note);
     void deleted(qint64 id);
     void failed(const QString &error);
+    // A password the server will not take again. It travels apart from failed()
+    // because it asks the session to stop rather than to retry.
+    void unauthorized(const QString &error);
 
 private:
     void onFinished(int status, const QByteArray &body, const QString &etag,
@@ -52,6 +55,7 @@ private:
     void onFailed(const QString &error);
     void send(const QByteArray &method, const QString &path, const QByteArray &body);
     void handleWrite(Operation operation, int status, const QByteArray &body);
+    void reportStatus(int status);
 
     HttpClient m_http;
     QString m_server;

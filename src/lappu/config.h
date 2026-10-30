@@ -20,6 +20,7 @@ class Config : public QObject
     Q_PROPERTY(bool syncAfterPush READ syncAfterPush WRITE setSyncAfterPush
                NOTIFY syncAfterPushChanged)
     Q_PROPERTY(int coverNoteId READ coverNoteId WRITE setCoverNoteId NOTIFY coverNoteIdChanged)
+    Q_PROPERTY(QString sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
     Q_PROPERTY(bool configured READ isConfigured NOTIFY configuredChanged)
     Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
     Q_PROPERTY(QString secretsError READ secretsError NOTIFY secretsErrorChanged)
@@ -53,6 +54,10 @@ public:
     int coverNoteId() const { return m_coverNoteId; }
     void setCoverNoteId(int id);
 
+    // How the notes list is ordered: "modified" or "title".
+    QString sortMode() const { return m_sortMode; }
+    void setSortMode(const QString &mode);
+
     bool isConfigured() const;
     bool isReady() const { return m_ready; }
     QString secretsError() const { return m_secretsError; }
@@ -70,6 +75,7 @@ signals:
     void syncIntervalChanged();
     void syncAfterPushChanged();
     void coverNoteIdChanged();
+    void sortModeChanged();
     void configuredChanged();
     void readyChanged();
     void secretsErrorChanged();
@@ -84,6 +90,7 @@ private:
     QString m_username;
     QString m_password;
     QString m_secretsError;
+    QString m_sortMode;
     bool m_ignoreSslErrors;
     bool m_syncOnStart;
     int m_syncInterval;

@@ -47,6 +47,7 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(&m_api, &NotesApi::updated, this, &Session::onUpdated);
     connect(&m_api, &NotesApi::deleted, this, &Session::onDeleted);
     connect(&m_api, &NotesApi::failed, this, &Session::onApiFailed);
+    connect(&m_api, &NotesApi::unauthorized, this, &Session::onUnauthorized);
     connect(m_notes, &NotesModel::changed, this, &Session::notesChanged);
     connect(m_config, &Config::readyChanged, this, &Session::readyChanged);
     connect(m_config, &Config::configuredChanged, this, &Session::onConfiguredChanged);
@@ -61,6 +62,7 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(m_config, &Config::syncIntervalChanged, this, &Session::syncIntervalChanged);
     connect(m_config, &Config::syncAfterPushChanged, this, &Session::syncAfterPushChanged);
     connect(m_config, &Config::coverNoteIdChanged, this, &Session::coverNoteIdChanged);
+    connect(m_config, &Config::sortModeChanged, this, &Session::sortModeChanged);
     connect(m_config, &Config::syncIntervalChanged, this, &Session::applySyncTimer);
     connect(m_config, &Config::readyChanged, this, &Session::syncIfStartupWanted);
     m_cache.open();
@@ -139,6 +141,16 @@ int Session::coverNoteId() const
 void Session::setCoverNoteId(int id)
 {
     m_config->setCoverNoteId(id);
+}
+
+QString Session::sortMode() const
+{
+    return m_config->sortMode();
+}
+
+void Session::setSortMode(const QString &mode)
+{
+    m_config->setSortMode(mode);
 }
 
 void Session::setBusy(bool busy)
@@ -371,6 +383,21 @@ void Session::onApiFailed(const QString &error)
 
     if (asked)
         setError(error);
+}
+
+// Only the password is let go of: the notes and anything still owed stay where
+// they are, so a fresh sign-in sends them rather than losing them. Being sent
+// back to the sign-in page always needs a reason, so this one is never silent.
+void Session::onUnauthorized(const QString &error)
+{
+    m_syncTimer.stop();
+    m_syncedOnStart = false;
+    m_pending.clear();
+    m_pullAfter = false;
+    m_announce = false;
+    setBusy(false);
+    m_config->setPassword(QString());
+    setError(error);
 }
 
 void Session::store(const LocalNote &note)

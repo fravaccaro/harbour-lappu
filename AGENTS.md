@@ -112,9 +112,13 @@ Networking stays in C++. Pages bind to `Lappu` and `Notes`.
 
 Syncing notes is implemented in both directions. `Session` is the only writer: `saveNote`, `setFavorite` and `deleteNote` write to `NotesCache` straight away, marking the row `dirty` (or `deleted`), then offer it to the server. `Session::sync()` sends what is owed first and pulls afterwards, so a note edited on the phone is the one that stands. A note written while offline keeps its `dirty` row, survives a restart, and is sent again by the next sync; a flush the user did not ask for stays quiet about an unreachable server. Conflicts are last-write-wins: no `If-Match` is sent.
 
+Nothing bounds a request but `HttpClient::watchForStall()`. Qt 5.6 has no transfer timeout, and `Session` clears `m_busy` only when a reply arrives, so a request that hung would leave the app busy for good and every later `sync()` would return at its own `m_busy` guard. The watchdog is a `QTimer` parented to the reply, restarted by each progress signal, so it cuts off only a transfer that has stopped moving and leaves a slow one alone. Nothing else in the app aborts a reply, which is why `OperationCanceledError` is reported as the server having stopped answering.
+
+A refused password is not an ordinary error. `NotesApi::reportStatus()` splits `401` off onto `unauthorized()`, and `Session::onUnauthorized()` stops the timer and drops the password so the app returns to the sign-in page. It clears nothing else: the cache and its `dirty` rows stay, so a fresh sign-in sends them. Unlike every other API error it is reported whether or not the user asked for the sync, because being sent back to sign in needs a reason.
+
 A note has no title of its own. The server names it after the first line of the content, and `Session` works the same name out locally so the pages can show it before the next pull confirms it. An unsynced new note borrows a negative id until the server names it.
 
-`qml/notes/NotesStore.qml` is the QML-side view of the synced notes: it owns the filtering, search, sort, category and cover state, and is filled through `ingest()` from `Notes.notes()`. It writes nothing itself; every edit is handed to `Lappu`.
+`qml/notes/NotesStore.qml` is the QML-side view of the synced notes: it owns the filtering, search, sort, category and cover state, and is filled through `ingest()` from `Notes.notes()`. It writes nothing itself; every edit is handed to `Lappu`. The two pieces of that state the user expects to outlast a restart — the sort order and the pinned note — are bindings onto `Lappu.sortMode` and `Lappu.coverNoteId`, which `Config` keeps in `settings.conf`, so neither may be assigned imperatively.
 
 Sailjail private directories follow `OrganizationName` / `ApplicationName`:
 

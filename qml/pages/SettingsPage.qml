@@ -40,12 +40,12 @@ Page {
                 width: parent.width
                 label: qsTr("Sort")
                 Component.onCompleted: {
-                    currentIndex = app.notes.sortMode === "title" ? 1 : 0
+                    currentIndex = Lappu.sortMode === "title" ? 1 : 0
                     ready = true
                 }
                 onCurrentIndexChanged: {
                     if (ready && currentIndex >= 0)
-                        app.notes.sortMode = currentIndex === 1 ? "title" : "modified"
+                        Lappu.sortMode = currentIndex === 1 ? "title" : "modified"
                 }
 
                 menu: ContextMenu {

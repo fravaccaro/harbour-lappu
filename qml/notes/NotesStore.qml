@@ -7,7 +7,8 @@ QtObject {
     property string filterKind: "all"
     property string filterCategory: ""
     property string searchText: ""
-    property string sortMode: "modified"
+    // The session keeps the order, so it is still there after a restart.
+    property string sortMode: Lappu.sortMode
     property bool busy: false
     onSearchTextChanged: reloadVisible()
     onSortModeChanged: reloadVisible()

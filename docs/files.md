@@ -31,6 +31,8 @@ A change made with the server out of reach stays marked as owed. It survives clo
 
 A note created offline is listed and can be opened and edited like any other; it is only waiting for the server to give it an id. Lappu does not announce a server it could not reach unless you asked for the refresh yourself, so working offline is quiet rather than a stream of complaints.
 
+A network that accepts the connection but never answers - a café or hotel Wi-Fi waiting for you to agree to its terms is the usual culprit - is given about half a minute of silence before the refresh is abandoned and said to have failed. A slow answer is not cut off: the wait only runs out while nothing at all is arriving.
+
 ## When the same note changed twice
 
 A note changed on the phone and on the server between two refreshes is resolved as **last write wins**: the copy sent by the phone replaces what the server held, and no attempt is made to merge the two or to ask. Lappu does not send the version it last read, so the server does not reject the change either.

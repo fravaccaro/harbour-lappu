@@ -31,6 +31,7 @@ class Session : public QObject
     Q_PROPERTY(bool syncAfterPush READ syncAfterPush WRITE setSyncAfterPush
                NOTIFY syncAfterPushChanged)
     Q_PROPERTY(int coverNoteId READ coverNoteId WRITE setCoverNoteId NOTIFY coverNoteIdChanged)
+    Q_PROPERTY(QString sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
 
 public:
     explicit Session(Config *config, NotesModel *notes, QObject *parent = nullptr);
@@ -54,6 +55,9 @@ public:
     // The note the cover shows, or 0 when none is pinned.
     int coverNoteId() const;
     void setCoverNoteId(int id);
+
+    QString sortMode() const;
+    void setSortMode(const QString &mode);
 
     Q_INVOKABLE void startLogin(const QString &serverUrl);
     Q_INVOKABLE void cancelLogin();
@@ -82,6 +86,7 @@ signals:
     void syncIntervalChanged();
     void syncAfterPushChanged();
     void coverNoteIdChanged();
+    void sortModeChanged();
     void loginUrlReady(const QString &url);
     void loginSucceeded();
     void loginFailed(const QString &error);
@@ -101,6 +106,7 @@ private:
     void onLoginFailed(const QString &error);
     void onNotesReady(const QVector<LocalNote> &notes);
     void onApiFailed(const QString &error);
+    void onUnauthorized(const QString &error);
     void onCreated(qint64 localId, const LocalNote &note);
     void onUpdated(const LocalNote &note);
     void onDeleted(qint64 id);

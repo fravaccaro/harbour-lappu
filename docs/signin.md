@@ -13,6 +13,12 @@ Once the server grants access it creates an app password named Lappu, and Lappu 
 
 The app password is kept in **Sailfish Secrets**, in a collection locked with the device lock, not in a plain file.
 
+## When the password stops working
+
+A password the server no longer accepts - usually one revoked on the server, or an account whose access has changed - takes you back to the sign-in page with the reason shown. The server address is still filled in, so signing in again is a matter of tapping **Sign in** and letting the server's page take over.
+
+Nothing you wrote is lost in the process. Unlike signing out, this keeps the local copy of the notes and anything still waiting to be uploaded, so a note written before the password expired is sent once you have signed in again.
+
 ## Self-signed certificates
 
 A server whose certificate the device does not trust cannot be reached until **Ignore certificate errors** is turned on. The switch sits on the sign-in page and, afterwards, on the settings page. Leave it off for a server with a certificate the device already trusts.

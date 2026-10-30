@@ -150,7 +150,7 @@ void NotesApi::onFinished(int status, const QByteArray &body, const QString &, c
     }
 
     if (status != 200) {
-        emit failed(statusError(status));
+        reportStatus(status);
         return;
     }
 
@@ -170,7 +170,7 @@ void NotesApi::handleWrite(Operation operation, int status, const QByteArray &bo
         if (operation == Update && status == 404)
             emit deleted(m_pendingId);
         else
-            emit failed(statusError(status));
+            reportStatus(status);
         return;
     }
 
@@ -179,6 +179,16 @@ void NotesApi::handleWrite(Operation operation, int status, const QByteArray &bo
         emit created(m_pendingId, note);
     else
         emit updated(note);
+}
+
+void NotesApi::reportStatus(int status)
+{
+    if (status == 401) {
+        emit unauthorized(statusError(status));
+        return;
+    }
+
+    emit failed(statusError(status));
 }
 
 void NotesApi::onFailed(const QString &error)

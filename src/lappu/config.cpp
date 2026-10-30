@@ -33,6 +33,8 @@ Config::Config(QObject *parent)
     m_syncInterval = m_settings.value(QStringLiteral("sync/intervalMinutes"), 0).toInt();
     m_syncAfterPush = m_settings.value(QStringLiteral("sync/afterPush"), true).toBool();
     m_coverNoteId = m_settings.value(QStringLiteral("cover/noteId"), 0).toInt();
+    m_sortMode = m_settings.value(QStringLiteral("notes/sortMode"),
+                                  QStringLiteral("modified")).toString();
     connect(&m_secrets, &SecretsStore::loaded, this, &Config::applyStoredPassword);
     connect(&m_secrets, &SecretsStore::failed, this, [this](const QString &error) {
         m_secretsError = error;
@@ -164,6 +166,19 @@ void Config::setCoverNoteId(int id)
     m_coverNoteId = id;
     store(QStringLiteral("cover/noteId"), m_coverNoteId);
     emit coverNoteIdChanged();
+}
+
+// Anything but "title" is the order notes arrive in, so an unknown value read
+// back from a hand-edited settings file falls there rather than nowhere.
+void Config::setSortMode(const QString &mode)
+{
+    const QString safe = mode == QStringLiteral("title") ? mode : QStringLiteral("modified");
+    if (safe == m_sortMode)
+        return;
+
+    m_sortMode = safe;
+    store(QStringLiteral("notes/sortMode"), m_sortMode);
+    emit sortModeChanged();
 }
 
 void Config::clearCredentials()

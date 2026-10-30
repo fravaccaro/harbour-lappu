@@ -599,6 +599,10 @@
         <source>New note</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>The server stopped answering.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsPage</name>
