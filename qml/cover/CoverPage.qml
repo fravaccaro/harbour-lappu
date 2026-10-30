@@ -119,6 +119,9 @@ CoverBackground {
     }
 
     CoverActionList {
+        // Neither action has anywhere to go before anyone has signed in.
+        enabled: Muistio.configured
+
         CoverAction {
             iconSource: "image://theme/icon-cover-new"
             onTriggered: win.openNewNote()

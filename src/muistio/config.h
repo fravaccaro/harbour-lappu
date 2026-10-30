@@ -19,6 +19,7 @@ class Config : public QObject
                NOTIFY syncIntervalChanged)
     Q_PROPERTY(bool syncAfterPush READ syncAfterPush WRITE setSyncAfterPush
                NOTIFY syncAfterPushChanged)
+    Q_PROPERTY(int coverNoteId READ coverNoteId WRITE setCoverNoteId NOTIFY coverNoteIdChanged)
     Q_PROPERTY(bool configured READ isConfigured NOTIFY configuredChanged)
     Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
     Q_PROPERTY(QString secretsError READ secretsError NOTIFY secretsErrorChanged)
@@ -48,6 +49,10 @@ public:
     bool syncAfterPush() const { return m_syncAfterPush; }
     void setSyncAfterPush(bool enabled);
 
+    // The note the cover shows, or 0 when none is pinned.
+    int coverNoteId() const { return m_coverNoteId; }
+    void setCoverNoteId(int id);
+
     bool isConfigured() const;
     bool isReady() const { return m_ready; }
     QString secretsError() const { return m_secretsError; }
@@ -64,6 +69,7 @@ signals:
     void syncOnStartChanged();
     void syncIntervalChanged();
     void syncAfterPushChanged();
+    void coverNoteIdChanged();
     void configuredChanged();
     void readyChanged();
     void secretsErrorChanged();
@@ -82,6 +88,7 @@ private:
     bool m_syncOnStart;
     int m_syncInterval;
     bool m_syncAfterPush;
+    int m_coverNoteId;
     bool m_ready;
 };
 

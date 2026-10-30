@@ -60,6 +60,7 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(m_config, &Config::syncOnStartChanged, this, &Session::syncOnStartChanged);
     connect(m_config, &Config::syncIntervalChanged, this, &Session::syncIntervalChanged);
     connect(m_config, &Config::syncAfterPushChanged, this, &Session::syncAfterPushChanged);
+    connect(m_config, &Config::coverNoteIdChanged, this, &Session::coverNoteIdChanged);
     connect(m_config, &Config::syncIntervalChanged, this, &Session::applySyncTimer);
     connect(m_config, &Config::readyChanged, this, &Session::syncIfStartupWanted);
     m_cache.open();
@@ -128,6 +129,16 @@ bool Session::syncAfterPush() const
 void Session::setSyncAfterPush(bool enabled)
 {
     m_config->setSyncAfterPush(enabled);
+}
+
+int Session::coverNoteId() const
+{
+    return m_config->coverNoteId();
+}
+
+void Session::setCoverNoteId(int id)
+{
+    m_config->setCoverNoteId(id);
 }
 
 void Session::setBusy(bool busy)
@@ -228,6 +239,7 @@ void Session::logout()
     m_syncTimer.stop();
     m_syncedOnStart = false;
     m_config->clearCredentials();
+    m_config->setCoverNoteId(0);
     m_cache.clear();
     m_notes->reload();
 }
@@ -320,6 +332,10 @@ void Session::onCreated(qint64 localId, const LocalNote &note)
 {
     ++m_pushed;
     m_cache.markClean(localId, note);
+    // The note the cover points at has just been given its server id.
+    if (m_config->coverNoteId() == localId)
+        m_config->setCoverNoteId(note.id);
+
     reloadModels();
     pushNext();
 }

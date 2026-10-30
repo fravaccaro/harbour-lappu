@@ -30,6 +30,7 @@ class Session : public QObject
                NOTIFY syncIntervalChanged)
     Q_PROPERTY(bool syncAfterPush READ syncAfterPush WRITE setSyncAfterPush
                NOTIFY syncAfterPushChanged)
+    Q_PROPERTY(int coverNoteId READ coverNoteId WRITE setCoverNoteId NOTIFY coverNoteIdChanged)
 
 public:
     explicit Session(Config *config, NotesModel *notes, QObject *parent = nullptr);
@@ -50,6 +51,9 @@ public:
     void setSyncInterval(int minutes);
     bool syncAfterPush() const;
     void setSyncAfterPush(bool enabled);
+    // The note the cover shows, or 0 when none is pinned.
+    int coverNoteId() const;
+    void setCoverNoteId(int id);
 
     Q_INVOKABLE void startLogin(const QString &serverUrl);
     Q_INVOKABLE void cancelLogin();
@@ -77,6 +81,7 @@ signals:
     void syncOnStartChanged();
     void syncIntervalChanged();
     void syncAfterPushChanged();
+    void coverNoteIdChanged();
     void loginUrlReady(const QString &url);
     void loginSucceeded();
     void loginFailed(const QString &error);

@@ -11,7 +11,8 @@ QtObject {
     property bool busy: false
     onSearchTextChanged: reloadVisible()
     onSortModeChanged: reloadVisible()
-    property int pinnedNoteId: 0
+    // The session keeps the pin, so it is still there after a restart.
+    property int pinnedNoteId: Muistio.coverNoteId
     onPinnedNoteIdChanged: applyPinned()
     // Kept as plain properties so the cover follows edits to the pinned note.
     property string pinnedTitle: ""
@@ -214,11 +215,11 @@ QtObject {
 
     // Only one note sits on the cover, so pinning another replaces the pin.
     function pinNote(noteId) {
-        pinnedNoteId = noteId
+        Muistio.coverNoteId = noteId
     }
 
     function unpinNote() {
-        pinnedNoteId = 0
+        Muistio.coverNoteId = 0
     }
 
     function pinnedNote() {
