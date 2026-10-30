@@ -2,6 +2,7 @@
 
 #include <QDateTime>
 #include <QStringList>
+#include <QVariantMap>
 
 #include "notesmodel.h"
 
@@ -33,6 +34,45 @@ bool isLocalOnly(const LocalNote &note)
     return note.id <= 0;
 }
 
+// Two notes the user could not tell apart. The stamps differ whenever both
+// sides were touched, and the version does too, so neither is worth comparing.
+bool sameNote(const LocalNote &mine, const LocalNote &theirs)
+{
+    return mine.content == theirs.content
+            && mine.category == theirs.category
+            && mine.favorite == theirs.favorite;
+}
+
+// The edit made here as a note of its own, for when the server's version is
+// given the original note back. The version is dropped along with the id it
+// belonged to, and only the title is labelled: a marker line in the content
+// would become the name of the note on the next pull and would be sent to the
+// server as text the user never wrote.
+LocalNote forkedOnto(const LocalNote &mine, qint64 tempId)
+{
+    LocalNote fork = mine;
+    fork.id = tempId;
+    fork.etag.clear();
+    fork.title = QObject::tr("%1 (my version)").arg(mine.title);
+    fork.deleted = false;
+    return fork;
+}
+
+QVariantMap conflictRow(const QPair<LocalNote, LocalNote> &pair)
+{
+    QVariantMap map;
+    map.insert(QStringLiteral("noteId"), pair.first.id);
+    map.insert(QStringLiteral("mineTitle"), pair.first.title);
+    map.insert(QStringLiteral("mineContent"), pair.first.content);
+    map.insert(QStringLiteral("mineModified"), pair.first.modified);
+    map.insert(QStringLiteral("theirsTitle"), pair.second.title);
+    map.insert(QStringLiteral("theirsContent"), pair.second.content);
+    map.insert(QStringLiteral("theirsModified"), pair.second.modified);
+    map.insert(QStringLiteral("categoryDiffers"), pair.first.category != pair.second.category);
+    map.insert(QStringLiteral("favoriteDiffers"), pair.first.favorite != pair.second.favorite);
+    return map;
+}
+
 }
 
 Session::Session(Config *config, NotesModel *notes, QObject *parent)
@@ -56,6 +96,7 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(&m_api, &NotesApi::deleted, this, &Session::onDeleted);
     connect(&m_api, &NotesApi::failed, this, &Session::onApiFailed);
     connect(&m_api, &NotesApi::unauthorized, this, &Session::onUnauthorized);
+    connect(&m_api, &NotesApi::conflicted, this, &Session::onConflict);
     connect(m_notes, &NotesModel::changed, this, &Session::notesChanged);
     connect(m_config, &Config::readyChanged, this, &Session::readyChanged);
     connect(m_config, &Config::configuredChanged, this, &Session::onConfiguredChanged);
@@ -268,6 +309,10 @@ void Session::logout()
     m_config->setCoverNoteId(0);
     m_cache.clear();
     m_notes->reload();
+    // The local side of a pair was one of the rows just dropped, so there is
+    // nothing left for an answer to settle.
+    m_conflicts.clear();
+    emit conflictsChanged();
 }
 
 void Session::reloadSecrets()
@@ -311,18 +356,32 @@ void Session::pushDirty()
 
 void Session::pushNext()
 {
-    if (m_pending.isEmpty()) {
+    const LocalNote note = takeNextOwed();
+    if (note.id == 0) {
         queueDrained();
         return;
     }
 
-    const LocalNote note = m_pending.takeFirst();
     if (note.deleted)
         m_api.deleteNote(note.id);
     else if (isLocalOnly(note))
         m_api.createNote(note);
     else
         m_api.updateNote(note);
+}
+
+// A note waiting for the user to say which version to keep is passed over:
+// offering it again would only earn the same refusal and leave the answer
+// being waited for twice. An id of 0 is nothing left to send.
+LocalNote Session::takeNextOwed()
+{
+    while (!m_pending.isEmpty()) {
+        const LocalNote note = m_pending.takeFirst();
+        if (indexOfConflict(note.id) < 0)
+            return note;
+    }
+
+    return LocalNote();
 }
 
 void Session::queueDrained()
@@ -380,6 +439,143 @@ void Session::onDeleted(qint64 id)
     m_cache.remove(id);
     reloadModels();
     pushNext();
+}
+
+// A refused write is not a failure: the server answered, and answered well,
+// so the rest of what is owed still goes out. m_pushed is left alone, since
+// nothing was pushed.
+void Session::onConflict(const LocalNote &remote)
+{
+    const LocalNote mine = m_cache.note(remote.id);
+    // Gone, or settled while the answer was travelling: a stale refusal with
+    // nothing left to argue about.
+    if (mine.id == 0 || !mine.dirty) {
+        pushNext();
+        return;
+    }
+
+    // Deleted here. The note stays owed as it is, and the delete the next run
+    // sends carries no version for the server to refuse.
+    if (mine.deleted) {
+        pushNext();
+        return;
+    }
+
+    // The refusal is proof the server holds something this device has not
+    // read, which is the one place the feature weakens queueDrained()'s rule
+    // that a run which pushed nothing does not pull. It stays bounded at one
+    // pull per run, and a pull has no version to be refused over.
+    m_pullAfter = true;
+    settleOrAsk(mine, remote);
+    pushNext();
+}
+
+// Both sides arrived at the same note, so nothing is lost by taking the
+// server's word for it and nothing is worth saying about it either.
+void Session::settleOrAsk(const LocalNote &mine, const LocalNote &theirs)
+{
+    if (sameNote(mine, theirs)) {
+        m_cache.markClean(mine.id, theirs);
+        reloadModels();
+        return;
+    }
+
+    m_conflicts.append(qMakePair(mine, theirs));
+    emit conflictsChanged();
+    // Said whether or not the sync was asked for: a note that stopped being
+    // sent, and a page that appeared to settle it, both need a reason.
+    emit notice(tr("%1 changed on the server as well. Choose which version to keep.")
+                .arg(theirs.title));
+}
+
+int Session::indexOfConflict(qint64 noteId) const
+{
+    for (int i = 0; i < m_conflicts.size(); ++i) {
+        if (m_conflicts.at(i).first.id == noteId)
+            return i;
+    }
+
+    return -1;
+}
+
+// Takes the pair out of the list, so an answer settles a note once and the
+// next sync is free to offer it again.
+bool Session::takeConflict(qint64 noteId, QPair<LocalNote, LocalNote> *pair)
+{
+    const int at = indexOfConflict(noteId);
+    if (at < 0)
+        return false;
+
+    *pair = m_conflicts.at(at);
+    m_conflicts.remove(at);
+    return true;
+}
+
+QVariantList Session::conflicts() const
+{
+    QVariantList list;
+    list.reserve(m_conflicts.size());
+    for (int i = 0; i < m_conflicts.size(); ++i)
+        list.append(conflictRow(m_conflicts.at(i)));
+
+    return list;
+}
+
+// The row stays dirty and takes on the version the server answered with, so
+// what goes out is a conditional write again rather than one that overwrites
+// whatever is there by then.
+void Session::resolveKeepMine(int noteId)
+{
+    QPair<LocalNote, LocalNote> pair;
+    if (!takeConflict(noteId, &pair))
+        return;
+
+    m_cache.setEtag(pair.first.id, pair.second.etag);
+    emit conflictsChanged();
+    // An answer given while the rest of the run is still going out stops at
+    // pushDirty()'s own busy guard. Nothing is lost by that: the row is dirty
+    // and now carries the version the server asked for, so the next sync
+    // sends it, and the pull this run earned leaves a dirty row alone.
+    pushDirty();
+}
+
+void Session::resolveKeepTheirs(int noteId)
+{
+    QPair<LocalNote, LocalNote> pair;
+    if (!takeConflict(noteId, &pair))
+        return;
+
+    m_cache.markClean(noteId, pair.second);
+    reloadModels();
+    emit conflictsChanged();
+}
+
+// The cover keeps its pin on the original id: that is the note the user
+// pinned, and the server's version is the one that goes on carrying it.
+void Session::resolveKeepBoth(int noteId)
+{
+    QPair<LocalNote, LocalNote> pair;
+    if (!takeConflict(noteId, &pair))
+        return;
+
+    // The note may have been written to again while the question went
+    // unanswered, and it is that text the user means by their version.
+    const LocalNote mine = m_cache.note(noteId);
+    const LocalNote fork = forkedOnto(mine.id != 0 && !mine.deleted ? mine : pair.first,
+                                      m_cache.nextTempId());
+    // Written to the cache rather than through store(), which would push as
+    // well and so re-enter a queue that may still be draining.
+    m_cache.upsertLocal(fork);
+    m_cache.markClean(noteId, pair.second);
+    // The fork borrows a negative id, so it goes out as a new note, and a
+    // note the server has never seen has no version to be refused over.
+    m_pending.append(fork);
+    reloadModels();
+    emit conflictsChanged();
+    // With a run still draining this stops at the busy guard, the queue it
+    // was just added to being the one that carries it; with nothing in
+    // flight it starts a run and finds the same row in the cache.
+    pushDirty();
 }
 
 // The rest of the run is abandoned: whatever was owed stays owed, and is

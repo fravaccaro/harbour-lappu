@@ -11,6 +11,8 @@ The first page is the notes themselves. Each row carries the title of the note, 
 
 A note has **no title of its own**. The server names it after its first line, and Lappu works out the same name on the phone, so a new note is named the moment you write that line rather than after the next refresh. See [Writing a note](editing).
 
+A row above the notes appears when a note changed on the phone and on the server at once, counting how many are waiting; tapping it opens the two versions side by side to choose between them. A note named **"... (my version)"** is the phone's side of such a choice, kept as a note of its own because **Keep both** was the answer; the name lasts until the next refresh, when the server names it after its first line like any other note. See [Sync, files and permissions](files).
+
 ## The pulley menu
 
 Pull the list down for **About**, **Settings**, **Refresh**, **Search** and **New note**. New note sits at the handle, nearest the thumb.

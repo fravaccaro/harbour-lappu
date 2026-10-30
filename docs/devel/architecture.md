@@ -22,9 +22,10 @@ nav_order: 1
 | `src/lappu/url.*` | Server URL normalisation |
 | `src/lappu/types.h` | Plain data structs (`LocalNote`) |
 | `qml/pages/*` | Silica UI |
+| `qml/pages/ConflictPage.qml` | The two versions of a note that changed on both sides, and the three answers to it |
 | `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category and cover state |
 | `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, and the subset of HTML a Silica `Label` draws |
-| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar, the edit history, the note body |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar, the edit history, the note body, one side of a conflict |
 | `qml/cover/*` | The cover page and its glyph |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe and LinkHandler modules |
 
@@ -40,14 +41,18 @@ nav_order: 1
 
 `Session::sync()` **sends what is owed before it pulls**, so a note edited on the phone is the one that stands rather than being overwritten by the older copy coming back. `pushNext()` drains `m_pending` one note at a time, choosing the verb from the row itself: a `deleted` row is a `DELETE`, a row whose id is not a server id yet is a `POST`, anything else is a `PUT`.
 
-Conflicts are **last write wins**. No `If-Match` is sent, so the server does not reject a note that changed on both sides. The ETag the server sends is kept with the note so that a conditional write can be added later, which is the only way to notice such a conflict; until then nothing is decided by it, and in particular it does not say whether the server knows the note.
+A `PUT` is **conditional**. `NotesApi::updateNote()` sends the stored ETag as `If-Match`, wrapped in the double quotes the server compares against - the JSON `etag` attribute arrives bare, and a bare header would be refused by every write. An empty ETag sends no header at all, so a server too old to hand one out is written to unconditionally as before. A `POST` has nothing to match, and a `DELETE` is not checked server-side, so neither carries the header.
+
+A refused write answers `412` with the server's whole note as the body, which `NotesApi::reportConflict()` parses and reports on `conflicted()` rather than `failed()`: the server is healthy and nothing is lost, so `Session::onConflict()` ends in `pushNext()` like a success and leaves `m_pushed` alone. It settles the note by itself where it can - a row that is gone or already clean, a row marked `deleted` whose `DELETE` will go out unconditionally, or two sides that agree on content, category and favourite - and otherwise records the pair in `m_conflicts` and says so through `notice()`. `pushNext()` skips any id in that list, or every run would earn the same `412` again and add a second pair.
+
+`m_conflicts` is held in memory alone. The local side of a pair is the `dirty` row in the cache, so an app closed before the user answers loses only the question, and the next run's `412` asks it again. The three resolvers each settle the original row: `resolveKeepMine()` adopts the server's ETag through `NotesCache::setEtag()` and leaves the row `dirty` for another conditional write, `resolveKeepTheirs()` calls `markClean()` with the server's note, and `resolveKeepBoth()` writes the local text to a fresh negative id through `m_cache.upsertLocal()` - never through `store()`, which would re-enter the push - and `markClean()`s the original with the server's note. A branch that left the original `dirty` with its stale ETag would fork another copy on every sync, so settling it is what the feature rests on. The cover keeps its pin on the original id: that is the note the user pinned, and the server's version is the one that goes on holding it.
 
 Two paths lead into the push, and they differ in how loudly they fail:
 
 * `sync()` sets `m_announce` and `m_pullAfter`, so it reports a server it could not reach and pulls afterwards.
 * `pushDirty()`, which runs whenever credentials are applied, clears both. An owed note is offered as soon as it is made, but a flush the user did not ask for stays quiet and leaves the note waiting.
 
-`queueDrained()` decides whether to pull: either the run asked for one, or something was actually pushed and **Refresh after saving a note** is on. A push that sent nothing therefore cannot trigger a pull, which is what stops a note the server keeps refusing from driving an endless loop.
+`queueDrained()` decides whether to pull: either the run asked for one, or something was actually pushed and **Refresh after saving a note** is on, or a write was refused as out of date, which is proof the server holds something newer. A push that sent nothing cannot otherwise trigger a pull, which is what stops a note the server keeps refusing from driving an endless loop; the conflict clause is the one exception, and it stays bounded at one pull per run because a pull carries no ETag and so cannot itself be refused.
 
 ## Automatic refresh
 
@@ -66,6 +71,8 @@ Such an id is an ordinary id everywhere else, and treating it as a stand-in for 
 ## Messages to the user
 
 A passing message has one route: `app.showToast()` in `qml/harbour-lappu.qml` hands it to the single `LappuNotification`, which publishes a transient notice. Anything the session reports through `errorMessage` arrives that way, as does a note that is no longer there. No page carries its own copy of `errorMessage`.
+
+Something the user is owed but that is not an error travels on `notice()`, a plain signal, instead. `errorMessage` is a property, and its `if (error == m_error) return;` guard would hold back the second of two identical notices; it also reads as a failure, which a refused write is not. Like `unauthorized`, a notice is said whether or not the sync was asked for, because a change the user can see needs a reason.
 
 A failed sign-in is the exception: `loginFailed` reaches the sign-in pages, which say so in place, because the reason belongs to the form the user is looking at. That is why `onLoginFailed()` in `session.cpp` does not also set `errorMessage`. A sign-in that simply runs out of time takes the same route: `LoginFlow::onDeadline()` cancels the poll and fails with a reason.
 

@@ -56,6 +56,27 @@ Page {
                 title: app.notes.listTitle
             }
 
+            // The conflict page is never pushed on its own: a page arriving
+            // over the user's work during a refresh would be an ambush. The
+            // row waits here instead, for as long as anything is unsettled.
+            BackgroundItem {
+                id: conflictRow
+
+                width: parent.width
+                visible: Lappu.conflictCount > 0
+                onClicked: pageStack.push(Qt.resolvedUrl("ConflictPage.qml"))
+
+                Label {
+                    x: Theme.horizontalPageMargin
+                    width: parent.width - 2 * Theme.horizontalPageMargin
+                    anchors.verticalCenter: parent.verticalCenter
+                    truncationMode: TruncationMode.Fade
+                    color: conflictRow.highlighted ? Theme.highlightColor : Theme.errorColor
+                    font.pixelSize: Theme.fontSizeSmall
+                    text: qsTr("%n note(s) changed on the server as well", "", Lappu.conflictCount)
+                }
+            }
+
             SearchField {
                 id: searchField
 

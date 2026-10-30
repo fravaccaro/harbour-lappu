@@ -2,8 +2,10 @@
 #define LAPPU_SESSION_H
 
 #include <QObject>
+#include <QPair>
 #include <QString>
 #include <QTimer>
+#include <QVariantList>
 
 #include "config.h"
 #include "loginflow.h"
@@ -34,6 +36,8 @@ class Session : public QObject
                NOTIFY syncAfterPushChanged)
     Q_PROPERTY(int coverNoteId READ coverNoteId WRITE setCoverNoteId NOTIFY coverNoteIdChanged)
     Q_PROPERTY(QString sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
+    // How many notes changed on both sides and are waiting to be settled.
+    Q_PROPERTY(int conflictCount READ conflictCount NOTIFY conflictsChanged)
 
 public:
     explicit Session(Config *config, NotesModel *notes, QObject *parent = nullptr);
@@ -61,6 +65,7 @@ public:
 
     QString sortMode() const;
     void setSortMode(const QString &mode);
+    int conflictCount() const { return m_conflicts.size(); }
 
     Q_INVOKABLE void startLogin(const QString &serverUrl);
     Q_INVOKABLE void cancelLogin();
@@ -76,6 +81,17 @@ public:
                               bool favorite);
     Q_INVOKABLE void setFavorite(int noteId, bool favorite);
     Q_INVOKABLE void deleteNote(int noteId);
+    // The unsettled notes as plain rows, each carrying both versions, the way
+    // NotesModel::notes() hands the notes themselves to QML.
+    Q_INVOKABLE QVariantList conflicts() const;
+    // Keeps the edit made here and offers it again against the version the
+    // server answered with.
+    Q_INVOKABLE void resolveKeepMine(int noteId);
+    // Takes the server's version and lets go of the edit made here.
+    Q_INVOKABLE void resolveKeepTheirs(int noteId);
+    // Keeps both: the server's version takes the note back, and the text
+    // written here goes on as a note of its own.
+    Q_INVOKABLE void resolveKeepBoth(int noteId);
 
 signals:
     void readyChanged();
@@ -96,6 +112,11 @@ signals:
     void loginSucceeded();
     void loginFailed(const QString &error);
     void notesChanged();
+    void conflictsChanged();
+    // Something the user is owed an explanation of, but that is not an error:
+    // it goes its own way rather than through errorMessage, which would hold
+    // a second identical notice back.
+    void notice(const QString &text);
 
 private:
     void setBusy(bool busy);
@@ -115,9 +136,14 @@ private:
     void onCreated(qint64 localId, const LocalNote &note);
     void onUpdated(const LocalNote &note);
     void onDeleted(qint64 id);
+    void onConflict(const LocalNote &remote);
+    void settleOrAsk(const LocalNote &mine, const LocalNote &theirs);
+    int indexOfConflict(qint64 noteId) const;
+    bool takeConflict(qint64 noteId, QPair<LocalNote, LocalNote> *pair);
     void store(const LocalNote &note);
     void pushDirty();
     void pushNext();
+    LocalNote takeNextOwed();
     void queueDrained();
     void fetchNotes();
 
@@ -129,6 +155,12 @@ private:
     QTimer m_syncTimer;
     // What is still owed to the server in this run.
     QVector<LocalNote> m_pending;
+    // The notes that changed on both sides and have not been settled, as the
+    // version written here paired with the one the server answered with.
+    // Deliberately kept nowhere else: the local side of a pair is the dirty
+    // row in the cache, so an app closed before the user answers loses only
+    // the question, and the next sync's refused write asks it again.
+    QVector<QPair<LocalNote, LocalNote> > m_conflicts;
     QString m_loginUrl;
     QString m_error;
     bool m_busy;

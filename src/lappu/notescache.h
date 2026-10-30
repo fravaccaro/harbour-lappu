@@ -33,6 +33,9 @@ public:
     // A note written here has no server id yet, so it borrows a negative one.
     qint64 nextTempId() const;
     void markDeleted(qint64 id);
+    // Adopts a version onto a row without settling it, so an edit still owed
+    // to the server is offered again against the version the server has.
+    void setEtag(qint64 id, const QString &etag);
     // The server has the note now, under the id it chose for it.
     void markClean(qint64 oldId, const LocalNote &note);
     void remove(qint64 id);

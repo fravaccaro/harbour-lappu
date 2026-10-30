@@ -98,6 +98,63 @@
     </message>
 </context>
 <context>
+    <name>ConflictPage</name>
+    <message>
+        <source>Keep the server&apos;s version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keep my version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Keep both</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Which version?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This note was changed here and on the server. Pull down to keep one version, the other, or both.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The category or the star differ between the two as well.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n more note(s) wait after this one.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>On this phone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>On the server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nothing to settle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A note that changed on both sides is found again by the next refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ConflictVersion</name>
+    <message>
+        <source>This version is empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CoverPage</name>
     <message>
         <source>Lappu</source>
@@ -417,6 +474,13 @@
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
+    <message numerus="yes">
+        <source>%n note(s) changed on the server as well</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
 </context>
 <context>
     <name>NotesStore</name>
@@ -673,6 +737,21 @@
     </message>
     <message>
         <source>The server stopped answering.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The note changed on the server, which did not say how.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 (my version)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Session</name>
+    <message>
+        <source>%1 changed on the server as well. Choose which version to keep.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

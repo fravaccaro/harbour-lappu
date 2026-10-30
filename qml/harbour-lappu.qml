@@ -127,6 +127,7 @@ ApplicationWindow {
         onNotesChanged: app.notes.ingest(Notes.notes())
         onBusyChanged: app.notes.busy = Lappu.busy
         onErrorMessageChanged: app.showToast(Lappu.errorMessage)
+        onNotice: app.showToast(text)
     }
 
     LappuNotification {

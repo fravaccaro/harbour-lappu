@@ -102,7 +102,7 @@ This document is a living contract. Keeping it accurate is part of the implement
 | `src/lappu/types.h` | Plain data structs (`LocalNote`) |
 | `qml/pages/*` | Silica pages |
 | `qml/notes/*` | Notes view model (`NotesStore.qml`) and markdown helpers (`NoteFormat.js`) |
-| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the markdown bar, the edit history, the note body |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the markdown bar, the edit history, the note body, one side of a conflict (`ConflictVersion.qml`) |
 | `qml/cover/*` | Cover page |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe, and LinkHandler modules |
 | `docs/*` | The documentation site, built by Jekyll from `_config.yml`; `README.md` is its home page |
@@ -110,7 +110,9 @@ This document is a living contract. Keeping it accurate is part of the implement
 
 Networking stays in C++. Pages bind to `Lappu` and `Notes`.
 
-Syncing notes is implemented in both directions. `Session` is the only writer: `saveNote`, `setFavorite` and `deleteNote` write to `NotesCache` straight away, marking the row `dirty` (or `deleted`), then offer it to the server. `Session::sync()` sends what is owed first and pulls afterwards, so a note edited on the phone is the one that stands. A note written while offline keeps its `dirty` row, survives a restart, and is sent again by the next sync; a flush the user did not ask for stays quiet about an unreachable server. Conflicts are last-write-wins: no `If-Match` is sent.
+Syncing notes is implemented in both directions. `Session` is the only writer: `saveNote`, `setFavorite` and `deleteNote` write to `NotesCache` straight away, marking the row `dirty` (or `deleted`), then offer it to the server. `Session::sync()` sends what is owed first and pulls afterwards, so a note edited on the phone is the one that stands. A note written while offline keeps its `dirty` row, survives a restart, and is sent again by the next sync; a flush the user did not ask for stays quiet about an unreachable server.
+
+A `PUT` carries the stored ETag as `If-Match`, in the double quotes the server compares against, while the JSON hands the same tag out bare; an empty tag sends no header, so an older server is still written to unconditionally. A `POST` has nothing to match and a `DELETE` is not checked, so neither sends it. The `412` that answers a stale write carries the server's whole note, which `NotesApi::conflicted()` reports apart from `failed()`: the server is well, so `Session::onConflict()` ends in `pushNext()` and leaves `m_pushed` alone, and the refusal earns the run a pull. It settles what it can by itself and otherwise records the pair in `m_conflicts` — in memory only, since the local side is the `dirty` row the next `412` would ask about again — tells the user through `notice()`, and is skipped by `pushNext()` until answered. Every resolver settles the original row, because one that left it `dirty` with a stale tag would fork another copy on each sync; `resolveKeepBoth()` writes its fork through `NotesCache::upsertLocal()` rather than `Session::store()`, which would re-enter the push, and labels only the title, never the content. The cover keeps its pin on the original id.
 
 A link is never opened straight from the app. Every one goes through `Opal.LinkHandler`, including the links inside a note, which arrive from the server and so are shown to the user before anything is followed.
 

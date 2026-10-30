@@ -55,6 +55,7 @@ DISTFILES += \
     harbour-lappu.desktop \
     icons/harbour-lappu.svg \
     qml/harbour-lappu.qml \
+    qml/components/ConflictVersion.qml \
     qml/components/EditHistory.qml \
     qml/components/FilterItem.qml \
     qml/components/LappuNotification.qml \
@@ -68,6 +69,7 @@ DISTFILES += \
     qml/pages/AboutPage.qml \
     qml/pages/CategoriesPage.qml \
     qml/pages/CategoryPickerPage.qml \
+    qml/pages/ConflictPage.qml \
     qml/pages/LoginPage.qml \
     qml/pages/NoteEditPage.qml \
     qml/pages/NotePage.qml \

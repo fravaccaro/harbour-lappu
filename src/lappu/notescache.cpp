@@ -186,6 +186,18 @@ void NotesCache::markDeleted(qint64 id)
     query.exec();
 }
 
+void NotesCache::setEtag(qint64 id, const QString &etag)
+{
+    if (!isOpen())
+        return;
+
+    QSqlQuery query(m_db);
+    query.prepare(QStringLiteral("UPDATE notes SET etag = ? WHERE id = ?"));
+    query.addBindValue(etag);
+    query.addBindValue(id);
+    query.exec();
+}
+
 void NotesCache::markClean(qint64 oldId, const LocalNote &note)
 {
     if (!isOpen())

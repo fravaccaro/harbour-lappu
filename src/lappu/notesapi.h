@@ -47,12 +47,20 @@ signals:
     // A password the server will not take again. It travels apart from failed()
     // because it asks the session to stop rather than to retry.
     void unauthorized(const QString &error);
+    // The note as the server holds it, from the answer to a write it refused
+    // because the version written over was not the one it had. It travels
+    // apart from failed() because nothing is wrong with the server and nothing
+    // is lost: the edit is only unsettled until it is said which side to keep.
+    void conflicted(const LocalNote &remote);
 
 private:
     void onFinished(int status, const QByteArray &body);
     void onFailed(const QString &error);
-    void send(const QByteArray &method, const QString &path, const QByteArray &body);
+    void send(const QByteArray &method, const QString &path, const QByteArray &body,
+              const QString &etag = QString());
     void handleWrite(Operation operation, int status, const QByteArray &body);
+    void reportWritten(Operation operation, const QByteArray &body);
+    void reportConflict(const QByteArray &body);
     void reportStatus(int status);
 
     HttpClient m_http;

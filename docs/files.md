@@ -23,7 +23,7 @@ Signing in refreshes whatever the startup setting says, because a new account ha
 
 A refresh **sends what is owed before it fetches anything**. Saving a note, favouriting it or deleting it writes the change to the copy on the phone straight away and marks that note as owed; the refresh offers the owed notes to the server first, then pulls the server's notes over the result.
 
-Doing it in that order is what makes a note edited on the phone the one that stands, rather than being overwritten by the older copy coming back from the server.
+Doing it in that order is half of what keeps a note edited on the phone from being overwritten by the older copy coming back from the server. The other half is the check below: an edit carries the version of the note it was made from, so a note that changed on the server as well is not quietly written over but handed back to you to settle.
 
 ## Editing with no server in reach
 
@@ -35,9 +35,23 @@ A network that accepts the connection but never answers - a café or hotel Wi-Fi
 
 ## When the same note changed twice
 
-A note changed on the phone and on the server between two refreshes is resolved as **last write wins**: the copy sent by the phone replaces what the server held, and no attempt is made to merge the two or to ask. Lappu does not send the version it last read, so the server does not reject the change either.
+An edit sent to the server carries the **version of the note it was made from**, and the server refuses it if that is not the version it holds - which is exactly the case where someone else, or another device, changed the same note in the meantime. Nothing is lost by the refusal: the note stops being offered, the refresh carries on with everything else, and the notes page grows a row at the top counting the notes that are waiting to be settled.
 
-Refreshing before a long edit, and again afterwards, is the way to avoid losing the other side's work.
+Tapping that row opens the two versions, the phone's above the server's, with three answers in the pulley menu:
+
+* **Keep my version** - the edit is sent again, this time over the version the server just showed, so it lands rather than being refused a second time
+* **Keep the server's version** - the server's text takes the note, and the edit made on the phone is let go of
+* **Keep both** - the server's version takes the note back, and the text written on the phone goes on as a **note of its own**
+
+Where both sides happened to end on the same text, category and star there is nothing to ask, so the note is settled without a word.
+
+A note **deleted** on the phone is deleted on the server whatever became of it there: a delete is never refused over a version.
+
+The questions themselves are not kept anywhere. Closing Lappu before answering one loses it, and the conflict page is empty until the next refresh - which finds the same note again, because the edit is still waiting on the phone.
+
+A server too old to tell Lappu which version of a note it holds is written to the way it always was: last write wins, with nothing to refuse and nothing to ask.
+
+Refreshing before a long edit, and again afterwards, is still the way to be asked as little as possible.
 
 ## Where the copy is kept
 

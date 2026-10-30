@@ -13,9 +13,10 @@ struct LocalNote
     QString title;
     QString content;
     QString category;
-    // The server's version of the note, kept for the `If-Match` header a
-    // conditional write would need. Nothing is decided by it: whether the
-    // server knows the note at all is told by the id.
+    // The server's version of the note, as it was last read. It goes back out
+    // in the `If-Match` header of an edit, so a note that changed on the
+    // server in the meantime is refused rather than written over. It still
+    // says nothing about whether the server knows the note: that is the id.
     QString etag;
     bool favorite;
     // Shared with the account as view-only, so the pages refuse to edit it.
