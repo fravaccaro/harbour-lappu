@@ -31,10 +31,6 @@ QtObject {
         return Format.categoryLabel(category)
     }
 
-    function bodyHtml(content) {
-        return Format.toHtml(content)
-    }
-
     function filterTitle() {
         if (filterKind === "favorites")
             return qsTr("Favorites")
@@ -236,6 +232,38 @@ QtObject {
         pinnedText = note ? Format.plainText(note.content) : ""
     }
 
+    function toggleTask(noteId, lineIndex) {
+        var i = indexOfId(noteId)
+        if (i < 0 || allNotes.get(i).locked)
+            return
+        var content = flipLine(allNotes.get(i).content, lineIndex)
+        if (content === null)
+            return
+        allNotes.setProperty(i, "content", content)
+        allNotes.setProperty(i, "modified", Math.floor(Date.now() / 1000))
+        refreshLists()
+    }
+
+    // Returns null when that line carries no task marker, so the caller can
+    // leave the note untouched.
+    function flipLine(content, lineIndex) {
+        var lines = String(content).split("\n")
+        if (lineIndex < 0 || lineIndex >= lines.length)
+            return null
+        var flipped = flipTaskLine(lines[lineIndex])
+        if (flipped === null)
+            return null
+        lines[lineIndex] = flipped
+        return lines.join("\n")
+    }
+
+    function flipTaskLine(line) {
+        var task = Format.parseTask(line)
+        if (!task)
+            return null
+        return String(line).replace(/\[[ xX]\]/, task.done ? "[ ]" : "[x]")
+    }
+
     function toggleFavorite(noteId) {
         var i = indexOfId(noteId)
         if (i < 0)
@@ -306,7 +334,7 @@ QtObject {
 
     function seedHome() {
         addDummy(2, "Shopping", "", true, 2 * 3600, false,
-                 "- Bread\n- Oat milk\n- Lemons\n- **Focaccia flour**")
+                 "- [ ] Bread\n- [x] Oat milk\n- [ ] Lemons\n- [ ] **Focaccia flour**")
         addDummy(4, "Focaccia", "Recipes", false, 3 * 86400, false,
                  "# Focaccia\n\n500g flour, 400ml water, 10g salt.\n\nSee [the Notes app](https://apps.nextcloud.com/apps/notes).")
         addDummy(5, "Wifi codes", "", false, 8 * 86400, false,

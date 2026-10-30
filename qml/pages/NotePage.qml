@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import "../components"
 
 Page {
     id: page
@@ -31,6 +32,11 @@ Page {
     function headerDescription() {
         var cat = page.category === "" ? qsTr("Uncategorized") : app.notes.categoryLabel(page.category)
         return cat + " \u00b7 " + app.notes.relativeTime(page.modified)
+    }
+
+    function toggleTask(lineIndex) {
+        app.notes.toggleTask(page.noteId, lineIndex)
+        page.load()
     }
 
     function remove() {
@@ -98,15 +104,12 @@ Page {
                 text: qsTr("This note is read-only.")
             }
 
-            Label {
-                x: Theme.horizontalPageMargin
-                width: parent.width - 2 * Theme.horizontalPageMargin
+            NoteBody {
+                width: parent.width
                 visible: page.content !== ""
-                wrapMode: Text.WordWrap
-                textFormat: Text.RichText
-                color: Theme.primaryColor
-                linkColor: Theme.highlightColor
-                text: app.notes.bodyHtml(page.content)
+                content: page.content
+                locked: page.locked
+                onTaskClicked: page.toggleTask(lineIndex)
                 onLinkActivated: Qt.openUrlExternally(link)
             }
 

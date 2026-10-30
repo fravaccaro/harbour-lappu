@@ -51,9 +51,11 @@ DISTFILES += \
     harbour-muistio.desktop \
     icons/harbour-muistio.svg \
     qml/harbour-muistio.qml \
+    qml/components/EditHistory.qml \
     qml/components/FilterItem.qml \
     qml/components/MarkdownToolbar.qml \
     qml/components/MuistioNotification.qml \
+    qml/components/NoteBody.qml \
     qml/cover/CoverPage.qml \
     qml/mock/NoteFormat.js \
     qml/mock/NotesStore.qml \

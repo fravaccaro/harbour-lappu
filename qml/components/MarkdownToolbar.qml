@@ -21,6 +21,9 @@ Item {
     id: root
 
     property Item target
+    // Optional. When set, each format tap is recorded as its own step rather
+    // than merging into the word last typed.
+    property QtObject history
     property int savedStart: 0
     property int savedEnd: 0
     readonly property int buttonWidth: Math.max(Theme.fontSizeLarge,
@@ -29,6 +32,8 @@ Item {
     function remember() {
         if (!target)
             return
+        if (history)
+            history.seal()
         savedStart = target.selectionStart
         savedEnd = target.selectionEnd
     }

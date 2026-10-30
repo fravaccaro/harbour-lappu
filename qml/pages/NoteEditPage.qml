@@ -25,10 +25,17 @@ Dialog {
     Component.onCompleted: {
         if (page.noteId === 0 && page.inheritCategory !== "")
             page.category = page.inheritCategory
+        editHistory.reset(bodyField.text, bodyField.cursorPosition)
     }
     canAccept: true
     onAccepted: app.notes.saveNote(page.noteId, titleField.text, bodyField.text,
                                    page.category, favoriteSwitch.checked)
+
+    EditHistory {
+        id: editHistory
+
+        target: bodyField
+    }
 
     SilicaFlickable {
         id: flick
@@ -72,9 +79,26 @@ Dialog {
                 checked: page.favorite
             }
 
+            Row {
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                IconButton {
+                    enabled: editHistory.canUndo
+                    icon.source: "image://theme/icon-m-back"
+                    onClicked: editHistory.undo()
+                }
+
+                IconButton {
+                    enabled: editHistory.canRedo
+                    icon.source: "image://theme/icon-m-forward"
+                    onClicked: editHistory.redo()
+                }
+            }
+
             MarkdownToolbar {
                 width: parent.width
                 target: bodyField
+                history: editHistory
             }
 
             TextArea {
@@ -86,6 +110,7 @@ Dialog {
                 placeholderText: qsTr("Write a note...")
                 wrapMode: TextEdit.Wrap
                 color: Theme.primaryColor
+                onTextChanged: editHistory.watch(text, cursorPosition)
             }
         }
 
