@@ -4,6 +4,17 @@ import Sailfish.Silica 1.0
 Page {
     id: page
 
+    readonly property var intervals: [0, 5, 15, 30, 60]
+
+    function intervalIndex(minutes) {
+        var index = page.intervals.indexOf(minutes)
+        return index < 0 ? 0 : index
+    }
+
+    function intervalLabel(minutes) {
+        return minutes === 0 ? qsTr("Off") : qsTr("Every %n minute(s)", "", minutes)
+    }
+
     allowedOrientations: Orientation.All
 
     SilicaFlickable {
@@ -44,6 +55,53 @@ Page {
 
                     MenuItem {
                         text: qsTr("Title")
+                    }
+                }
+            }
+
+            SectionHeader {
+                text: qsTr("Synchronisation")
+            }
+
+            TextSwitch {
+                width: parent.width
+                text: qsTr("Refresh when the app starts")
+                checked: Muistio.syncOnStart
+                onCheckedChanged: Muistio.syncOnStart = checked
+            }
+
+            TextSwitch {
+                width: parent.width
+                text: qsTr("Refresh after saving a note")
+                description: qsTr("Fetches server changes once the note has been sent.")
+                checked: Muistio.syncAfterPush
+                onCheckedChanged: Muistio.syncAfterPush = checked
+            }
+
+            ComboBox {
+                // Guards the stored value against the index changes that happen
+                // while the menu is still being built.
+                property bool ready: false
+
+                width: parent.width
+                label: qsTr("Automatic refresh")
+                description: qsTr("Only while Muistio is running.")
+                Component.onCompleted: {
+                    currentIndex = page.intervalIndex(Muistio.syncInterval)
+                    ready = true
+                }
+                onCurrentIndexChanged: {
+                    if (ready && currentIndex >= 0)
+                        Muistio.syncInterval = page.intervals[currentIndex]
+                }
+
+                menu: ContextMenu {
+                    Repeater {
+                        model: page.intervals
+
+                        MenuItem {
+                            text: page.intervalLabel(modelData)
+                        }
                     }
                 }
             }

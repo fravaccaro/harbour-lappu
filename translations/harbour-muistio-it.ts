@@ -639,6 +639,41 @@
         <source>Not signed in</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>Every %n minute(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Synchronisation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Refresh when the app starts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Refresh after saving a note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fetches server changes once the note has been sent.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Automatic refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Only while Muistio is running.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>StartPage</name>

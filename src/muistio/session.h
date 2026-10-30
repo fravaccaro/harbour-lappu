@@ -25,6 +25,11 @@ class Session : public QObject
     Q_PROPERTY(QString serverUrl READ serverUrl NOTIFY serverUrlChanged)
     Q_PROPERTY(bool ignoreSslErrors READ ignoreSslErrors WRITE setIgnoreSslErrors
                NOTIFY ignoreSslErrorsChanged)
+    Q_PROPERTY(bool syncOnStart READ syncOnStart WRITE setSyncOnStart NOTIFY syncOnStartChanged)
+    Q_PROPERTY(int syncInterval READ syncInterval WRITE setSyncInterval
+               NOTIFY syncIntervalChanged)
+    Q_PROPERTY(bool syncAfterPush READ syncAfterPush WRITE setSyncAfterPush
+               NOTIFY syncAfterPushChanged)
 
 public:
     explicit Session(Config *config, NotesModel *notes, QObject *parent = nullptr);
@@ -38,6 +43,13 @@ public:
     QString serverUrl() const;
     bool ignoreSslErrors() const;
     void setIgnoreSslErrors(bool ignore);
+    bool syncOnStart() const;
+    void setSyncOnStart(bool enabled);
+    // Minutes between automatic syncs; 0 turns them off.
+    int syncInterval() const;
+    void setSyncInterval(int minutes);
+    bool syncAfterPush() const;
+    void setSyncAfterPush(bool enabled);
 
     Q_INVOKABLE void startLogin(const QString &serverUrl);
     Q_INVOKABLE void cancelLogin();
@@ -62,6 +74,9 @@ signals:
     void loginUrlChanged();
     void serverUrlChanged();
     void ignoreSslErrorsChanged();
+    void syncOnStartChanged();
+    void syncIntervalChanged();
+    void syncAfterPushChanged();
     void loginUrlReady(const QString &url);
     void loginSucceeded();
     void loginFailed(const QString &error);
@@ -72,6 +87,8 @@ private:
     void setError(const QString &error);
     void applyCredentials();
     void applyApiSettings();
+    void applySyncTimer();
+    void syncIfStartupWanted();
     void reloadModels();
     void onConfiguredChanged();
     void onLoginUrl(const QString &url);
@@ -93,6 +110,7 @@ private:
     LoginFlow m_login;
     NotesApi m_api;
     NotesCache m_cache;
+    QTimer m_syncTimer;
     // What is still owed to the server in this run.
     QVector<LocalNote> m_pending;
     QString m_loginUrl;
@@ -104,6 +122,9 @@ private:
     // be reached; the note simply stays owed.
     bool m_announce;
     int m_pushed;
+    // The sync a launch asks for is wanted once, not again every time the
+    // credentials are applied.
+    bool m_syncedOnStart;
 };
 
 #endif

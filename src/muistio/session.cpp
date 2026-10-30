@@ -35,7 +35,10 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     , m_pullAfter(false)
     , m_announce(false)
     , m_pushed(0)
+    , m_syncedOnStart(false)
 {
+    m_syncTimer.setSingleShot(false);
+    connect(&m_syncTimer, &QTimer::timeout, this, &Session::sync);
     connect(&m_login, &LoginFlow::loginUrlReady, this, &Session::onLoginUrl);
     connect(&m_login, &LoginFlow::finished, this, &Session::onLoggedIn);
     connect(&m_login, &LoginFlow::failed, this, &Session::onLoginFailed);
@@ -54,9 +57,17 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(m_config, &Config::usernameChanged, this, &Session::applyApiSettings);
     connect(m_config, &Config::passwordChanged, this, &Session::applyApiSettings);
     connect(m_config, &Config::ignoreSslErrorsChanged, this, &Session::applyApiSettings);
+    connect(m_config, &Config::syncOnStartChanged, this, &Session::syncOnStartChanged);
+    connect(m_config, &Config::syncIntervalChanged, this, &Session::syncIntervalChanged);
+    connect(m_config, &Config::syncAfterPushChanged, this, &Session::syncAfterPushChanged);
+    connect(m_config, &Config::syncIntervalChanged, this, &Session::applySyncTimer);
+    connect(m_config, &Config::readyChanged, this, &Session::syncIfStartupWanted);
     m_cache.open();
     if (m_config->isReady() && m_config->isConfigured())
         applyCredentials();
+
+    applySyncTimer();
+    syncIfStartupWanted();
 }
 
 bool Session::isReady() const
@@ -87,6 +98,36 @@ bool Session::ignoreSslErrors() const
 void Session::setIgnoreSslErrors(bool ignore)
 {
     m_config->setIgnoreSslErrors(ignore);
+}
+
+bool Session::syncOnStart() const
+{
+    return m_config->syncOnStart();
+}
+
+void Session::setSyncOnStart(bool enabled)
+{
+    m_config->setSyncOnStart(enabled);
+}
+
+int Session::syncInterval() const
+{
+    return m_config->syncInterval();
+}
+
+void Session::setSyncInterval(int minutes)
+{
+    m_config->setSyncInterval(minutes);
+}
+
+bool Session::syncAfterPush() const
+{
+    return m_config->syncAfterPush();
+}
+
+void Session::setSyncAfterPush(bool enabled)
+{
+    m_config->setSyncAfterPush(enabled);
 }
 
 void Session::setBusy(bool busy)
@@ -125,17 +166,42 @@ void Session::applyCredentials()
 {
     applyApiSettings();
     reloadModels();
-    if (m_config->syncOnStart())
-        sync();
-    else
-        pushDirty();
+    applySyncTimer();
+    pushDirty();
+}
+
+// Only while the app is running: Sailfish wakes nothing on its own for this.
+void Session::applySyncTimer()
+{
+    const int minutes = m_config->syncInterval();
+    if (minutes <= 0 || !m_config->isConfigured()) {
+        m_syncTimer.stop();
+        return;
+    }
+
+    m_syncTimer.setInterval(minutes * 60 * 1000);
+    m_syncTimer.start();
+}
+
+void Session::syncIfStartupWanted()
+{
+    if (m_syncedOnStart || !m_config->isReady() || !m_config->isConfigured())
+        return;
+    if (!m_config->syncOnStart())
+        return;
+
+    m_syncedOnStart = true;
+    sync();
 }
 
 void Session::onConfiguredChanged()
 {
     emit configuredChanged();
-    if (m_config->isConfigured())
-        applyCredentials();
+    if (!m_config->isConfigured())
+        return;
+
+    applyCredentials();
+    syncIfStartupWanted();
 }
 
 void Session::startLogin(const QString &serverUrl)
@@ -159,6 +225,8 @@ void Session::cancelLogin()
 void Session::logout()
 {
     cancelLogin();
+    m_syncTimer.stop();
+    m_syncedOnStart = false;
     m_config->clearCredentials();
     m_cache.clear();
     m_notes->reload();
@@ -243,6 +311,9 @@ void Session::onNotesReady(const QVector<LocalNote> &notes)
     setBusy(false);
     m_cache.applyRemote(notes);
     reloadModels();
+    // The wait counts from the last sync rather than from when it was asked for.
+    if (m_syncTimer.isActive())
+        m_syncTimer.start();
 }
 
 void Session::onCreated(qint64 localId, const LocalNote &note)
@@ -279,6 +350,9 @@ void Session::onApiFailed(const QString &error)
     m_announce = false;
     setBusy(false);
     reloadModels();
+    if (m_syncTimer.isActive())
+        m_syncTimer.start();
+
     if (asked)
         setError(error);
 }
@@ -350,6 +424,9 @@ void Session::onLoggedIn(const QString &server, const QString &user,
     m_config->setUsername(user);
     m_config->setPassword(password);
     applyCredentials();
+    // A fresh sign-in is worth a pull whatever the startup setting says.
+    m_syncedOnStart = true;
+    sync();
     emit loginSucceeded();
 }
 
