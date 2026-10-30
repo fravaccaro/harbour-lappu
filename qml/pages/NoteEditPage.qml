@@ -81,7 +81,6 @@ Dialog {
                 // writing never runs under them.
                 height: Math.max(implicitHeight + undoBar.height, Screen.height / 3)
                 text: page.content
-                label: qsTr("The first line is the title")
                 placeholderText: qsTr("Write a note...")
                 wrapMode: TextEdit.Wrap
                 color: Theme.primaryColor
