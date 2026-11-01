@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="it">
+<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="it">
 <context>
     <name>AboutPage</name>
     <message>
@@ -125,10 +123,7 @@
     </message>
     <message numerus="yes">
         <source>%n more note(s) wait after this one.</source>
-        <translation>
-            <numerusform>C&apos;è ancora %n nota in attesa dopo questa.</numerusform>
-            <numerusform>Ci sono ancora %n note in attesa dopo questa.</numerusform>
-        </translation>
+        <translation><numerusform>C&apos;è ancora %n nota in attesa dopo questa.</numerusform><numerusform>Ci sono ancora %n note in attesa dopo questa.</numerusform><numerusform>Ci sono ancora %n note in attesa dopo questa.</numerusform></translation>
     </message>
     <message>
         <source>On this phone</source>
@@ -438,10 +433,7 @@
     <name>NotesListHeader</name>
     <message numerus="yes">
         <source>%n note(s) changed on the server as well</source>
-        <translation>
-            <numerusform>%n nota modificata anche sul server</numerusform>
-            <numerusform>%n note modificate anche sul server</numerusform>
-        </translation>
+        <translation><numerusform>%n nota modificata anche sul server</numerusform><numerusform>%n note modificate anche sul server</numerusform><numerusform>%n note modificate anche sul server</numerusform></translation>
     </message>
     <message>
         <source>Search notes</source>
@@ -514,17 +506,11 @@
     </message>
     <message numerus="yes">
         <source>%n minute(s) ago</source>
-        <translation>
-            <numerusform>%n minuto fa</numerusform>
-            <numerusform>%n minuti fa</numerusform>
-        </translation>
+        <translation><numerusform>%n minuto fa</numerusform><numerusform>%n minuti fa</numerusform><numerusform>%n minuti fa</numerusform></translation>
     </message>
     <message numerus="yes">
         <source>%n hour(s) ago</source>
-        <translation>
-            <numerusform>%n ora fa</numerusform>
-            <numerusform>%n ore fa</numerusform>
-        </translation>
+        <translation><numerusform>%n ora fa</numerusform><numerusform>%n ore fa</numerusform><numerusform>%n ore fa</numerusform></translation>
     </message>
     <message>
         <source>Yesterday</source>
@@ -532,10 +518,7 @@
     </message>
     <message numerus="yes">
         <source>%n day(s) ago</source>
-        <translation>
-            <numerusform>%n giorno fa</numerusform>
-            <numerusform>%n giorni fa</numerusform>
-        </translation>
+        <translation><numerusform>giorno fa</numerusform><numerusform>%n giorni fa</numerusform><numerusform>%n giorni fa</numerusform></translation>
     </message>
 </context>
 <context>
@@ -582,10 +565,7 @@
     </message>
     <message numerus="yes">
         <source>show license(s)</source>
-        <translation>
-            <numerusform>mostra licenza</numerusform>
-            <numerusform>mostra licenze</numerusform>
-        </translation>
+        <translation><numerusform>mostra licenza</numerusform><numerusform>mostra licenze</numerusform><numerusform>mostra licenze</numerusform></translation>
     </message>
     <message>
         <source>News</source>
@@ -629,10 +609,10 @@
     </message>
     <message numerus="yes">
         <source>License(s)</source>
-        <translation>
-            <numerusform>Licenza</numerusform>
-            <numerusform>Licenze</numerusform>
-        </translation>
+        <translation><numerusform>mostra licenza
+</numerusform><numerusform>mostra licenze
+</numerusform><numerusform>mostra licenze
+</numerusform></translation>
     </message>
     <message>
         <source>Note: please check the source code for most accurate information.</source>
@@ -823,10 +803,7 @@
     </message>
     <message numerus="yes">
         <source>Every %n minute(s)</source>
-        <translation>
-            <numerusform>Ogni %n minuto</numerusform>
-            <numerusform>Ogni %n minuti</numerusform>
-        </translation>
+        <translation><numerusform>Ogni %n minuto</numerusform><numerusform>Ogni %n minuti</numerusform><numerusform>Ogni %n minuti</numerusform></translation>
     </message>
     <message>
         <source>Synchronisation</source>
