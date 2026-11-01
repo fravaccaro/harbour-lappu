@@ -1,6 +1,6 @@
+import "../components"
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../components"
 
 Dialog {
     id: page
@@ -8,9 +8,9 @@ Dialog {
     property string category
 
     function choose(name) {
-        newField.text = name
-        page.category = name
-        page.accept()
+        newField.text = name;
+        page.category = name;
+        page.accept();
     }
 
     allowedOrientations: Orientation.All
@@ -59,10 +59,14 @@ Dialog {
                     selected: page.category === model.name
                     onClicked: page.choose(model.name)
                 }
+
             }
+
         }
 
         VerticalScrollDecorator {
         }
+
     }
+
 }

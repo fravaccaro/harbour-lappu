@@ -57,6 +57,7 @@ Column {
                 right: timeText.left
                 rightMargin: Theme.paddingMedium
             }
+
         }
 
         Label {
@@ -64,16 +65,16 @@ Column {
 
             color: Theme.secondaryColor
             font.pixelSize: Theme.fontSizeExtraSmall
-            text: root.modified > 0
-                  ? Qt.formatDateTime(new Date(root.modified * 1000), Qt.DefaultLocaleShortDate)
-                  : ""
+            text: root.modified > 0 ? Qt.formatDateTime(new Date(root.modified * 1000), Qt.DefaultLocaleShortDate) : ""
 
             anchors {
                 right: parent.right
                 rightMargin: Theme.horizontalPageMargin
                 verticalCenter: labelText.verticalCenter
             }
+
         }
+
     }
 
     NoteBody {
@@ -93,4 +94,5 @@ Column {
         font.pixelSize: Theme.fontSizeSmall
         text: qsTr("This version is empty.")
     }
+
 }

@@ -36,6 +36,7 @@ class Session : public QObject
                NOTIFY syncAfterPushChanged)
     Q_PROPERTY(int coverNoteId READ coverNoteId WRITE setCoverNoteId NOTIFY coverNoteIdChanged)
     Q_PROPERTY(QString sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
+    Q_PROPERTY(QString viewMode READ viewMode WRITE setViewMode NOTIFY viewModeChanged)
     // How many notes changed on both sides and are waiting to be settled.
     Q_PROPERTY(int conflictCount READ conflictCount NOTIFY conflictsChanged)
 
@@ -65,6 +66,8 @@ public:
 
     QString sortMode() const;
     void setSortMode(const QString &mode);
+    QString viewMode() const;
+    void setViewMode(const QString &mode);
     int conflictCount() const { return m_conflicts.size(); }
 
     Q_INVOKABLE void startLogin(const QString &serverUrl);
@@ -108,6 +111,7 @@ signals:
     void syncAfterPushChanged();
     void coverNoteIdChanged();
     void sortModeChanged();
+    void viewModeChanged();
     void loginUrlReady(const QString &url);
     void loginSucceeded();
     void loginFailed(const QString &error);

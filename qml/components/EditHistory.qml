@@ -40,95 +40,102 @@ QtObject {
     property int previousCursor: 0
     property bool applying: false
     property bool bursting: false
-    property Timer burstTimer: Timer {
+    property Timer burstTimer
+
+    burstTimer: Timer {
         interval: root.burstInterval
         onTriggered: root.bursting = false
     }
 
     function reset(text, cursor) {
-        undoStack = []
-        redoStack = []
-        undoCount = 0
-        redoCount = 0
-        bursting = false
-        previousText = text
-        previousCursor = cursor
+        undoStack = [];
+        redoStack = [];
+        undoCount = 0;
+        redoCount = 0;
+        bursting = false;
+        previousText = text;
+        previousCursor = cursor;
     }
 
     function snapshot() {
         return {
             "text": previousText,
             "cursor": previousCursor
-        }
+        };
     }
 
     function pushUndo(step) {
-        undoStack.push(step)
+        undoStack.push(step);
         if (undoStack.length > depth)
-            undoStack.shift()
-        undoCount = undoStack.length
+            undoStack.shift();
+
+        undoCount = undoStack.length;
     }
 
     function pushRedo(step) {
-        redoStack.push(step)
-        redoCount = redoStack.length
+        redoStack.push(step);
+        redoCount = redoStack.length;
     }
 
     function clearRedo() {
-        redoStack = []
-        redoCount = 0
+        redoStack = [];
+        redoCount = 0;
     }
 
     function watch(text, cursor) {
         if (applying) {
-            remember(text, cursor)
-            return
+            remember(text, cursor);
+            return ;
         }
         if (!bursting) {
-            pushUndo(snapshot())
-            clearRedo()
-            bursting = true
+            pushUndo(snapshot());
+            clearRedo();
+            bursting = true;
         }
-        remember(text, cursor)
-        burstTimer.restart()
+        remember(text, cursor);
+        burstTimer.restart();
     }
 
     function remember(text, cursor) {
-        previousText = text
-        previousCursor = cursor
+        previousText = text;
+        previousCursor = cursor;
     }
 
     // Ends the current step, so what follows is recorded on its own.
     function seal() {
-        burstTimer.stop()
-        bursting = false
+        burstTimer.stop();
+        bursting = false;
     }
 
     function undo() {
         if (!canUndo)
-            return
-        seal()
-        pushRedo(snapshot())
-        apply(undoStack.pop())
-        undoCount = undoStack.length
+            return ;
+
+        seal();
+        pushRedo(snapshot());
+        apply(undoStack.pop());
+        undoCount = undoStack.length;
     }
 
     function redo() {
         if (!canRedo)
-            return
-        seal()
-        pushUndo(snapshot())
-        apply(redoStack.pop())
-        redoCount = redoStack.length
+            return ;
+
+        seal();
+        pushUndo(snapshot());
+        apply(redoStack.pop());
+        redoCount = redoStack.length;
     }
 
     function apply(step) {
         if (!target)
-            return
-        applying = true
-        target.text = step.text
-        target.cursorPosition = Math.min(step.cursor, step.text.length)
-        applying = false
-        remember(step.text, step.cursor)
+            return ;
+
+        applying = true;
+        target.text = step.text;
+        target.cursorPosition = Math.min(step.cursor, step.text.length);
+        applying = false;
+        remember(step.text, step.cursor);
     }
+
 }

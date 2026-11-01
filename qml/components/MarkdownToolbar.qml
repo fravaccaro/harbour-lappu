@@ -28,136 +28,140 @@ Item {
     property QtObject history
     property int savedStart: 0
     property int savedEnd: 0
-    readonly property int buttonWidth: Math.max(Theme.fontSizeLarge,
-                                                Math.floor((width - 6 * Theme.paddingSmall) / 7))
+    readonly property int buttonWidth: Math.max(Theme.fontSizeLarge, Math.floor((width - 6 * Theme.paddingSmall) / 7))
 
     function remember() {
         if (!target)
-            return
+            return ;
+
         if (history)
-            history.seal()
-        savedStart = target.selectionStart
-        savedEnd = target.selectionEnd
+            history.seal();
+
+        savedStart = target.selectionStart;
+        savedEnd = target.selectionEnd;
     }
 
     function restore() {
-        target.forceActiveFocus()
-        target.select(savedStart, savedEnd)
+        target.forceActiveFocus();
+        target.select(savedStart, savedEnd);
     }
 
     function wrap(before, after) {
         if (!target)
-            return
-        restore()
+            return ;
+
+        restore();
         if (savedStart === savedEnd)
-            insertEmpty(before, after)
+            insertEmpty(before, after);
         else
-            wrapRange(before, after)
+            wrapRange(before, after);
     }
 
     function splice(from, to, chunk) {
-        var t = target.text
-        target.text = t.substring(0, from) + chunk + t.substring(to)
+        var t = target.text;
+        target.text = t.substring(0, from) + chunk + t.substring(to);
     }
 
     function insertEmpty(before, after) {
-        splice(savedStart, savedStart, before + after)
-        target.cursorPosition = savedStart + before.length
+        splice(savedStart, savedStart, before + after);
+        target.cursorPosition = savedStart + before.length;
     }
 
     function wrapRange(before, after) {
-        var inner = target.text.substring(savedStart, savedEnd)
-        splice(savedStart, savedEnd, before + inner + after)
-        target.select(savedStart + before.length, savedEnd + before.length)
+        var inner = target.text.substring(savedStart, savedEnd);
+        splice(savedStart, savedEnd, before + inner + after);
+        target.select(savedStart + before.length, savedEnd + before.length);
     }
 
     function lineStart(text, pos) {
-        var at = text.lastIndexOf("\n", pos - 1)
-        return at < 0 ? 0 : at + 1
+        var at = text.lastIndexOf("\n", pos - 1);
+        return at < 0 ? 0 : at + 1;
     }
 
     function prefixLine(prefix) {
         if (!target)
-            return
-        restore()
-        var pos = lineStart(target.text, savedStart)
-        splice(pos, pos, prefix)
-        target.cursorPosition = savedEnd + prefix.length
+            return ;
+
+        restore();
+        var pos = lineStart(target.text, savedStart);
+        splice(pos, pos, prefix);
+        target.cursorPosition = savedEnd + prefix.length;
     }
 
     function hashes(level) {
-        var marks = ""
-        for (var i = 0; i < level; ++i)
-            marks += "#"
-        return marks + " "
+        var marks = "";
+        for (var i = 0; i < level; ++i) marks += "#"
+        return marks + " ";
     }
 
     function setHeading(level) {
         if (!target)
-            return
-        restore()
-        replaceHeading(lineStart(target.text, savedStart), hashes(level))
+            return ;
+
+        restore();
+        replaceHeading(lineStart(target.text, savedStart), hashes(level));
     }
 
     function replaceHeading(pos, prefix) {
-        var rest = target.text.substring(pos)
-        var match = rest.match(/^#{1,6}\s+/)
-        var n = match ? match[0].length : 0
-        target.text = target.text.substring(0, pos) + prefix + rest.substring(n)
-        target.cursorPosition = pos + prefix.length
+        var rest = target.text.substring(pos);
+        var match = rest.match(/^#{1,6}\s+/);
+        var n = match ? match[0].length : 0;
+        target.text = target.text.substring(0, pos) + prefix + rest.substring(n);
+        target.cursorPosition = pos + prefix.length;
     }
 
     function apply(kind) {
         if (kind === "bold")
-            wrap("**", "**")
+            wrap("**", "**");
         else if (kind === "italic")
-            wrap("*", "*")
+            wrap("*", "*");
         else if (kind === "underline")
-            wrap("<u>", "</u>")
+            wrap("<u>", "</u>");
         else if (kind === "strike")
-            wrap("~~", "~~")
+            wrap("~~", "~~");
         else
-            applyBlock(kind)
+            applyBlock(kind);
     }
 
     function applyBlock(kind) {
         if (kind === "list")
-            prefixLine("- ")
+            prefixLine("- ");
         else if (kind === "task")
-            prefixLine("- [ ] ")
+            prefixLine("- [ ] ");
         else if (kind === "link")
-            wrap("[", "]()")
+            wrap("[", "]()");
         else if (kind === "table")
-            insertTable()
+            insertTable();
         else if (kind.length === 2 && kind.charAt(0) === "h")
-            setHeading(Number(kind.charAt(1)))
+            setHeading(Number(kind.charAt(1)));
     }
 
     // The name of a column the writer is expected to replace, which is why it
     // is handed back selected rather than merely written.
     function columnName() {
-        return qsTr("Column")
+        return qsTr("Column");
     }
 
     function tableSkeleton() {
-        return "| " + columnName() + " | " + columnName() + " |\n| --- | --- |\n|  |  |\n"
+        return "| " + columnName() + " | " + columnName() + " |\n| --- | --- |\n|  |  |\n";
     }
 
     // Past the leading "| " of the first header cell.
     function insertTable() {
         if (!target)
-            return
-        restore()
-        var at = insertBlock(tableSkeleton()) + 2
-        target.select(at, at + columnName().length)
+            return ;
+
+        restore();
+        var at = insertBlock(tableSkeleton()) + 2;
+        target.select(at, at + columnName().length);
     }
 
     // Where the block landed. A table is a block, so it begins on a line of
     // its own however the caret was placed.
     function insertBlock(chunk) {
-        var lead = savedStart > 0 && target.text.charAt(savedStart - 1) !== "\n" ? "\n" : ""
-        splice(savedStart, savedEnd, lead + chunk)
-        return savedStart + lead.length
+        var lead = savedStart > 0 && target.text.charAt(savedStart - 1) !== "\n" ? "\n" : "";
+        splice(savedStart, savedEnd, lead + chunk);
+        return savedStart + lead.length;
     }
 
     height: Theme.itemSizeSmall * 2
@@ -171,18 +175,48 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
 
             Repeater {
+                delegate: markButton
+
                 model: ListModel {
-                    ListElement { label: "B"; kind: "bold" }
-                    ListElement { label: "I"; kind: "italic" }
-                    ListElement { label: "U"; kind: "underline" }
-                    ListElement { label: "S"; kind: "strike" }
-                    ListElement { label: "\ud834\udd18"; kind: "list" }
-                    ListElement { label: "\ud83d\uddf8"; kind: "task" }
-                    ListElement { label: "\ud83d\udd17"; kind: "link" }
+                    ListElement {
+                        label: "B"
+                        kind: "bold"
+                    }
+
+                    ListElement {
+                        label: "I"
+                        kind: "italic"
+                    }
+
+                    ListElement {
+                        label: "U"
+                        kind: "underline"
+                    }
+
+                    ListElement {
+                        label: "S"
+                        kind: "strike"
+                    }
+
+                    ListElement {
+                        label: "\ud834\udd18"
+                        kind: "list"
+                    }
+
+                    ListElement {
+                        label: "\ud83d\uddf8"
+                        kind: "task"
+                    }
+
+                    ListElement {
+                        label: "\ud83d\udd17"
+                        kind: "link"
+                    }
+
                 }
 
-                delegate: markButton
             }
+
         }
 
         Row {
@@ -190,19 +224,50 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
 
             Repeater {
+                delegate: markButton
+
                 model: ListModel {
-                    ListElement { label: "H1"; kind: "h1" }
-                    ListElement { label: "H2"; kind: "h2" }
-                    ListElement { label: "H3"; kind: "h3" }
-                    ListElement { label: "H4"; kind: "h4" }
-                    ListElement { label: "H5"; kind: "h5" }
-                    ListElement { label: "H6"; kind: "h6" }
-                    ListElement { label: "\u25a6"; kind: "table" }
+                    ListElement {
+                        label: "H1"
+                        kind: "h1"
+                    }
+
+                    ListElement {
+                        label: "H2"
+                        kind: "h2"
+                    }
+
+                    ListElement {
+                        label: "H3"
+                        kind: "h3"
+                    }
+
+                    ListElement {
+                        label: "H4"
+                        kind: "h4"
+                    }
+
+                    ListElement {
+                        label: "H5"
+                        kind: "h5"
+                    }
+
+                    ListElement {
+                        label: "H6"
+                        kind: "h6"
+                    }
+
+                    ListElement {
+                        label: "\u25a6"
+                        kind: "table"
+                    }
+
                 }
 
-                delegate: markButton
             }
+
         }
+
     }
 
     Component {
@@ -224,6 +289,9 @@ Item {
                 color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
                 text: label
             }
+
         }
+
     }
+
 }

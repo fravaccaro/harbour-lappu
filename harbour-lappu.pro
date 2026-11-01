@@ -64,6 +64,9 @@ DISTFILES += \
     qml/components/MarkdownTable.qml \
     qml/components/MarkdownToolbar.qml \
     qml/components/NoteBody.qml \
+    qml/components/NoteContextMenu.qml \
+    qml/components/NotesListHeader.qml \
+    qml/components/NotesPullDownMenu.qml \
     qml/cover/CoverPage.qml \
     qml/cover/cover-note.png \
     qml/notes/NoteFormat.js \

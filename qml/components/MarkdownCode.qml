@@ -61,5 +61,7 @@ Item {
             color: Theme.primaryColor
             text: root.content
         }
+
     }
+
 }

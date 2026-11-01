@@ -318,6 +318,33 @@
     </message>
 </context>
 <context>
+    <name>NoteContextMenu</name>
+    <message>
+        <source>Remove from favorites</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add to favorites</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unpin from cover</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pin to cover</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>NoteEditPage</name>
     <message>
         <source>Add</source>
@@ -329,10 +356,6 @@
     </message>
     <message>
         <source>New note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -352,7 +375,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The first line is the title</source>
+        <source>Edit note</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -411,45 +434,22 @@
     </message>
 </context>
 <context>
-    <name>NotesPage</name>
-    <message>
-        <source>About</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Refresh</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>No notes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>New note</source>
-        <translation type="unfinished"></translation>
+    <name>NotesListHeader</name>
+    <message numerus="yes">
+        <source>%n note(s) changed on the server as well</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
     </message>
     <message>
         <source>Search notes</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>NotesPage</name>
     <message>
-        <source>Remove from favorites</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Add to favorites</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Delete</source>
+        <source>No notes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -464,12 +464,19 @@
         <source>Pull down to add a note</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>NotesPullDownMenu</name>
     <message>
-        <source>Unpin from cover</source>
+        <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Pin to cover</source>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -480,11 +487,9 @@
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
-    <message numerus="yes">
-        <source>%n note(s) changed on the server as well</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-        </translation>
+    <message>
+        <source>New note</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -841,6 +846,18 @@
     </message>
     <message>
         <source>Signed in as %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grid</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

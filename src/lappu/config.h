@@ -21,6 +21,7 @@ class Config : public QObject
                NOTIFY syncAfterPushChanged)
     Q_PROPERTY(int coverNoteId READ coverNoteId WRITE setCoverNoteId NOTIFY coverNoteIdChanged)
     Q_PROPERTY(QString sortMode READ sortMode WRITE setSortMode NOTIFY sortModeChanged)
+    Q_PROPERTY(QString viewMode READ viewMode WRITE setViewMode NOTIFY viewModeChanged)
     Q_PROPERTY(bool configured READ isConfigured NOTIFY configuredChanged)
     Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
     Q_PROPERTY(QString secretsError READ secretsError NOTIFY secretsErrorChanged)
@@ -58,6 +59,10 @@ public:
     QString sortMode() const { return m_sortMode; }
     void setSortMode(const QString &mode);
 
+    // How the notes are laid out: "list" or "grid".
+    QString viewMode() const { return m_viewMode; }
+    void setViewMode(const QString &mode);
+
     bool isConfigured() const;
     bool isReady() const { return m_ready; }
     QString secretsError() const { return m_secretsError; }
@@ -76,6 +81,7 @@ signals:
     void syncAfterPushChanged();
     void coverNoteIdChanged();
     void sortModeChanged();
+    void viewModeChanged();
     void configuredChanged();
     void readyChanged();
     void secretsErrorChanged();
@@ -91,6 +97,7 @@ private:
     QString m_password;
     QString m_secretsError;
     QString m_sortMode;
+    QString m_viewMode;
     bool m_ignoreSslErrors;
     bool m_syncOnStart;
     int m_syncInterval;

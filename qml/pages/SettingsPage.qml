@@ -7,12 +7,12 @@ Page {
     readonly property var intervals: [0, 5, 15, 30, 60]
 
     function intervalIndex(minutes) {
-        var index = page.intervals.indexOf(minutes)
-        return index < 0 ? 0 : index
+        var index = page.intervals.indexOf(minutes);
+        return index < 0 ? 0 : index;
     }
 
     function intervalLabel(minutes) {
-        return minutes === 0 ? qsTr("Off") : qsTr("Every %n minute(s)", "", minutes)
+        return minutes === 0 ? qsTr("Off") : qsTr("Every %n minute(s)", "", minutes);
     }
 
     allowedOrientations: Orientation.All
@@ -38,14 +38,43 @@ Page {
                 property bool ready: false
 
                 width: parent.width
-                label: qsTr("Sort")
+                label: qsTr("View")
                 Component.onCompleted: {
-                    currentIndex = Lappu.sortMode === "title" ? 1 : 0
-                    ready = true
+                    currentIndex = Lappu.viewMode === "grid" ? 1 : 0;
+                    ready = true;
                 }
                 onCurrentIndexChanged: {
                     if (ready && currentIndex >= 0)
-                        Lappu.sortMode = currentIndex === 1 ? "title" : "modified"
+                        Lappu.viewMode = currentIndex === 1 ? "grid" : "list";
+
+                }
+
+                menu: ContextMenu {
+                    MenuItem {
+                        text: qsTr("List")
+                    }
+
+                    MenuItem {
+                        text: qsTr("Grid")
+                    }
+
+                }
+
+            }
+
+            ComboBox {
+                property bool ready: false
+
+                width: parent.width
+                label: qsTr("Sort")
+                Component.onCompleted: {
+                    currentIndex = Lappu.sortMode === "title" ? 1 : 0;
+                    ready = true;
+                }
+                onCurrentIndexChanged: {
+                    if (ready && currentIndex >= 0)
+                        Lappu.sortMode = currentIndex === 1 ? "title" : "modified";
+
                 }
 
                 menu: ContextMenu {
@@ -56,7 +85,9 @@ Page {
                     MenuItem {
                         text: qsTr("Title")
                     }
+
                 }
+
             }
 
             SectionHeader {
@@ -87,12 +118,13 @@ Page {
                 label: qsTr("Automatic refresh")
                 description: qsTr("Only while Lappu is running.")
                 Component.onCompleted: {
-                    currentIndex = page.intervalIndex(Lappu.syncInterval)
-                    ready = true
+                    currentIndex = page.intervalIndex(Lappu.syncInterval);
+                    ready = true;
                 }
                 onCurrentIndexChanged: {
                     if (ready && currentIndex >= 0)
-                        Lappu.syncInterval = page.intervals[currentIndex]
+                        Lappu.syncInterval = page.intervals[currentIndex];
+
                 }
 
                 menu: ContextMenu {
@@ -102,8 +134,11 @@ Page {
                         MenuItem {
                             text: page.intervalLabel(modelData)
                         }
+
                     }
+
                 }
+
             }
 
             SectionHeader {
@@ -140,16 +175,19 @@ Page {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Sign out")
                 onClicked: remorse.execute(qsTr("Signing out"), function() {
-                    Lappu.logout()
+                    Lappu.logout();
                 })
             }
+
         }
 
         VerticalScrollDecorator {
         }
+
     }
 
     RemorsePopup {
         id: remorse
     }
+
 }

@@ -35,6 +35,8 @@ Config::Config(QObject *parent)
     m_coverNoteId = m_settings.value(QStringLiteral("cover/noteId"), 0).toInt();
     m_sortMode = m_settings.value(QStringLiteral("notes/sortMode"),
                                   QStringLiteral("modified")).toString();
+    m_viewMode = m_settings.value(QStringLiteral("notes/viewMode"),
+                                  QStringLiteral("list")).toString();
     connect(&m_secrets, &SecretsStore::loaded, this, &Config::applyStoredPassword);
     connect(&m_secrets, &SecretsStore::failed, this, [this](const QString &error) {
         m_secretsError = error;
@@ -179,6 +181,20 @@ void Config::setSortMode(const QString &mode)
     m_sortMode = safe;
     store(QStringLiteral("notes/sortMode"), m_sortMode);
     emit sortModeChanged();
+}
+
+// The list is what the notes have always been shown as, so it is where an
+// unknown value falls: a settings file that says nothing useful about the
+// layout leaves the app looking the way it did before.
+void Config::setViewMode(const QString &mode)
+{
+    const QString safe = mode == QStringLiteral("grid") ? mode : QStringLiteral("list");
+    if (safe == m_viewMode)
+        return;
+
+    m_viewMode = safe;
+    store(QStringLiteral("notes/viewMode"), m_viewMode);
+    emit viewModeChanged();
 }
 
 void Config::clearCredentials()

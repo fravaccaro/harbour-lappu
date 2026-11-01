@@ -1,7 +1,7 @@
+import "../components"
 import Opal.LinkHandler 1.0 as L
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../components"
 
 Page {
     id: page
@@ -15,43 +15,45 @@ Page {
     property int modified
 
     function load() {
-        var note = app.notes.noteById(page.noteId)
+        var note = app.notes.noteById(page.noteId);
         if (!note)
-            return
-        applyNote(note)
+            return ;
+
+        applyNote(note);
     }
 
     function applyNote(note) {
-        page.title = note.title
-        page.content = note.content
-        page.category = note.category
-        page.favorite = note.favorite
-        page.locked = note.locked
-        page.modified = note.modified
+        page.title = note.title;
+        page.content = note.content;
+        page.category = note.category;
+        page.favorite = note.favorite;
+        page.locked = note.locked;
+        page.modified = note.modified;
     }
 
     function headerDescription() {
-        var cat = page.category === "" ? qsTr("Uncategorized") : app.notes.categoryLabel(page.category)
-        return cat + " \u00b7 " + app.notes.relativeTime(page.modified)
+        var cat = page.category === "" ? qsTr("Uncategorized") : app.notes.categoryLabel(page.category);
+        return cat + " \u00b7 " + app.notes.relativeTime(page.modified);
     }
 
     function toggleTask(lineIndex) {
-        app.notes.toggleTask(page.noteId, lineIndex)
-        page.load()
+        app.notes.toggleTask(page.noteId, lineIndex);
+        page.load();
     }
 
     function remove() {
         remorse.execute(qsTr("Deleting"), function() {
-            app.notes.removeNote(page.noteId)
-            pageStack.pop()
-        })
+            app.notes.removeNote(page.noteId);
+            pageStack.pop();
+        });
     }
 
     allowedOrientations: Orientation.All
     Component.onCompleted: page.load()
     onStatusChanged: {
         if (status === PageStatus.Active)
-            page.load()
+            page.load();
+
     }
 
     SilicaFlickable {
@@ -67,8 +69,8 @@ Page {
             MenuItem {
                 text: page.favorite ? qsTr("Remove from favorites") : qsTr("Add to favorites")
                 onClicked: {
-                    app.notes.toggleFavorite(page.noteId)
-                    page.load()
+                    app.notes.toggleFavorite(page.noteId);
+                    page.load();
                 }
             }
 
@@ -82,6 +84,7 @@ Page {
                 text: qsTr("Edit")
                 onClicked: app.editNote(page.noteId)
             }
+
         }
 
         Column {
@@ -126,13 +129,16 @@ Page {
                 font.pixelSize: Theme.fontSizeSmall
                 text: qsTr("This note is empty.")
             }
+
         }
 
         VerticalScrollDecorator {
         }
+
     }
 
     RemorsePopup {
         id: remorse
     }
+
 }

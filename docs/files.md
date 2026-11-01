@@ -67,7 +67,7 @@ Sailjail gives Lappu three private directories of its own, named after the organ
 
 | Path | Holds |
 |---|---|
-| `~/.config/org.frapps/harbour-lappu` | `settings.conf` - the server address, the user name, the sort and sync settings, the pinned note |
+| `~/.config/org.frapps/harbour-lappu` | `settings.conf` - the server address, the user name, the sort, view and sync settings, the pinned note |
 | `~/.local/share/org.frapps/harbour-lappu` | `notes.sqlite` - the copy of the notes |
 | `~/.cache/org.frapps/harbour-lappu` | whatever the web view leaves behind while signing in; nothing the app writes itself |
 

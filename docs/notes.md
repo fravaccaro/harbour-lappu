@@ -36,6 +36,14 @@ Choosing a view takes you back to the notes with the title at the top changed to
 
 The search runs on the phone against the copy it already has, so it answers as you type and works with no server in reach. It matches the title and the body of the note, not the category.
 
+## List or grid
+
+**View** on the settings page draws the notes either as a **List** of full-width rows or as a **Grid** of cards. The grid fits two cards across a phone held upright and more as the screen gets wider, so turning it on its side gives you more cards rather than wider ones.
+
+A card carries the same four things the row does - the title with its star, how long ago the note changed, the opening of the body and the category - stacked rather than laid out across, with the body given whatever room is left in the card. Tapping and holding a card opens the same menu as a row.
+
+Everything else is the same in both: the pulley menu, the search field, the chosen category, the sort order and the row that counts unsettled notes. Changing the setting starts the notes again from the top.
+
 ## Sorting
 
 **Sort** on the settings page orders the notes by **Last modified** or by **Title**. Favourites are kept at the top either way, sorted among themselves by the same rule.

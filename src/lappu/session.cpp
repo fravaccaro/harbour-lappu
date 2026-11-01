@@ -114,6 +114,7 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(m_config, &Config::syncAfterPushChanged, this, &Session::syncAfterPushChanged);
     connect(m_config, &Config::coverNoteIdChanged, this, &Session::coverNoteIdChanged);
     connect(m_config, &Config::sortModeChanged, this, &Session::sortModeChanged);
+    connect(m_config, &Config::viewModeChanged, this, &Session::viewModeChanged);
     connect(m_config, &Config::syncIntervalChanged, this, &Session::applySyncTimer);
     connect(m_config, &Config::readyChanged, this, &Session::syncIfStartupWanted);
     m_cache.open();
@@ -207,6 +208,16 @@ QString Session::sortMode() const
 void Session::setSortMode(const QString &mode)
 {
     m_config->setSortMode(mode);
+}
+
+QString Session::viewMode() const
+{
+    return m_config->viewMode();
+}
+
+void Session::setViewMode(const QString &mode)
+{
+    m_config->setViewMode(mode);
 }
 
 void Session::setBusy(bool busy)

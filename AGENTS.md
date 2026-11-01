@@ -90,7 +90,7 @@ This document is a living contract. Keeping it accurate is part of the implement
 
 | Path | Purpose |
 |---|---|
-| `src/lappu/config.*` | Server URL, user name, TLS preference |
+| `src/lappu/config.*` | Server URL, user name, TLS preference, sort, view and the pinned note |
 | `src/lappu/secretsstore.*` | App password in a device-lock Sailfish Secrets collection |
 | `src/lappu/loginflow.*` | Nextcloud login flow v2 |
 | `src/lappu/httpclient.*` | `QNetworkAccessManager` wrapper |
@@ -102,7 +102,7 @@ This document is a living contract. Keeping it accurate is part of the implement
 | `src/lappu/types.h` | Plain data structs (`LocalNote`) |
 | `qml/pages/*` | Silica pages |
 | `qml/notes/*` | Notes view model (`NotesStore.qml`) and markdown helpers (`NoteFormat.js`) |
-| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the markdown bar, the edit history, the note body, a markdown table (`MarkdownTable.qml`), a code block (`MarkdownCode.qml`), one side of a conflict (`ConflictVersion.qml`) |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the markdown bar, the edit history, the note body, a markdown table (`MarkdownTable.qml`), a code block (`MarkdownCode.qml`), one side of a conflict (`ConflictVersion.qml`), and the three pieces both notes layouts share — the pulley menu (`NotesPullDownMenu.qml`), the header (`NotesListHeader.qml`) and a note's own menu (`NoteContextMenu.qml`) |
 | `qml/cover/*` | Cover page |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe, and LinkHandler modules |
 | `docs/*` | The documentation site, built by Jekyll from `_config.yml`; `README.md` is its home page |
@@ -131,6 +131,8 @@ A rendered row is not a line of the note. `NoteFormat.previewBlocks()` hands `No
 `blockAt()` asks about a fence before a table, because inside a fence a row of pipes is code and a hash is a hash; `MarkdownCode` then draws the block as `Text.PlainText`, which is what keeps it unread. Inside a line the same rule holds one level down: `richText()` splits the backquoted spans out before any other mark is read, or the asterisks of a snippet would be taken for emphasis. What marks a task is the brackets and not the bullet — `-`, `*` and `+` all open one, as they do in the server's own renderer — and `NotesStore.flipTaskLine()` rewrites only the brackets, so the bullet a note was written with survives a tick. A heading carries its `level` and a nested item its `indent` rather than arriving pre-marked, since size, weight and offset are the drawing's business.
 
 `qml/notes/NotesStore.qml` is the QML-side view of the synced notes: it owns the filtering, search, sort, category and cover state, and is filled through `ingest()` from `Notes.notes()`. It writes nothing itself; every edit is handed to `Lappu`. The two pieces of that state the user expects to outlast a restart — the sort order and the pinned note — are bindings onto `Lappu.sortMode` and `Lappu.coverNoteId`, which `Config` keeps in `settings.conf`, so neither may be assigned imperatively.
+
+How the notes are laid out is not part of that state, because nothing but the drawing depends on it: `NotesPage` reads `Lappu.viewMode` itself and loads either a `SilicaListView` of rows or a `SilicaGridView` of cards. They are two kinds of view rather than one drawn two ways — a `GridView` gives every cell the same height, which the rows do not have — so only the chosen one is built, and the three things they would otherwise each hold a copy of live in `qml/components/` instead. A cell measures itself off `Screen.width` rather than a column count, so two fit across the narrow side of any screen and a wider one gets more of them rather than wider ones.
 
 Sailjail private directories follow `OrganizationName` / `ApplicationName`:
 

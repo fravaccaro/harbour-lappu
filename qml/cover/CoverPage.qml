@@ -29,6 +29,7 @@ CoverBackground {
             bottom: parent.bottom
             bottomMargin: -height * 0.04
         }
+
     }
 
     Column {
@@ -52,10 +53,12 @@ CoverBackground {
             // filter title until there is an account to filter.
             text: {
                 if (!Lappu.configured || !store)
-                    return qsTr("Lappu")
-                return cover.pinned ? store.pinnedTitle : store.listTitle
+                    return qsTr("Lappu");
+
+                return cover.pinned ? store.pinnedTitle : store.listTitle;
             }
         }
+
     }
 
     ListView {
@@ -85,6 +88,7 @@ CoverBackground {
             color: Theme.primaryColor
             text: title
         }
+
     }
 
     Label {
@@ -109,6 +113,7 @@ CoverBackground {
             bottom: parent.bottom
             bottomMargin: Theme.itemSizeSmall
         }
+
     }
 
     OpacityRampEffect {
@@ -144,6 +149,7 @@ CoverBackground {
             verticalCenter: parent.verticalCenter
             margins: Theme.paddingMedium
         }
+
     }
 
     CoverActionList {
@@ -159,5 +165,7 @@ CoverBackground {
             iconSource: "image://theme/icon-cover-sync"
             onTriggered: win.syncNotes()
         }
+
     }
+
 }

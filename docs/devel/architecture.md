@@ -11,7 +11,7 @@ nav_order: 1
 
 | Part | Purpose |
 |---|---|
-| `src/lappu/config.*` | Server URL, user name, TLS preference, the sort and sync settings and the pinned note, in `~/.config/org.frapps/harbour-lappu/settings.conf` |
+| `src/lappu/config.*` | Server URL, user name, TLS preference, the sort, view and sync settings and the pinned note, in `~/.config/org.frapps/harbour-lappu/settings.conf` |
 | `src/lappu/secretsstore.*` | The app password in a device-lock collection of Sailfish Secrets |
 | `src/lappu/loginflow.*` | Nextcloud login flow v2: ask for a login page, then poll until the server hands over an app password or twenty minutes pass |
 | `src/lappu/httpclient.*` | `QNetworkAccessManager` wrapper: basic auth, custom methods, TLS preference |
@@ -25,7 +25,7 @@ nav_order: 1
 | `qml/pages/ConflictPage.qml` | The two versions of a note that changed on both sides, and the three answers to it |
 | `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category and cover state |
 | `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, and the subset of HTML a Silica `Label` draws |
-| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar, the edit history, the note body, a Markdown table, a code block, one side of a conflict |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar, the edit history, the note body, a Markdown table, a code block, one side of a conflict, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
 | `qml/cover/*` | The cover page and its glyph |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe and LinkHandler modules |
 

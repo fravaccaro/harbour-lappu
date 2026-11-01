@@ -1,28 +1,28 @@
+import "../components"
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../components"
 
 Page {
     id: page
 
     function selectAll() {
-        app.notes.setFilter("all")
-        pageStack.navigateBack()
+        app.notes.setFilter("all");
+        pageStack.navigateBack();
     }
 
     function selectFavorites() {
-        app.notes.setFilter("favorites")
-        pageStack.navigateBack()
+        app.notes.setFilter("favorites");
+        pageStack.navigateBack();
     }
 
     function selectUncategorized() {
-        app.notes.setFilter("uncategorized")
-        pageStack.navigateBack()
+        app.notes.setFilter("uncategorized");
+        pageStack.navigateBack();
     }
 
     function selectCategory(name) {
-        app.notes.setFilter("category", name)
-        pageStack.navigateBack()
+        app.notes.setFilter("category", name);
+        pageStack.navigateBack();
     }
 
     allowedOrientations: Orientation.All
@@ -50,6 +50,15 @@ Page {
                 text: qsTr("Refresh")
                 onClicked: app.syncNotes()
             }
+
+        }
+
+        ViewPlaceholder {
+            enabled: listView.count === 0
+            text: qsTr("No categories")
+        }
+
+        VerticalScrollDecorator {
         }
 
         header: Column {
@@ -87,6 +96,7 @@ Page {
                 visible: listView.count > 0
                 text: qsTr("Categories")
             }
+
         }
 
         delegate: ListItem {
@@ -109,6 +119,7 @@ Page {
                     rightMargin: Theme.paddingMedium
                     verticalCenter: parent.verticalCenter
                 }
+
             }
 
             Label {
@@ -123,15 +134,11 @@ Page {
                     rightMargin: Theme.horizontalPageMargin
                     verticalCenter: parent.verticalCenter
                 }
+
             }
+
         }
 
-        ViewPlaceholder {
-            enabled: listView.count === 0
-            text: qsTr("No categories")
-        }
-
-        VerticalScrollDecorator {
-        }
     }
+
 }

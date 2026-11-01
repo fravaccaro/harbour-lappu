@@ -6,9 +6,9 @@ Name:       harbour-lappu
 # package imports them anyway.
 %define __provides_exclude_from ^%{_datadir}/.*$
 
-Summary:    Nextcloud notes for Sailfish OS
+Summary:    Nextcloud Notes for Sailfish OS
 Version:    0.1.0
-Release:    1
+Release:    2
 License:    GPLv3
 URL:        https://github.com/fravaccaro/harbour-lappu
 Source0:    %{name}-%{version}.tar.bz2
@@ -27,7 +27,7 @@ BuildRequires:  desktop-file-utils
 BuildRequires:  qt5-qttools-linguist
 
 %description
-Lappu lists and edits Nextcloud notes. Sign in through the server's own
+Lappu lists and edits Nextcloud Notes. Sign in through the server's own
 page, write in Markdown, browse by category and search, and keep a copy on
 the device so the notes can be read and written while the server is out of
 reach.

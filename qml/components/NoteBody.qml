@@ -1,6 +1,6 @@
+import "../notes/NoteFormat.js" as Format
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../notes/NoteFormat.js" as Format
 
 /*!
     \brief Read-only markdown preview whose task lines are tappable.
@@ -38,24 +38,25 @@ Column {
     signal linkActivated(string link)
 
     function rebuild() {
-        var rows = Format.previewBlocks(root.content)
-        lineModel.clear()
-        for (var i = 0; i < rows.length; ++i)
-            lineModel.append(rows[i])
+        var rows = Format.previewBlocks(root.content);
+        lineModel.clear();
+        for (var i = 0; i < rows.length; ++i) lineModel.append(rows[i])
     }
 
     // A heading is told apart by size as much as by weight. Past the second
     // level there is no size left to give one, so the rest read as bold.
     function headingSize(level) {
         if (level === 1)
-            return Theme.fontSizeExtraLarge
-        return level === 2 ? Theme.fontSizeLarge : Theme.fontSizeMedium
+            return Theme.fontSizeExtraLarge;
+
+        return level === 2 ? Theme.fontSizeLarge : Theme.fontSizeMedium;
     }
 
     onContentChanged: root.rebuild()
     Component.onCompleted: root.rebuild()
 
     Repeater {
+
         model: ListModel {
             id: lineModel
         }
@@ -89,10 +90,10 @@ Column {
                     anchors.verticalCenter: parent.verticalCenter
                     wrapMode: Text.WordWrap
                     textFormat: Text.RichText
-                    color: taskRow.highlighted ? Theme.highlightColor
-                                               : (done ? Theme.secondaryColor : Theme.primaryColor)
+                    color: taskRow.highlighted ? Theme.highlightColor : (done ? Theme.secondaryColor : Theme.primaryColor)
                     text: html
                 }
+
             }
 
             // Prose, a bullet and a heading are one label: a heading differs
@@ -104,8 +105,7 @@ Column {
                 wrapMode: Text.WordWrap
                 textFormat: Text.RichText
                 font.bold: kind === "heading"
-                font.pixelSize: kind === "heading" ? root.headingSize(level)
-                                                   : Theme.fontSizeMedium
+                font.pixelSize: kind === "heading" ? root.headingSize(level) : Theme.fontSizeMedium
                 color: Theme.primaryColor
                 linkColor: Theme.highlightColor
                 text: html
@@ -142,6 +142,7 @@ Column {
                     text: html
                     onLinkActivated: root.linkActivated(link)
                 }
+
             }
 
             // Loaded rather than hidden, unlike the rows above: a grid is a
@@ -157,7 +158,9 @@ Column {
                         content: block
                         onLinkActivated: root.linkActivated(link)
                     }
+
                 }
+
             }
 
             Loader {
@@ -169,7 +172,9 @@ Column {
                         width: root.width
                         content: block
                     }
+
                 }
+
             }
 
             Item {
@@ -177,6 +182,9 @@ Column {
                 height: Theme.paddingMedium
                 visible: kind === "blank"
             }
+
         }
+
     }
+
 }

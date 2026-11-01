@@ -1,6 +1,6 @@
+import "../components"
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../components"
 
 Dialog {
     id: page
@@ -14,21 +14,21 @@ Dialog {
     function pickCategory() {
         var dialog = pageStack.push(Qt.resolvedUrl("CategoryPickerPage.qml"), {
             "category": page.category
-        })
+        });
         dialog.accepted.connect(function() {
-            page.category = dialog.category
-        })
+            page.category = dialog.category;
+        });
     }
 
     allowedOrientations: Orientation.All
     Component.onCompleted: {
         if (page.noteId === 0 && page.inheritCategory !== "")
-            page.category = page.inheritCategory
-        editHistory.reset(bodyField.text, bodyField.cursorPosition)
+            page.category = page.inheritCategory;
+
+        editHistory.reset(bodyField.text, bodyField.cursorPosition);
     }
     canAccept: true
-    onAccepted: app.notes.saveNote(page.noteId, bodyField.text, page.category,
-                                   favoriteSwitch.checked)
+    onAccepted: app.notes.saveNote(page.noteId, bodyField.text, page.category, favoriteSwitch.checked)
 
     EditHistory {
         id: editHistory
@@ -114,9 +114,10 @@ Dialog {
                             anchors.centerIn: parent
                             font.pixelSize: Theme.fontSizeLarge
                             color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
-                            opacity: parent.enabled ? 1.0 : Theme.opacityLow
+                            opacity: parent.enabled ? 1 : Theme.opacityLow
                             text: "\u21a9"
                         }
+
                     }
 
                     BackgroundItem {
@@ -129,15 +130,21 @@ Dialog {
                             anchors.centerIn: parent
                             font.pixelSize: Theme.fontSizeLarge
                             color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
-                            opacity: parent.enabled ? 1.0 : Theme.opacityLow
+                            opacity: parent.enabled ? 1 : Theme.opacityLow
                             text: "\u21aa"
                         }
+
                     }
+
                 }
+
             }
+
         }
 
         VerticalScrollDecorator {
         }
+
     }
+
 }

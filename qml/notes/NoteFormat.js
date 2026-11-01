@@ -43,8 +43,8 @@ function stripMarkdown(text) {
 
 function excerpt(text) {
     var line = stripMarkdown(text)
-    if (line.length > 80)
-        return line.substring(0, 79) + "\u2026"
+    if (line.length > 100)
+        return line.substring(0, 99) + "\u2026"
     return line
 }
 
@@ -217,9 +217,11 @@ function tableAt(lines, from) {
     while (at < lines.length && isTableRow(lines[at]))
         rows.push(splitRow(lines[at++]))
 
-    return { "rows": rows,
-             "alignments": alignmentsOf(lines[from + 1]),
-             "lineCount": at - from }
+    return {
+        "rows": rows,
+        "alignments": alignmentsOf(lines[from + 1]),
+        "lineCount": at - from
+    }
 }
 
 // The table a block of lines holds, or null when those lines are not one.
@@ -231,8 +233,10 @@ function tableOf(block) {
 // lines at once and nothing downstream may assume one row is one line. Every
 // role is set on every row: a ListModel takes its roles from the first one.
 function previewRow(kind, done, html, lineIndex) {
-    return { "kind": kind, "done": done, "html": html, "lineIndex": lineIndex,
-             "level": 0, "indent": 0, "block": "" }
+    return {
+        "kind": kind, "done": done, "html": html, "lineIndex": lineIndex,
+        "level": 0, "indent": 0, "block": ""
+    }
 }
 
 function taskRow(task, lineIndex) {
@@ -318,8 +322,10 @@ function codeAt(lines, from) {
     while (at < lines.length && !isFence(lines[at]))
         at += 1
 
-    return { "text": lines.slice(from + 1, at).join("\n"),
-             "lineCount": Math.min(at + 1, lines.length) - from }
+    return {
+        "text": lines.slice(from + 1, at).join("\n"),
+        "lineCount": Math.min(at + 1, lines.length) - from
+    }
 }
 
 function codeRow(code, lineIndex) {
@@ -340,8 +346,10 @@ function blockAt(lines, from) {
     if (table === null)
         return null
 
-    return { "row": tableBlock(lines, from, table.lineCount),
-             "lineCount": table.lineCount }
+    return {
+        "row": tableBlock(lines, from, table.lineCount),
+        "lineCount": table.lineCount
+    }
 }
 
 function previewBlocks(text) {

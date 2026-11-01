@@ -1,3 +1,4 @@
+import "../notes/NoteFormat.js" as Format
 /*!
     \qmltype MarkdownTable
     \brief A GitHub-style Markdown table drawn as a grid.
@@ -23,7 +24,6 @@
 */
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../notes/NoteFormat.js" as Format
 
 Item {
     id: root
@@ -40,61 +40,57 @@ Item {
     // Text cannot be measured declaratively, and nothing outside this file
     // reads the widths, so they are the one thing assigned rather than bound.
     function remeasure() {
-        var widths = []
-        for (var c = 0; c < root.columnCount; ++c)
-            widths.push(0)
-        for (var r = 0; r < root.rows.length; ++r)
-            widths = widerRow(widths, root.rows[r])
-        root.columnWidths = capped(widths)
+        var widths = [];
+        for (var c = 0; c < root.columnCount; ++c) widths.push(0)
+        for (var r = 0; r < root.rows.length; ++r) widths = widerRow(widths, root.rows[r])
+        root.columnWidths = capped(widths);
     }
 
     // Every column is measured in the header's bold, since a column sized to
     // its lighter body text would clip the name standing above it.
     function widerRow(widths, cells) {
         for (var c = 0; c < widths.length; ++c) {
-            ruler.text = c < cells.length ? Format.stripMarkdown(cells[c]) : ""
-            widths[c] = Math.max(widths[c], ruler.width + 2 * Theme.paddingMedium)
+            ruler.text = c < cells.length ? Format.stripMarkdown(cells[c]) : "";
+            widths[c] = Math.max(widths[c], ruler.width + 2 * Theme.paddingMedium);
         }
-        return widths
+        return widths;
     }
 
     // No column is wider than the note itself, so a long cell wraps instead of
     // pushing every column after it out of reach.
     function capped(widths) {
-        var limit = root.width - 2 * Theme.horizontalPageMargin
-        for (var c = 0; c < widths.length; ++c)
-            widths[c] = Math.min(widths[c], limit)
-        return widths
+        var limit = root.width - 2 * Theme.horizontalPageMargin;
+        for (var c = 0; c < widths.length; ++c) widths[c] = Math.min(widths[c], limit)
+        return widths;
     }
 
     function columnWidth(column) {
-        return column < root.columnWidths.length ? root.columnWidths[column] : 0
+        return column < root.columnWidths.length ? root.columnWidths[column] : 0;
     }
 
     function gridWidth() {
-        var total = 0
-        for (var c = 0; c < root.columnWidths.length; ++c)
-            total += root.columnWidths[c]
-        return total
+        var total = 0;
+        for (var c = 0; c < root.columnWidths.length; ++c) total += root.columnWidths[c]
+        return total;
     }
 
     // A row the writer left short still fills the width of the table, so the
     // grid stays rectangular however the Markdown was typed.
     function cell(row, column) {
-        var cells = root.rows[row]
-        return cells !== undefined && column < cells.length ? cells[column] : ""
+        var cells = root.rows[row];
+        return cells !== undefined && column < cells.length ? cells[column] : "";
     }
 
     function alignmentOf(column) {
-        var at = column < root.alignments.length ? root.alignments[column] : "left"
+        var at = column < root.alignments.length ? root.alignments[column] : "left";
         if (at === "right")
-            return Text.AlignRight
-        return at === "center" ? Text.AlignHCenter : Text.AlignLeft
+            return Text.AlignRight;
+
+        return at === "center" ? Text.AlignHCenter : Text.AlignLeft;
     }
 
     width: parent ? parent.width : Screen.width
     height: viewport.height
-
     onContentChanged: root.remeasure()
     onWidthChanged: root.remeasure()
     Component.onCompleted: root.remeasure()
@@ -164,8 +160,11 @@ Item {
                                     text: Format.lineToHtml(root.cell(rowBlock.rowIndex, index))
                                     onLinkActivated: root.linkActivated(link)
                                 }
+
                             }
+
                         }
+
                     }
 
                     Separator {
@@ -174,8 +173,13 @@ Item {
                         color: Theme.secondaryColor
                         horizontalAlignment: Qt.AlignHCenter
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

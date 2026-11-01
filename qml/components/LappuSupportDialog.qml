@@ -53,6 +53,7 @@ SupportDialog {
         DetailsParagraph {
             text: qsTr("Support keeps it working with new Nextcloud releases and new versions of Sailfish OS.")
         }
+
     }
 
     DetailsDrawer {
@@ -61,5 +62,7 @@ SupportDialog {
         DetailsParagraph {
             text: qsTr("Report what breaks, suggest what is missing, or tell other Nextcloud users about the app.")
         }
+
     }
+
 }

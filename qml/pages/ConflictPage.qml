@@ -1,7 +1,7 @@
+import "../components"
 import Opal.LinkHandler 1.0 as L
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import "../components"
 
 Page {
     id: page
@@ -36,6 +36,7 @@ Page {
                 text: qsTr("Keep both")
                 onClicked: Lappu.resolveKeepBoth(page.conflict.noteId)
             }
+
         }
 
         Column {
@@ -62,8 +63,7 @@ Page {
             Label {
                 x: Theme.horizontalPageMargin
                 width: parent.width - 2 * Theme.horizontalPageMargin
-                visible: page.conflict !== null
-                         && (page.conflict.categoryDiffers || page.conflict.favoriteDiffers)
+                visible: page.conflict !== null && (page.conflict.categoryDiffers || page.conflict.favoriteDiffers)
                 wrapMode: Text.WordWrap
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeExtraSmall
@@ -106,6 +106,7 @@ Page {
                 modified: page.conflict ? page.conflict.theirsModified : 0
                 onLinkActivated: L.LinkHandler.openOrCopyUrl(link)
             }
+
         }
 
         // The questions are not kept anywhere: an app closed before they were
@@ -118,5 +119,7 @@ Page {
 
         VerticalScrollDecorator {
         }
+
     }
+
 }

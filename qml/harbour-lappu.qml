@@ -12,57 +12,60 @@ ApplicationWindow {
 
     function showMain() {
         if (pageStack.busy) {
-            navigateAgain.restart()
-            return
+            navigateAgain.restart();
+            return ;
         }
-        pageStack.replaceAbove(null, Lappu.configured ? notesPage : loginPage)
+        pageStack.replaceAbove(null, Lappu.configured ? notesPage : loginPage);
     }
 
     function showToast(text) {
         if (text !== "")
-            globalNotification.toast(text)
+            globalNotification.toast(text);
+
     }
 
     function syncNotes() {
-        Lappu.sync()
+        Lappu.sync();
     }
 
     function openNote(noteId) {
         if (!notes.noteById(noteId)) {
-            showToast(qsTr("That note is no longer here."))
-            return
+            showToast(qsTr("That note is no longer here."));
+            return ;
         }
         pageStack.push(Qt.resolvedUrl("pages/NotePage.qml"), {
             "noteId": noteId
-        })
+        });
     }
 
     function inheritCategory() {
-        return notes.filterKind === "category" ? notes.filterCategory : ""
+        return notes.filterKind === "category" ? notes.filterCategory : "";
     }
 
     // Reachable from the cover, which can be tapped before anyone has signed in.
     function openNewNote() {
         if (!Lappu.configured)
-            return
-        activate()
+            return ;
+
+        activate();
         pageStack.push(Qt.resolvedUrl("pages/NoteEditPage.qml"), {
             "inheritCategory": inheritCategory()
-        })
+        });
     }
 
     function togglePin(noteId) {
         if (notes.pinnedNoteId === noteId)
-            notes.unpinNote()
+            notes.unpinNote();
         else
-            notes.pinNote(noteId)
+            notes.pinNote(noteId);
     }
 
     function editNote(noteId) {
-        var note = notes.noteById(noteId)
+        var note = notes.noteById(noteId);
         if (!note || note.locked)
-            return
-        pushEditor(note)
+            return ;
+
+        pushEditor(note);
     }
 
     function pushEditor(note) {
@@ -71,7 +74,7 @@ ApplicationWindow {
             "content": note.content,
             "category": note.category,
             "favorite": note.favorite
-        })
+        });
     }
 
     initialPage: Lappu.ready ? (Lappu.configured ? notesPage : loginPage) : startPage
@@ -98,6 +101,7 @@ ApplicationWindow {
 
         StartPage {
         }
+
     }
 
     Component {
@@ -105,6 +109,7 @@ ApplicationWindow {
 
         LoginPage {
         }
+
     }
 
     Component {
@@ -112,17 +117,20 @@ ApplicationWindow {
 
         NotesPage {
         }
+
     }
 
     Connections {
         target: Lappu
         onReadyChanged: {
             if (Lappu.ready)
-                app.showMain()
+                app.showMain();
+
         }
         onConfiguredChanged: {
             if (!Lappu.configured)
-                app.showMain()
+                app.showMain();
+
         }
         onNotesChanged: app.notes.ingest(Notes.notes())
         onBusyChanged: app.notes.busy = Lappu.busy
@@ -137,9 +145,13 @@ ApplicationWindow {
     // Asks for support once the app has been used for a while, and not again
     // for a long time after the answer.
     AskForSupport {
+
         contents: Component {
             LappuSupportDialog {
             }
+
         }
+
     }
+
 }
