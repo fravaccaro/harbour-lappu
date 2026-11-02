@@ -73,7 +73,7 @@ The startup refresh is behind `syncIfStartupWanted()` and its `m_syncedOnStart` 
 
 ## A note has no title
 
-The server names a note after the first line of its content. `noteTitle()` in `session.cpp` works the same name out locally, so a page can show it before the next pull confirms it.
+A note's title is its file name, and the Notes **v1** API does not work it out from the content the way the deprecated v0.2 one did: a write that carries no title has the server fall back to "New note". So `noteTitle()` in `session.cpp` names the note after the first line of its content - taking off the markers that open a heading or a list item, as the server's own clients do - and `bodyFor()` sends that title with every `POST` and `PUT`. The server sanitises it (it is a file name, and a duplicate gains a sequential number) and hands the result back, which the cache adopts through `markClean()`, so the name a page shows before the first pull is confirmed or corrected by it.
 
 A note that has not reached the server borrows a **negative id** until the server names it. That id is what the cover may be holding, so `onCreated()` remaps it: if `coverNoteId` is the local id being replaced, it is rewritten to the id the server gave. Without that, pinning a brand-new note would leave the cover blank after its first sync.
 

@@ -13,7 +13,7 @@ Above the text sit the category of the note and a **Favorite** switch, so neithe
 
 ## The title is the first line
 
-A note carries no title field. The server names a note after its first line, and Lappu works out the same name on the phone, which is why the field is labelled *The first line is the title*. Write the title on the first line and the body under it.
+A note carries no title field: its title is its first line. Lappu names the note from that line as you write it - taking off a leading `#` or list marker the way Nextcloud does - which is why the field is labelled *The first line is the title*. Write the title on the first line and the body under it.
 
 Naming it locally means a new note is listed under its real name straight away, rather than waiting for the next refresh to learn what the server decided to call it.
 

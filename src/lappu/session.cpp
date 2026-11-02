@@ -1,6 +1,7 @@
 #include "session.h"
 
 #include <QDateTime>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QVariantMap>
 
@@ -8,17 +9,29 @@
 
 namespace {
 
-// The server names a note after the first line that says anything, so the
-// pages can show the same name before the next pull confirms it.
+// The markers that open a heading or a list item are taken off the line that
+// becomes the title, the way the server's own renderer names a note, so a
+// bullet or a task reads as the thing itself rather than "- [ ] ...".
+QString titleFromLine(QString line)
+{
+    while (line.startsWith(QLatin1Char('#')))
+        line.remove(0, 1);
+
+    static const QRegularExpression marker(
+        QStringLiteral("^\\s*[-*+]\\s+(\\[[ xX]\\]\\s+)?"));
+    line.remove(marker);
+    return line.trimmed();
+}
+
+// The note is named after the first line that says anything. The name is worked
+// out here so the pages can show it before the next pull confirms it, and it
+// travels with the note because the v1 API keeps the title it is given rather
+// than deriving one from the content.
 QString noteTitle(const QString &content)
 {
     const QStringList lines = content.split(QLatin1Char('\n'));
     for (int i = 0; i < lines.size(); ++i) {
-        QString line = lines.at(i).trimmed();
-        while (line.startsWith(QLatin1Char('#')))
-            line.remove(0, 1);
-
-        line = line.trimmed();
+        const QString line = titleFromLine(lines.at(i).trimmed());
         if (!line.isEmpty())
             return line;
     }

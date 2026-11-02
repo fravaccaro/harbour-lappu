@@ -43,11 +43,15 @@ QVector<LocalNote> notesFrom(const QByteArray &body)
     return notes;
 }
 
-// Only these are the caller's to set: the server works the title out from the
-// content and stamps the note itself.
+// The title travels with the note because the v1 API no longer works it out
+// from the content: it is the note's file name, and a write that leaves it out
+// has the server fall back to "New note". `Session` names the note after its
+// first line, and the server hands the sanitised name back for the cache to
+// adopt. The modified stamp is left for the server to set.
 QByteArray bodyFor(const LocalNote &note)
 {
     QJsonObject object;
+    object.insert(QStringLiteral("title"), note.title);
     object.insert(QStringLiteral("content"), note.content);
     object.insert(QStringLiteral("category"), note.category);
     object.insert(QStringLiteral("favorite"), note.favorite);
