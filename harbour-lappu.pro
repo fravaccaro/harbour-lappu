@@ -83,4 +83,5 @@ DISTFILES += \
     qml/pages/StartPage.qml \
     qml/pages/TranslationsPage.qml \
     qml/pages/WebLoginPage.qml \
-    translations/harbour-lappu.ts
+    translations/harbour-lappu.ts \
+    translations/harbour-lappu-en.ts

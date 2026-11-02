@@ -770,7 +770,7 @@
     <name>Session</name>
     <message>
         <source>%1 changed on the server as well. Choose which version to keep.</source>
-        <translation>Anche %1 è stata modificata sul server. Scegli quale versione mantenere.</translation>
+        <translation>%1 è stata modificata anche sul server. Scegli quale versione mantenere.</translation>
     </message>
 </context>
 <context>

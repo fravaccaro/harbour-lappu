@@ -49,7 +49,7 @@ The runtime dependencies are the Silica components, the WebView, and the notific
 
 ## Translations
 
-Italian ships with the app. Translators work on the [Transifex project](https://explore.transifex.com/fravaccaro/lappu). A new language is a further `.ts` file beside it:
+Italian ships with the app. Translators work on the [Transifex project](https://explore.transifex.com/fravaccaro/lappu). English is already the language the strings are written in, so `translations/harbour-lappu-en.ts` is kept for the translators and is not listed in `TRANSLATIONS`: listing it there is what would compile it to a `.qm`. A new language is a further `.ts` file beside it:
 
 1. Copy `translations/harbour-lappu.ts` to `translations/harbour-lappu-<code>.ts`.
 2. Add it to `TRANSLATIONS` in `harbour-lappu.pro`.
