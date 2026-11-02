@@ -82,6 +82,11 @@ Dialog {
                 height: Math.max(implicitHeight + undoBar.height, Screen.height / 3)
                 text: page.content
                 placeholderText: qsTr("Write a note...")
+                // A tap on the Markdown bar pulls focus off the field, and the
+                // default behaviour clears it a moment later, taking the keyboard
+                // down. Keeping focus lets the bar add a mark without the keyboard
+                // slipping away; a deliberate swipe down still closes it.
+                focusOutBehavior: FocusBehavior.KeepFocus
                 wrapMode: TextEdit.Wrap
                 color: Theme.primaryColor
                 onTextChanged: editHistory.watch(text, cursorPosition)

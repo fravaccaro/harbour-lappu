@@ -41,8 +41,19 @@ function stripMarkdown(text) {
     return t.replace(/\s+/g, " ").trim()
 }
 
+// The first line that says anything is the note's title, shown on its own, so
+// the body that follows it is where the preview begins. A note that is only a
+// title has no body and so no excerpt, which the rows and cards hide.
+function bodyAfterTitle(text) {
+    var lines = String(text).split("\n")
+    var i = 0
+    while (i < lines.length && stripMarkdown(lines[i]) === "")
+        i += 1
+    return lines.slice(i + 1).join("\n")
+}
+
 function excerpt(text) {
-    var line = stripMarkdown(text)
+    var line = stripMarkdown(bodyAfterTitle(text))
     if (line.length > 100)
         return line.substring(0, 99) + "\u2026"
     return line

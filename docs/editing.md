@@ -35,6 +35,8 @@ The bar above the text applies Markdown to the selection, or, with nothing selec
 
 A heading button **replaces** whatever heading the line already had rather than adding more hashes, so tapping H2 on an H1 line makes it an H2.
 
+A tap on the bar leaves the keyboard up, so several marks can be added in a row without it closing between them.
+
 The table button is the one that writes more than markers. It lays down a header row, the row of dashes under it and one empty row, always on lines of its own, and leaves the first column name selected so typing renames it:
 
 ```

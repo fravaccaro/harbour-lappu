@@ -111,6 +111,8 @@ Columns are measured, which QML offers no declarative way to do. `MarkdownTable.
 
 List excerpts and the cover have no room for any of this, so `stripMarkdown()` takes the markers out: `stripBlocks()` for what marks a whole line - the dashes of a table, a fence, a `>`, a bullet, a task's brackets - and `stripSpans()` for what marks a run of text inside one. A table row gives up its pipes only when the line is fenced by them, which again leaves prose alone.
 
+An excerpt starts after the title, not at the top of the note: the title is already shown on its own, so `excerpt()` drops the first line that says anything - the same line `noteTitle()` names the note after - through `bodyAfterTitle()`, and a note that is only a title has no excerpt at all. The cover keeps the whole note through `plainText()`, since it shows the title and body together.
+
 ## Links
 
 No link is handed to the browser by the app. `Opal.LinkHandler` shows it first, which matters most for the links inside a note, since those came from the server rather than from the app. `NoteBody` only re-emits `linkActivated`, so the page that holds it decides, and both the page and the component's own example call `LinkHandler.openOrCopyUrl()`.

@@ -9,6 +9,10 @@
     several lines: it lays down an empty two-column table on lines of its own
     and hands back the first column name selected, ready to be typed over.
 
+    Every button restores focus to \c target before it edits, so the keyboard a
+    writer had open stays open. The field keeps that focus through the edit with
+    \c {focusOutBehavior: FocusBehavior.KeepFocus}.
+
     \qml
     MarkdownToolbar {
         width: parent.width
