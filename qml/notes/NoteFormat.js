@@ -16,18 +16,22 @@ function stripTables(t) {
 
 // What a line is marked as: the hashes of a heading, the fence of a code
 // block, the > of a quote, the bullet of a list and the brackets of a task.
-// The task is taken off before the bullet, being also a bullet.
+// The task is taken off before the bullet, being also a bullet. A footnote
+// keeps what it says and gives up the label that named it.
 function stripBlocks(t) {
     t = stripTables(t)
     t = t.replace(/^[ \t]*```.*$/gm, "")
     t = t.replace(/^#+[ \t]+/gm, "")
     t = t.replace(/^[ \t]*>+[ \t]?/gm, "")
+    t = t.replace(/^\[\^[^\]\s&<>"]+\]:[ \t]*/gm, "")
     t = t.replace(/^[ \t]*[-*+] \[[ xX]\][ \t]*/gm, "")
     return t.replace(/^[ \t]*[-*+][ \t]+/gm, "")
 }
 
-// What a run of text inside a line is marked with.
+// What a run of text inside a line is marked with. A reference stands for a
+// number the list and the cover have no room to give, so it goes entirely.
 function stripSpans(t) {
+    t = t.replace(/\[\^[^\]\s&<>"]+\]/g, "")
     t = t.replace(/\*\*(.*?)\*\*/g, "$1")
     t = t.replace(/\*(.*?)\*/g, "$1")
     t = t.replace(/~~(.*?)~~/g, "$1")
@@ -94,8 +98,22 @@ function inlineMarkup(t) {
     return t.replace(/\*(.+?)\*/g, "<i>$1</i>")
 }
 
-function markedUp(t) {
-    t = inlineMarkup(t)
+// A reference is drawn as the number the foot of the note gave it, never as
+// the label it was written with, so a note numbered 1, bignote, 1 still reads
+// 1, 2, 3. One the note never defines points at nothing and is left alone.
+function footnoteMarks(t, order) {
+    if (!order)
+        return t
+
+    return String(t).replace(/\[\^([^\]\s&<>"]+)\]/g, function (whole, id) {
+        if (!order.hasOwnProperty(id))
+            return whole
+        return "<sup><a href=\"footnote:" + id + "\">" + order[id] + "</a></sup>"
+    })
+}
+
+function markedUp(t, order) {
+    t = footnoteMarks(inlineMarkup(t), order)
     return t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "<a href=\"$2\">$1</a>")
 }
 
@@ -108,17 +126,19 @@ function codeSpan(span) {
 // every other mark and kept as it was written, or the asterisks of a snippet
 // would be taken for emphasis. Splitting on a captured group leaves those
 // spans at the odd places.
-function richText(t) {
+function richText(t, order) {
     var parts = String(t).split(/(`[^`]+`)/)
     for (var i = 0; i < parts.length; ++i)
-        parts[i] = i % 2 === 1 ? codeSpan(parts[i]) : markedUp(parts[i])
+        parts[i] = i % 2 === 1 ? codeSpan(parts[i]) : markedUp(parts[i], order)
     return parts.join("")
 }
 
 // One line of prose, escaped before any markup is read. Every row that draws
-// text goes through here, cells and headings included.
-function lineToHtml(line) {
-    return richText(escapeHtml(line))
+// text goes through here, cells and headings included. The numbering is handed
+// down from the whole note, so a caller with none - a table cell, which is no
+// place for a footnote - leaves a reference as it was written.
+function lineToHtml(line, order) {
+    return richText(escapeHtml(line), order)
 }
 
 // A nesting step is two spaces, a tab being four of them. Past the third step
@@ -163,9 +183,92 @@ function parseQuote(line) {
 }
 
 // The whole row is the tap target, so a link inside a task keeps its label
-// but loses the anchor.
-function taskHtml(text) {
-    return richText(escapeHtml(text)).replace(/<a href="[^"]*">([^<]*)<\/a>/g, "$1")
+// but loses the anchor. A reference keeps its number for the same reason: the
+// anchor goes and the superscript stays.
+function taskHtml(text, order) {
+    return richText(escapeHtml(text), order).replace(/<a href="[^"]*">([^<]*)<\/a>/g, "$1")
+}
+
+// The note a definition line opens: [^id]: followed by what it says, with the
+// indented lines under it belonging to the same note. An id holds no space,
+// and none of the characters escaping would rewrite, so the label read here
+// is the same one read in the body.
+function footnoteDefAt(lines, from) {
+    var match = String(lines[from]).match(/^\[\^([^\]\s&<>"]+)\]:[ \t]?/)
+    if (!match)
+        return null
+
+    var said = [String(lines[from]).substring(match[0].length)]
+    var at = from + 1
+    while (at < lines.length && /^[ \t]+\S/.test(lines[at]))
+        said.push(String(lines[at++]).trim())
+
+    return { "id": match[1], "text": said.join(" ").trim(), "lineCount": at - from }
+}
+
+// Every footnote the note defines, in the order they were written. A fence is
+// stepped over whole: inside one, a definition is code like any other line.
+function footnotesOf(lines) {
+    var book = { "defs": {}, "ids": [] }
+    var at = 0
+    while (at < lines.length) {
+        var code = codeAt(lines, at)
+        var def = code === null ? footnoteDefAt(lines, at) : null
+        if (def !== null && !book.defs.hasOwnProperty(def.id))
+            book.ids.push(def.id)
+        if (def !== null)
+            book.defs[def.id] = def.text
+        at += code !== null ? code.lineCount : (def !== null ? def.lineCount : 1)
+    }
+    return book
+}
+
+// What a line owes to the footnotes rather than to the body: a fence or a
+// definition, counted in lines, or 0 for a line the body keeps.
+function footnoteSkipAt(lines, from) {
+    var code = codeAt(lines, from)
+    if (code !== null)
+        return code.lineCount
+
+    var def = footnoteDefAt(lines, from)
+    return def !== null ? def.lineCount : 0
+}
+
+// A backquoted span is not read for references, as it is not read for any
+// other mark, or a snippet would spend a number nothing ever draws.
+function numberRefs(line, defs, order, count) {
+    var bare = String(line).replace(/`[^`]+`/g, "")
+    var refs = bare.match(/\[\^[^\]\s&<>"]+\]/g) || []
+    for (var i = 0; i < refs.length; ++i) {
+        var id = refs[i].substring(2, refs[i].length - 1)
+        if (defs.hasOwnProperty(id) && !order.hasOwnProperty(id))
+            order[id] = ++count
+    }
+    return count
+}
+
+// The number each footnote is drawn as, given out in the order the body first
+// asks for them. One the body never asks for still earns a number, after the
+// rest, so a definition written and forgotten is still shown.
+function footnoteOrder(lines, book) {
+    var order = {}
+    var count = 0
+    var at = 0
+    while (at < lines.length) {
+        var skip = footnoteSkipAt(lines, at)
+        if (skip === 0)
+            count = numberRefs(lines[at], book.defs, order, count)
+        at += skip > 0 ? skip : 1
+    }
+    return numberTheRest(book, order, count)
+}
+
+function numberTheRest(book, order, count) {
+    for (var i = 0; i < book.ids.length; ++i) {
+        if (!order.hasOwnProperty(book.ids[i]))
+            order[book.ids[i]] = ++count
+    }
+    return order
 }
 
 // The cells of one row, with the outer pipes dropped. A pipe a cell needs for
@@ -250,29 +353,29 @@ function previewRow(kind, done, html, lineIndex) {
     }
 }
 
-function taskRow(task, lineIndex) {
-    var row = previewRow("task", task.done, taskHtml(task.text), lineIndex)
+function taskRow(task, lineIndex, order) {
+    var row = previewRow("task", task.done, taskHtml(task.text, order), lineIndex)
     row.indent = task.indent
     return row
 }
 
-function quoteRow(quote, lineIndex) {
-    var row = previewRow("quote", false, lineToHtml(quote.text), lineIndex)
+function quoteRow(quote, lineIndex, order) {
+    var row = previewRow("quote", false, lineToHtml(quote.text, order), lineIndex)
     row.indent = quote.indent
     return row
 }
 
-function headingRow(line, level, lineIndex) {
+function headingRow(line, level, lineIndex, order) {
     var text = String(line).substring(level + 1)
-    var row = previewRow("heading", false, lineToHtml(text), lineIndex)
+    var row = previewRow("heading", false, lineToHtml(text, order), lineIndex)
     row.level = level
     return row
 }
 
 // A bullet is prose with a glyph in front of it, so it draws as any other line
 // of text does and only its indent sets it apart.
-function bulletRow(bullet, lineIndex) {
-    var html = "\u2022 " + lineToHtml(bullet.text)
+function bulletRow(bullet, lineIndex, order) {
+    var html = "\u2022 " + lineToHtml(bullet.text, order)
     var row = previewRow("text", false, html, lineIndex)
     row.indent = bullet.indent
     return row
@@ -281,34 +384,34 @@ function bulletRow(bullet, lineIndex) {
 // The kinds a line is known by from the way it begins, or null when it begins
 // with nothing in particular. A task is asked about before a bullet, being
 // also a bullet, and a quote before either, since it may hold one.
-function markedRow(line, lineIndex) {
+function markedRow(line, lineIndex, order) {
     var task = parseTask(line)
     if (task !== null)
-        return taskRow(task, lineIndex)
+        return taskRow(task, lineIndex, order)
 
     var quote = parseQuote(line)
     if (quote !== null)
-        return quoteRow(quote, lineIndex)
+        return quoteRow(quote, lineIndex, order)
 
-    return headingOrBullet(line, lineIndex)
+    return headingOrBullet(line, lineIndex, order)
 }
 
-function headingOrBullet(line, lineIndex) {
+function headingOrBullet(line, lineIndex, order) {
     var level = headingOf(line)
     if (level > 0)
-        return headingRow(line, level, lineIndex)
+        return headingRow(line, level, lineIndex, order)
 
     var bullet = parseBullet(line)
-    return bullet !== null ? bulletRow(bullet, lineIndex) : null
+    return bullet !== null ? bulletRow(bullet, lineIndex, order) : null
 }
 
-function previewLine(line, lineIndex) {
-    var marked = markedRow(line, lineIndex)
+function previewLine(line, lineIndex, order) {
+    var marked = markedRow(line, lineIndex, order)
     if (marked !== null)
         return marked
     if (String(line).trim() === "")
         return previewRow("blank", false, "", lineIndex)
-    return previewRow("text", false, lineToHtml(line), lineIndex)
+    return previewRow("text", false, lineToHtml(line, order), lineIndex)
 }
 
 // The markdown travels whole and the table is read again where it is drawn,
@@ -363,14 +466,49 @@ function blockAt(lines, from) {
     }
 }
 
-function previewBlocks(text) {
-    var lines = String(text).split("\n")
-    var rows = []
-    var at = 0
-    while (at < lines.length) {
-        var block = blockAt(lines, at)
-        rows.push(block !== null ? block.row : previewLine(lines[at], at))
-        at += block !== null ? block.lineCount : 1
+// What the lines beginning at \a at draw, and where the next row begins. A
+// definition draws nothing here - it is shown at the foot of the note - but
+// the lines it took are still counted, so every row that follows keeps the
+// line it was written on and a task still flips the line it names.
+function pushRow(rows, lines, at, order) {
+    var block = blockAt(lines, at)
+    if (block !== null) {
+        rows.push(block.row)
+        return at + block.lineCount
+    }
+
+    var def = footnoteDefAt(lines, at)
+    if (def !== null)
+        return at + def.lineCount
+
+    rows.push(previewLine(lines[at], at, order))
+    return at + 1
+}
+
+// The notes themselves, gathered under the body in the order of their numbers
+// rather than of their writing, each opening with the number the body shows.
+// They stand for no line of their own, so they carry none. A rule opens them,
+// since what follows it is no longer the note being read but its asides.
+function footnoteRows(book, order) {
+    if (book.ids.length === 0)
+        return []
+
+    var ids = book.ids.slice().sort(function (a, b) { return order[a] - order[b] })
+    var rows = [previewRow("rule", false, "", -1)]
+    for (var i = 0; i < ids.length; ++i) {
+        var html = order[ids[i]] + ". " + lineToHtml(book.defs[ids[i]], order)
+        rows.push(previewRow("footnote", false, html, -1))
     }
     return rows
+}
+
+function previewBlocks(text) {
+    var lines = String(text).split("\n")
+    var book = footnotesOf(lines)
+    var order = footnoteOrder(lines, book)
+    var rows = []
+    var at = 0
+    while (at < lines.length)
+        at = pushRow(rows, lines, at, order)
+    return rows.concat(footnoteRows(book, order))
 }

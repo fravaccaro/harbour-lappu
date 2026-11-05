@@ -32,6 +32,7 @@ The bar above the text applies Markdown to the selection, or, with nothing selec
 | Link | `[label]()`, with the cursor left in the brackets |
 | H1 - H6 | `#` to `######` at the start of the line |
 | ▦ | an empty two-column table |
+| ¹ | a footnote: `[^1]` here, and `[^1]: ` at the foot of the note |
 
 A heading button **replaces** whatever heading the line already had rather than adding more hashes, so tapping H2 on an H1 line makes it an H2.
 
@@ -46,6 +47,26 @@ The table button is the one that writes more than markers. It lays down a header
 ```
 
 Add a row by writing another line of the same shape, and a column by adding a cell to every row, the dashes included. Writing `:---`, `---:` or `:---:` in the row of dashes puts that column's text left, right or centre.
+
+The footnote button writes in two places at once, which no other button does: a reference where the cursor is, and the note it refers to at the foot of the text, with the cursor left after the colon ready for what it says. It numbers the reference with the lowest number the note has not used, so inserting one twice gives `[^1]` and `[^2]`.
+
+## Footnotes
+
+A footnote lets an aside sit out of the way of the sentence that needs it. Write a reference where the aside belongs, and the note itself on a line of its own:
+
+```
+The meeting is on Tuesday.[^1]
+
+[^1]: Moved from Monday.
+```
+
+The reference can be named anything without spaces - `[^1]`, `[^bignote]`, `[^why]` - and the note can be written anywhere, not only at the end. Lines indented under a note belong to it.
+
+Reading the note, a reference is drawn as a small raised **number** and the notes are gathered together under the body, below a line that separates them from it, whatever order they were written in. The numbers are counted in the order the references appear, so a note that refers to `[^5]` before `[^2]` still reads 1 then 2, and you never have to renumber anything by hand. A reference the note never defines is left as you typed it, since there is nothing to point at.
+
+Tapping a raised number does nothing: it points inside the note you are already reading.
+
+Nextcloud writes its comment threads using the same syntax, with names like `[^comment-1]`. Lappu has no separate comment view, so these are shown as ordinary footnotes - the text is all there, under the body with the rest.
 
 ## Undo and redo
 
@@ -71,7 +92,7 @@ A **task line** is drawn with a checkbox, and tapping the row ticks or unticks i
 
 A **table** is drawn as a grid with its header in bold, not as the pipes it was written with. What makes a table a table is the row of dashes directly under the header, which is why a sentence with a stray `|` in it is left as the sentence it is. Each column is as wide as its widest cell, and when the columns together want more room than the screen has, the grid can be dragged sideways; the rest of the note stays where it is. A link in a cell is a link, and is offered the same way as any other.
 
-In the notes list and on the cover, where there is no room for any of this, the markers are simply taken out: a table reads as its cells, a quote as its text, and a code block without its fences.
+In the notes list and on the cover, where there is no room for any of this, the markers are simply taken out: a table reads as its cells, a quote as its text, and a code block without its fences. A footnote reference goes with them, since there is no list of notes under an excerpt for a number to point at, while what the footnote says is kept with the rest of the text.
 
 A note the server marks read-only says so and cannot be edited. An empty note says that too, rather than showing a blank page.
 

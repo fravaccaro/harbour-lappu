@@ -11,6 +11,12 @@ import Sailfish.Silica 1.0
     drawn as code and a GitHub-style table as a grid; every other line becomes
     rich text. A nested item is indented as it was written.
 
+    A footnote reference - \c {[^1]} - is drawn as the number its note was
+    given, and the notes themselves are gathered under a rule at the foot of
+    the body, however they were scattered through the text. Tapping a
+    reference does nothing: it points inside the note, so it is never
+    reported through \c linkActivated.
+
     The component never rewrites the text itself: it reports the line of the
     tapped task through \c taskClicked so the owner can flip that line. A
     table or a code block stands for several lines at once, so that number is
@@ -36,6 +42,13 @@ Column {
 
     signal taskClicked(int lineIndex)
     signal linkActivated(string link)
+
+    // A footnote mark points inside the note itself, so it is answered here
+    // rather than offered to the owner: there is no address to open.
+    function followLink(link) {
+        if (String(link).indexOf("footnote:") !== 0)
+            root.linkActivated(link);
+    }
 
     function rebuild() {
         var rows = Format.previewBlocks(root.content);
@@ -109,7 +122,7 @@ Column {
                 color: Theme.primaryColor
                 linkColor: Theme.highlightColor
                 text: html
-                onLinkActivated: root.linkActivated(link)
+                onLinkActivated: root.followLink(link)
             }
 
             // A quote is marked by a bar beside it rather than by the > it was
@@ -140,9 +153,41 @@ Column {
                     color: Theme.secondaryColor
                     linkColor: Theme.highlightColor
                     text: html
-                    onLinkActivated: root.linkActivated(link)
+                    onLinkActivated: root.followLink(link)
                 }
 
+            }
+
+            // What follows the rule is no longer the note being read but the
+            // asides to it, so the two are parted by a line rather than by a
+            // gap, which a note with blank lines of its own would not show.
+            Item {
+                width: parent.width
+                height: Theme.paddingLarge * 2
+                visible: kind === "rule"
+
+                Separator {
+                    width: parent.width - 2 * Theme.horizontalPageMargin
+                    anchors.centerIn: parent
+                    color: Theme.secondaryColor
+                    horizontalAlignment: Qt.AlignHCenter
+                }
+
+            }
+
+            // A footnote stands under the body, set smaller and dimmer than
+            // what refers to it, and opens with the number the mark shows.
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - x - Theme.horizontalPageMargin
+                visible: kind === "footnote"
+                wrapMode: Text.WordWrap
+                textFormat: Text.RichText
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.secondaryColor
+                linkColor: Theme.highlightColor
+                text: html
+                onLinkActivated: root.followLink(link)
             }
 
             // Loaded rather than hidden, unlike the rows above: a grid is a
@@ -156,7 +201,7 @@ Column {
                     MarkdownTable {
                         width: root.width
                         content: block
-                        onLinkActivated: root.linkActivated(link)
+                        onLinkActivated: root.followLink(link)
                     }
 
                 }

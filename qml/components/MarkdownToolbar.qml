@@ -9,6 +9,10 @@
     several lines: it lays down an empty two-column table on lines of its own
     and hands back the first column name selected, ready to be typed over.
 
+    The footnote button writes in two places at once: a reference at the caret
+    and its note at the foot of the text, numbered with the lowest the note has
+    not spent. The caret is left after the note's colon, ready for what it says.
+
     Every button restores focus to \c target before it edits, so the keyboard a
     writer had open stays open. The field keeps that focus through the edit with
     \c {focusOutBehavior: FocusBehavior.KeepFocus}.
@@ -32,7 +36,8 @@ Item {
     property QtObject history
     property int savedStart: 0
     property int savedEnd: 0
-    readonly property int buttonWidth: Math.max(Theme.fontSizeLarge, Math.floor((width - 6 * Theme.paddingSmall) / 7))
+    // Eight to a row, the longest of the two rows deciding for both.
+    readonly property int buttonWidth: Math.max(Theme.fontSizeLarge, Math.floor((width - 7 * Theme.paddingSmall) / 8))
 
     function remember() {
         if (!target)
@@ -136,6 +141,8 @@ Item {
             wrap("[", "]()");
         else if (kind === "table")
             insertTable();
+        else if (kind === "footnote")
+            insertFootnote();
         else if (kind.length === 2 && kind.charAt(0) === "h")
             setHeading(Number(kind.charAt(1)));
     }
@@ -166,6 +173,41 @@ Item {
         var lead = savedStart > 0 && target.text.charAt(savedStart - 1) !== "\n" ? "\n" : "";
         splice(savedStart, savedEnd, lead + chunk);
         return savedStart + lead.length;
+    }
+
+    // The smallest number the note has not spent, so a new reference never
+    // lands on one already written. A note labelled in words keeps its words:
+    // only the numbered ones are counted.
+    function nextFootnoteId() {
+        var used = {};
+        var refs = target.text.match(/\[\^\d+\]/g) || [];
+        for (var i = 0; i < refs.length; ++i)
+            used[refs[i].substring(2, refs[i].length - 1)] = true;
+        var id = 1;
+        while (used[String(id)]) id += 1
+        return id;
+    }
+
+    // A reference where the caret is and its note at the foot of the text,
+    // which is where the reader is shown it.
+    function insertFootnote() {
+        if (!target)
+            return ;
+
+        restore();
+        var id = nextFootnoteId();
+        splice(savedStart, savedEnd, "[^" + id + "]");
+        appendDefinition(id);
+    }
+
+    // The caret follows the note down, so the writer says what it is rather
+    // than having to find the place themselves.
+    function appendDefinition(id) {
+        var text = target.text;
+        var lead = text.charAt(text.length - 1) === "\n" ? "" : "\n\n";
+        var opening = lead + "[^" + id + "]: ";
+        target.text = text + opening;
+        target.cursorPosition = text.length + opening.length;
     }
 
     height: Theme.itemSizeSmall * 2
@@ -264,6 +306,11 @@ Item {
                     ListElement {
                         label: "\u25a6"
                         kind: "table"
+                    }
+
+                    ListElement {
+                        label: "\u00b9"
+                        kind: "footnote"
                     }
 
                 }
