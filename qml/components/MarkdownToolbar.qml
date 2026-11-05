@@ -17,6 +17,13 @@
     writer had open stays open. The field keeps that focus through the edit with
     \c {focusOutBehavior: FocusBehavior.KeepFocus}.
 
+    The buttons stand on one line, dragged sideways when they want more room
+    than the screen has. The bar is made of nothing but buttons, so a drag
+    begins on one: Silica's \c DragFilter hands it to the flickable and cancels
+    the press, which is why a drag scrolls rather than writing a mark. Neither
+    the flickable nor a button takes focus, so dragging the bar leaves the
+    keyboard up just as tapping it does.
+
     \qml
     MarkdownToolbar {
         width: parent.width
@@ -36,8 +43,9 @@ Item {
     property QtObject history
     property int savedStart: 0
     property int savedEnd: 0
-    // Eight to a row, the longest of the two rows deciding for both.
-    readonly property int buttonWidth: Math.max(Theme.fontSizeLarge, Math.floor((width - 7 * Theme.paddingSmall) / 8))
+    // A square stop, sized to the finger rather than to the screen: the bar
+    // is dragged when the buttons want more room than there is.
+    readonly property int buttonWidth: Theme.itemSizeSmall
 
     function remember() {
         if (!target)
@@ -210,15 +218,26 @@ Item {
         target.cursorPosition = text.length + opening.length;
     }
 
-    height: Theme.itemSizeSmall * 2
+    height: Theme.itemSizeSmall
 
-    Column {
-        width: parent.width
-        spacing: 0
+    Flickable {
+        id: viewport
+
+        anchors.fill: parent
+        contentWidth: Math.max(bar.width + 2 * Theme.horizontalPageMargin, width)
+        flickableDirection: Flickable.HorizontalFlick
+        // An overscroll of the bar is the bar's own; the page below it stays
+        // where the writer left it.
+        boundsBehavior: Flickable.StopAtBounds
+        clip: true
 
         Row {
+            id: bar
+
+            // Against the page margin while the bar is wider than the screen,
+            // and in the middle of it once the buttons all fit.
+            x: Math.max(Theme.horizontalPageMargin, (viewport.contentWidth - width) / 2)
             spacing: Theme.paddingSmall
-            anchors.horizontalCenter: parent.horizontalCenter
 
             Repeater {
                 delegate: markButton
@@ -259,20 +278,6 @@ Item {
                         kind: "link"
                     }
 
-                }
-
-            }
-
-        }
-
-        Row {
-            spacing: Theme.paddingSmall
-            anchors.horizontalCenter: parent.horizontalCenter
-
-            Repeater {
-                delegate: markButton
-
-                model: ListModel {
                     ListElement {
                         label: "H1"
                         kind: "h1"

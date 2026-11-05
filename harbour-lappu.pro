@@ -49,6 +49,7 @@ appicon.path = /usr/share/$${TARGET}
 INSTALLS += appicon
 
 TRANSLATIONS += \
+    translations/harbour-lappu-en.ts \
     translations/harbour-lappu-it.ts
 
 DISTFILES += \
@@ -83,5 +84,4 @@ DISTFILES += \
     qml/pages/StartPage.qml \
     qml/pages/TranslationsPage.qml \
     qml/pages/WebLoginPage.qml \
-    translations/harbour-lappu.ts \
-    translations/harbour-lappu-en.ts
+    translations/harbour-lappu.ts

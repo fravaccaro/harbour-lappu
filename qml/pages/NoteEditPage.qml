@@ -62,7 +62,7 @@ Dialog {
                 width: parent.width
                 text: page.title
                 label: qsTr("Title")
-                placeholderText: qsTr("Named after the first line")
+                placeholderText: qsTr("Add a title...")
                 // The star is part of the field, so tapping it must not take
                 // the keyboard down in the middle of naming the note.
                 focusOutBehavior: FocusBehavior.KeepFocus

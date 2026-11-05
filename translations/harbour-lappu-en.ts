@@ -380,8 +380,8 @@
         <translation>Title</translation>
     </message>
     <message>
-        <source>Named after the first line</source>
-        <translation>Named after the first line</translation>
+        <source>Add a title...</source>
+        <translation>Add a title...</translation>
     </message>
 </context>
 <context>

@@ -377,11 +377,11 @@
     </message>
     <message>
         <source>Title</source>
-        <translation type="unfinished">Titolo</translation>
+        <translation>Titolo</translation>
     </message>
     <message>
-        <source>Named after the first line</source>
-        <translation type="unfinished"></translation>
+        <source>Add a title...</source>
+        <translation>Aggiungi un titolo...</translation>
     </message>
 </context>
 <context>

@@ -379,7 +379,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Named after the first line</source>
+        <source>Add a title...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

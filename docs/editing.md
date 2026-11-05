@@ -23,7 +23,7 @@ If the first line of the body says exactly what the title says, it is not drawn 
 
 ## The Markdown bar
 
-The bar above the text applies Markdown to the selection, or, with nothing selected, inserts the markers and leaves the cursor between them:
+The bar above the text applies Markdown to the selection, or, with nothing selected, inserts the markers and leaves the cursor between them. The buttons stand on one line, and when they want more room than the screen has the bar can be dragged sideways; the rest of the page stays where it is.
 
 | Button | Writes |
 |---|---|
@@ -40,7 +40,7 @@ The bar above the text applies Markdown to the selection, or, with nothing selec
 
 A heading button **replaces** whatever heading the line already had rather than adding more hashes, so tapping H2 on an H1 line makes it an H2.
 
-A tap on the bar leaves the keyboard up, so several marks can be added in a row without it closing between them.
+A tap on the bar leaves the keyboard up, so several marks can be added one after another without it closing between them, and so does dragging the bar to reach a button further along it. A drag that starts on a button scrolls the bar rather than writing anything.
 
 The table button is the one that writes more than markers. It lays down a header row, the row of dashes under it and one empty row, always on lines of its own, and leaves the first column name selected so typing renames it:
 
