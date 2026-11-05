@@ -379,6 +379,14 @@
         <source>Edit note</source>
         <translation>Edit note</translation>
     </message>
+    <message>
+        <source>Title</source>
+        <translation>Title</translation>
+    </message>
+    <message>
+        <source>Named after the first line</source>
+        <translation>Named after the first line</translation>
+    </message>
 </context>
 <context>
     <name>NotePage</name>

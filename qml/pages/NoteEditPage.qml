@@ -6,6 +6,7 @@ Dialog {
     id: page
 
     property int noteId: 0
+    property string title
     property string content
     property string category
     property bool favorite: false
@@ -28,7 +29,7 @@ Dialog {
         editHistory.reset(bodyField.text, bodyField.cursorPosition);
     }
     canAccept: true
-    onAccepted: app.notes.saveNote(page.noteId, bodyField.text, page.category, favoriteSwitch.checked)
+    onAccepted: app.notes.saveNote(page.noteId, titleField.text, bodyField.text, page.category, favoriteSwitch.checked)
 
     EditHistory {
         id: editHistory
@@ -50,6 +51,20 @@ Dialog {
             DialogHeader {
                 acceptText: page.noteId === 0 ? qsTr("Add") : qsTr("Save")
                 title: page.noteId === 0 ? qsTr("New note") : qsTr("Edit note")
+            }
+
+            // The name of the note, which is the name of the file on the
+            // server. It is not part of the text, and left empty it is taken
+            // from the first line rather than refusing the note.
+            TextField {
+                id: titleField
+
+                width: parent.width
+                text: page.title
+                label: qsTr("Title")
+                placeholderText: qsTr("Named after the first line")
+                EnterKey.iconSource: "image://theme/icon-m-enter-next"
+                EnterKey.onClicked: bodyField.forceActiveFocus()
             }
 
             ValueButton {

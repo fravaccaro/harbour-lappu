@@ -78,10 +78,12 @@ public:
     // the answer on the device.
     Q_INVOKABLE void sync();
     // An id of 0 writes a new note; any other id edits that note, including the
-    // negative one a note borrows while it waits to be sent. The title follows
-    // the first line of the content, as it does on the server.
-    Q_INVOKABLE void saveNote(int noteId, const QString &content, const QString &category,
-                              bool favorite);
+    // negative one a note borrows while it waits to be sent. The title is the
+    // note's name and is kept apart from the content: it is saved as it is
+    // given, so a note is never renamed by what is written in it. An empty
+    // title alone falls back to the first line.
+    Q_INVOKABLE void saveNote(int noteId, const QString &title, const QString &content,
+                              const QString &category, bool favorite);
     Q_INVOKABLE void setFavorite(int noteId, bool favorite);
     Q_INVOKABLE void deleteNote(int noteId);
     // The unsettled notes as plain rows, each carrying both versions, the way

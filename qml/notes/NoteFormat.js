@@ -45,30 +45,45 @@ function stripMarkdown(text) {
     return t.replace(/\s+/g, " ").trim()
 }
 
-// The first line that says anything is the note's title, shown on its own, so
-// the body that follows it is where the preview begins. A note that is only a
-// title has no body and so no excerpt, which the rows and cards hide.
-function bodyAfterTitle(text) {
-    var lines = String(text).split("\n")
-    var i = 0
-    while (i < lines.length && stripMarkdown(lines[i]) === "")
-        i += 1
-    return lines.slice(i + 1).join("\n")
+// How many lines at the head of the note the name has already said. The note
+// carries its whole text, the name being the file's rather than the text's, so
+// nothing is dropped unless the first line that says anything says exactly the
+// name - and then the blank line parting it from the body goes with it. A note
+// named anything else keeps every line it was written with.
+function titleSkip(lines, title) {
+    var named = String(title || "").trim()
+    var at = 0
+    while (at < lines.length && stripMarkdown(lines[at]) === "")
+        at += 1
+    if (named === "" || at >= lines.length || stripMarkdown(lines[at]) !== named)
+        return 0
+
+    at += 1
+    return at < lines.length && lines[at].trim() === "" ? at + 1 : at
 }
 
-function excerpt(text) {
-    var line = stripMarkdown(bodyAfterTitle(text))
+// What the note says once the name has had its say, which is where a preview
+// begins. A note that is only its own name has no body and so no excerpt,
+// which the rows and cards hide.
+function bodyAfterTitle(text, title) {
+    var lines = String(text).split("\n")
+    return lines.slice(titleSkip(lines, title)).join("\n")
+}
+
+function excerpt(text, title) {
+    var line = stripMarkdown(bodyAfterTitle(text, title))
     if (line.length > 100)
         return line.substring(0, 99) + "\u2026"
     return line
 }
 
 // The cover shows the note as written, so the line breaks are kept and only
-// the markup is taken out.
-function plainText(text) {
+// the markup is taken out. The name is drawn above it, so a first line that
+// only repeats it is left to the heading.
+function plainText(text, title) {
     var lines = String(text).split("\n")
     var out = []
-    for (var i = 0; i < lines.length; ++i) {
+    for (var i = titleSkip(lines, title); i < lines.length; ++i) {
         var line = stripMarkdown(lines[i])
         // The dashes under a table header strip to nothing, and leaving the
         // line behind would open a gap the note does not have.
@@ -502,12 +517,15 @@ function footnoteRows(book, order) {
     return rows
 }
 
-function previewBlocks(text) {
+// The lines the name has already said are a run at the head of the note, so
+// beginning past them is enough: every row that follows still carries the line
+// it was written on and a task still flips the right box.
+function previewBlocks(text, title) {
     var lines = String(text).split("\n")
     var book = footnotesOf(lines)
     var order = footnoteOrder(lines, book)
     var rows = []
-    var at = 0
+    var at = titleSkip(lines, title)
     while (at < lines.length)
         at = pushRow(rows, lines, at, order)
     return rows.concat(footnoteRows(book, order))

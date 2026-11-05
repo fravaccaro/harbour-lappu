@@ -71,9 +71,15 @@ Two paths lead into the push, and they differ in how loudly they fail:
 
 The startup refresh is behind `syncIfStartupWanted()` and its `m_syncedOnStart` latch, because `applyCredentials()` runs again whenever credentials are re-applied and would otherwise pull more than once. A fresh sign-in is the exception: `onLoggedIn()` sets the latch and syncs regardless of the setting, since a new account has nothing to show until it does.
 
-## A note has no title
+## The title is the note's name
 
-A note's title is its file name, and the Notes **v1** API does not work it out from the content the way the deprecated v0.2 one did: a write that carries no title has the server fall back to "New note". So `noteTitle()` in `session.cpp` names the note after the first line of its content - taking off the markers that open a heading or a list item, as the server's own clients do - and `bodyFor()` sends that title with every `POST` and `PUT`. The server sanitises it (it is a file name, and a duplicate gains a sequential number) and hands the result back, which the cache adopts through `markClean()`, so the name a page shows before the first pull is confirmed or corrected by it.
+A note's title is its **file name**, held apart from the content, which carries the whole document. The Notes **v1** API does not work the title out from the content the way the deprecated v0.2 one did: a write that carries no title has the server fall back to "New note", so the client owns the name. `bodyFor()` sends it with every `POST` and `PUT`; the server sanitises it (it is a file name, and a duplicate gains a sequential number) and hands the result back, which the cache adopts through `markClean()`, so the name a page shows before the first pull is confirmed or corrected by it.
+
+The name is the writer's. `NoteEditPage` gives it a field of its own above the body, and `chosenTitle()` in `session.cpp` saves what was typed verbatim, so **nothing renames a note but the writer** - a name set on the server or in Files outlives an edit made on the phone. `noteTitle()` survives only as the fallback for an empty field, naming the note after the first line of its content and taking off the markers that open a heading or a list item, as the server's own clients do, so a note jotted down in a hurry is still called something.
+
+Everything else that writes a note hands the stored name back untouched. `NotesStore.toggleTask()` passes `note.title` along with the flipped content, because a save is the only way to tick a box and a derived title would quietly rename the note; `setFavorite()` and `deleteNote()` reuse the stored row and never touch it.
+
+Because the content is the whole document, its first line is ordinary text. It is drawn like any other line, except where the name is already shown above it and the line says exactly the same thing: `NoteFormat.titleSkip()` counts off that line, and the blank line parting it from the body, for `previewBlocks()` on the note page, `excerpt()` in the rows and cards, and `plainText()` on the cover. A note renamed elsewhere, whose first line no longer matches, keeps every line it was written with. The skipped run is a **prefix**, so beginning the walk past it leaves every later row carrying its true `lineIndex` and a task still flipping the right box. A caller that passes no title skips nothing, which is what `ConflictVersion` wants: each side of a conflict is shown whole.
 
 A note that has not reached the server borrows a **negative id** until the server names it. That id is what the cover may be holding, so `onCreated()` remaps it: if `coverNoteId` is the local id being replaced, it is rewritten to the id the server gave. Without that, pinning a brand-new note would leave the cover blank after its first sync.
 
@@ -123,7 +129,7 @@ A reference is drawn as `<sup><a href="footnote:id">`, which makes it a link Qt 
 
 List excerpts and the cover have no room for any of this, so `stripMarkdown()` takes the markers out: `stripBlocks()` for what marks a whole line - the dashes of a table, a fence, a `>`, a bullet, a task's brackets, the label opening a footnote - and `stripSpans()` for what marks a run of text inside one. A table row gives up its pipes only when the line is fenced by them, which again leaves prose alone. A footnote reference goes entirely rather than becoming its number: there is no list under an excerpt for a number to point at, while what the footnote says is kept, since it is still part of the note.
 
-An excerpt starts after the title, not at the top of the note: the title is already shown on its own, so `excerpt()` drops the first line that says anything - the same line `noteTitle()` names the note after - through `bodyAfterTitle()`, and a note that is only a title has no excerpt at all. The cover keeps the whole note through `plainText()`, since it shows the title and body together.
+An excerpt is the note as written, less whatever the name has already said: `excerpt()` goes through `bodyAfterTitle()`, which drops only the run `titleSkip()` counts off, so a note whose first line repeats its name begins at the line after it and a note named anything else begins at the top. A note that is only its own name has no excerpt at all. The cover reads the same way through `plainText()`, since it draws the name above the text.
 
 ## Links
 

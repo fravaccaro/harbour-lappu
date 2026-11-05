@@ -11,11 +11,15 @@ nav_order: 3
 
 Above the text sit the category of the note and a **Favorite** switch, so neither needs a second visit.
 
-## The title is the first line
+## The title is the note's name
 
-A note carries no title field: its title is its first line. Lappu names the note from that line as you write it - taking off a leading `#` or list marker the way Nextcloud does - which is why the field is labelled *The first line is the title*. Write the title on the first line and the body under it.
+The **Title** field at the top of the page is the name of the note, which on the server is the name of its file. It is not part of the text: the body below holds the whole document, and the two are kept apart exactly as Nextcloud keeps them.
 
-Naming it locally means a new note is listed under its real name straight away, rather than waiting for the next refresh to learn what the server decided to call it.
+Changing the title **renames the note**. Nothing else does - editing the body, ticking a task or favouriting a note all leave the name alone - so a note you renamed in Nextcloud, or in the Files app, keeps that name when you edit it here.
+
+Leave the title empty and the note is named after the first line of the body instead, with a leading `#` or list marker taken off the way Nextcloud does. That way a note jotted down in a hurry still has a name, and it is listed under it straight away rather than waiting for the next refresh to learn what the server called it.
+
+If the first line of the body says exactly what the title says, it is not drawn twice: reading the note, and in the list, that line is left to the heading above. Notes written before Lappu had a title field, which usually repeat their name on the first line, therefore read as they always did.
 
 ## The Markdown bar
 

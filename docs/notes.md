@@ -9,7 +9,7 @@ nav_order: 2
 
 The first page is the notes themselves. Each row carries the title of the note, how long ago it was last changed, and the opening of the body; a favourite is marked with a star, and in the **All** view a note that belongs to a category says which one. Tapping a row opens the note; tapping and holding it opens a menu to favourite it, pin it to the cover, edit it or delete it.
 
-A note has **no title of its own**. Lappu names it after its first line, so a new note is named the moment you write that line rather than after the next refresh. See [Writing a note](editing).
+A note's title is its **name on the server**, kept apart from the text and set in its own field when you write the note. Left empty, it is taken from the first line of the body, so a note is named the moment you write that line rather than after the next refresh. See [Writing a note](editing).
 
 A row above the notes appears when a note changed on the phone and on the server at once, counting how many are waiting; tapping it opens the two versions side by side to choose between them. A note named **"... (my version)"** is the phone's side of such a choice, kept as a note of its own because **Keep both** was the answer; it keeps that name - the two notes would otherwise share one - until you change its first line. See [Sync, files and permissions](files).
 

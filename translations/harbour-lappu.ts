@@ -378,6 +378,14 @@
         <source>Edit note</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Named after the first line</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NotePage</name>

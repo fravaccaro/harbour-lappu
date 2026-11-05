@@ -23,10 +23,10 @@ QString titleFromLine(QString line)
     return line.trimmed();
 }
 
-// The note is named after the first line that says anything. The name is worked
-// out here so the pages can show it before the next pull confirms it, and it
-// travels with the note because the v1 API keeps the title it is given rather
-// than deriving one from the content.
+// A name for a note that was given none, taken from the first line that says
+// anything. The name is worked out here so the pages can show it before the
+// next pull confirms it, and it travels with the note because the v1 API keeps
+// the title it is given rather than deriving one from the content.
 QString noteTitle(const QString &content)
 {
     const QStringList lines = content.split(QLatin1Char('\n'));
@@ -37,6 +37,17 @@ QString noteTitle(const QString &content)
     }
 
     return QObject::tr("New note");
+}
+
+// The name the note is saved under: what the writer typed, or, when they typed
+// nothing, the first line of the body, so a note jotted down in a hurry is
+// still called something. A note that already has a name keeps it, since the
+// editor hands that name back untouched: nothing renames a note but the
+// writer, which is what keeps a name given on the server from being undone.
+QString chosenTitle(const QString &title, const QString &content)
+{
+    const QString typed = title.trimmed();
+    return typed.isEmpty() ? noteTitle(content) : typed;
 }
 
 // A note the server has never seen, which is the only kind worth offering it
@@ -656,8 +667,8 @@ void Session::store(const LocalNote &note)
     pushDirty();
 }
 
-void Session::saveNote(int noteId, const QString &content, const QString &category,
-                       bool favorite)
+void Session::saveNote(int noteId, const QString &title, const QString &content,
+                       const QString &category, bool favorite)
 {
     // Only an id of 0 asks for a new note. A note still waiting to be sent
     // carries a negative id, and editing it has to find that row rather than
@@ -670,7 +681,7 @@ void Session::saveNote(int noteId, const QString &content, const QString &catego
         note.id = m_cache.nextTempId();
 
     note.content = content;
-    note.title = noteTitle(content);
+    note.title = chosenTitle(title, content);
     note.category = category;
     note.favorite = favorite;
     note.modified = QDateTime::currentDateTimeUtc().toTime_t();

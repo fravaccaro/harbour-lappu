@@ -71,6 +71,7 @@ ApplicationWindow {
     function pushEditor(note) {
         pageStack.push(Qt.resolvedUrl("pages/NoteEditPage.qml"), {
             "noteId": note.noteId,
+            "title": note.title,
             "content": note.content,
             "category": note.category,
             "favorite": note.favorite

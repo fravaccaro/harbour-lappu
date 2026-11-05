@@ -162,7 +162,7 @@ QtObject {
             "favorite": note.favorite,
             "modified": note.modified,
             "locked": note.locked,
-            "excerpt": Format.excerpt(note.content),
+            "excerpt": Format.excerpt(note.content, note.title),
             "categoryLabel": Format.categoryLabel(note.category)
         };
     }
@@ -251,7 +251,7 @@ QtObject {
     function applyPinned() {
         var note = pinnedNote();
         pinnedTitle = note ? note.title : "";
-        pinnedText = note ? Format.plainText(note.content) : "";
+        pinnedText = note ? Format.plainText(note.content, note.title) : "";
     }
 
     function toggleTask(noteId, lineIndex) {
@@ -261,7 +261,7 @@ QtObject {
 
         var content = flipLine(note.content, lineIndex);
         if (content !== null)
-            saveNote(noteId, content, note.category, note.favorite);
+            saveNote(noteId, note.title, content, note.category, note.favorite);
 
     }
 
@@ -304,8 +304,10 @@ QtObject {
         Lappu.deleteNote(noteId);
     }
 
-    function saveNote(noteId, content, category, favorite) {
-        Lappu.saveNote(noteId, content, category, favorite);
+    // The title is the note's name and is passed in rather than worked out, so
+    // an edit that was not meant to rename the note does not.
+    function saveNote(noteId, title, content, category, favorite) {
+        Lappu.saveNote(noteId, title, content, category, favorite);
     }
 
     // Takes the notes the session keeps, each already keyed the way the rows
