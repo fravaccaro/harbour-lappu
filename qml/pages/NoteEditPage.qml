@@ -29,7 +29,7 @@ Dialog {
         editHistory.reset(bodyField.text, bodyField.cursorPosition);
     }
     canAccept: true
-    onAccepted: app.notes.saveNote(page.noteId, titleField.text, bodyField.text, page.category, favoriteSwitch.checked)
+    onAccepted: app.notes.saveNote(page.noteId, titleField.text, bodyField.text, page.category, page.favorite)
 
     EditHistory {
         id: editHistory
@@ -63,8 +63,20 @@ Dialog {
                 text: page.title
                 label: qsTr("Title")
                 placeholderText: qsTr("Named after the first line")
+                // The star is part of the field, so tapping it must not take
+                // the keyboard down in the middle of naming the note.
+                focusOutBehavior: FocusBehavior.KeepFocus
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
                 EnterKey.onClicked: bodyField.forceActiveFocus()
+
+                // Silica sets a field's right item against the text line and
+                // shortens the writing room to match, so the name never runs
+                // under the star.
+                rightItem: IconButton {
+                    icon.source: page.favorite ? "image://theme/icon-m-favorite-selected" : "image://theme/icon-m-favorite"
+                    onClicked: page.favorite = !page.favorite
+                }
+
             }
 
             ValueButton {
@@ -72,14 +84,6 @@ Dialog {
                 label: qsTr("Category")
                 value: page.category === "" ? qsTr("Uncategorized") : app.notes.categoryLabel(page.category)
                 onClicked: page.pickCategory()
-            }
-
-            TextSwitch {
-                id: favoriteSwitch
-
-                width: parent.width
-                text: qsTr("Favorite")
-                checked: page.favorite
             }
 
             MarkdownToolbar {
@@ -92,9 +96,11 @@ Dialog {
                 id: bodyField
 
                 width: parent.width
-                // The strip the arrows stand in is added to the field, so the
-                // writing never runs under them.
-                height: Math.max(implicitHeight + undoBar.height, Screen.height / 3)
+                // What is left of the page, so a short note is still written
+                // on the whole of it and the field grows with a longer one.
+                // The strip the arrows stand in is added to the writing, so
+                // the text never runs under them.
+                height: Math.max(implicitHeight + undoBar.height, page.height - y - Theme.paddingLarge)
                 text: page.content
                 placeholderText: qsTr("Write a note...")
                 // A tap on the Markdown bar pulls focus off the field, and the
@@ -103,6 +109,9 @@ Dialog {
                 // slipping away; a deliberate swipe down still closes it.
                 focusOutBehavior: FocusBehavior.KeepFocus
                 wrapMode: TextEdit.Wrap
+                // The field reaches the foot of the page, so the line Silica
+                // draws under it would be a rule across the bottom.
+                backgroundStyle: TextEditor.NoBackground
                 color: Theme.primaryColor
                 onTextChanged: editHistory.watch(text, cursorPosition)
 

@@ -368,10 +368,6 @@
         <translation>Uncategorized</translation>
     </message>
     <message>
-        <source>Favorite</source>
-        <translation>Favorite</translation>
-    </message>
-    <message>
         <source>Write a note...</source>
         <translation>Write a note...</translation>
     </message>

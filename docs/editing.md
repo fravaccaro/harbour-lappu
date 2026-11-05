@@ -9,7 +9,7 @@ nav_order: 3
 
 **New note** in the pulley menu of the notes list opens an empty note; **Edit**, in the menu of a note or on the note itself, opens one that already exists. Either way the page is a dialog: the change is kept when you accept it with **Add** or **Save**, and dropped when you navigate back.
 
-Above the text sit the category of the note and a **Favorite** switch, so neither needs a second visit.
+Above the text sit the star of the note, beside its title, and the category below, so neither needs a second visit.
 
 ## The title is the note's name
 
@@ -105,6 +105,8 @@ A note the server marks read-only says so and cannot be edited. An empty note sa
 **Category** opens a picker holding the categories the notes already use, with room to type a new one. A note created from inside a category starts in that category.
 
 Nextcloud writes a nested category with slashes in it, and Lappu shows it the same way with the separator spelled out.
+
+The **star** at the end of the Title field marks the note a favourite, the same star the notes list draws beside the name. Tapping it fills it in or empties it, and like everything else on the page it is only written when you accept the dialog; the menu of a note offers the same thing without opening the editor.
 
 ## Deleting
 

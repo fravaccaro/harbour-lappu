@@ -368,10 +368,6 @@
         <translation>Senza categoria</translation>
     </message>
     <message>
-        <source>Favorite</source>
-        <translation>Preferito</translation>
-    </message>
-    <message>
         <source>Write a note...</source>
         <translation>Scrivi una nota...</translation>
     </message>

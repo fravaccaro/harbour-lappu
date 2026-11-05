@@ -367,10 +367,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Favorite</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Write a note...</source>
         <translation type="unfinished"></translation>
     </message>
