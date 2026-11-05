@@ -184,9 +184,36 @@ QtObject {
     }
 
     function reloadVisible() {
-        var rows = matchingRows();
-        visibleNotes.clear();
-        for (var i = 0; i < rows.length; ++i) visibleNotes.append(rows[i])
+        syncRows(matchingRows());
+    }
+
+    // Rows are matched by id and set in place, never cleared: a row the user
+    // is deleting carries its own remorse inside its delegate, and rebuilding
+    // the list would destroy that countdown before it could run.
+    function syncRows(rows) {
+        for (var i = 0; i < rows.length; ++i) {
+            var at = indexOfRow(rows[i].noteId, i);
+            if (at < 0) {
+                visibleNotes.insert(i, rows[i]);
+            } else {
+                if (at !== i)
+                    visibleNotes.move(at, i, 1);
+
+                visibleNotes.set(i, rows[i]);
+            }
+        }
+        if (visibleNotes.count > rows.length)
+            visibleNotes.remove(rows.length, visibleNotes.count - rows.length);
+
+    }
+
+    function indexOfRow(noteId, from) {
+        for (var i = from; i < visibleNotes.count; ++i) {
+            if (visibleNotes.get(i).noteId === noteId)
+                return i;
+
+        }
+        return -1;
     }
 
     function namedCategories(map) {

@@ -37,9 +37,13 @@ nav_order: 1
 
 `NotesStore.qml` owns no notes of its own. It is filled through `ingest()` from `Notes.notes()` and hands every edit to `Lappu`, so the list is always a view of what the cache holds rather than a second copy that could drift from it.
 
+`visibleNotes` is the one model a view binds to, and `syncRows()` **edits it in place**: rows are matched by `noteId`, moved and `set()` where they already exist, inserted where they do not, and the tail that is left over is removed. Clearing it and filling it again would be simpler and is what it used to do, but it destroys every delegate, and a delegate is where Silica keeps a remorse: `RemorseItem.execute()` parents itself inside the item it covers, and a destroyed countdown never runs its callback. Deleting one note redraws the list, so a clear-and-refill silently threw away the delete the user had started on a second note. Keeping the rows also keeps the view's place on every refresh.
+
 ## Sync rules
 
 `Session::sync()` **sends what is owed before it pulls**, so a note edited on the phone is the one that stands rather than being overwritten by the older copy coming back. `pushNext()` drains `m_pending` one note at a time, choosing the verb from the row itself: a `deleted` row is a `DELETE`, a row whose id is not a server id yet is a `POST`, anything else is a `PUT`.
+
+A run takes its queue when it starts, so a note written or deleted while one is going out is not in it. `pushDirty()` cannot start a second run against a busy session, so it sets `m_owedWhileBusy` and leaves; `flushOwed()`, at the end of `queueDrained()` and `onNotesReady()`, sends what was marked rather than leaving it for the next sync. Only an edit of the user's sets that flag, which is what keeps a note the server keeps refusing from earning a run of its own on every drain: such a row stays `dirty` and waits, exactly as before.
 
 A `PUT` is **conditional**. `NotesApi::updateNote()` sends the stored ETag as `If-Match`, wrapped in the double quotes the server compares against - the JSON `etag` attribute arrives bare, and a bare header would be refused by every write. An empty ETag sends no header at all, so a server too old to hand one out is written to unconditionally as before. A `POST` has nothing to match, and a `DELETE` is not checked server-side, so neither carries the header.
 

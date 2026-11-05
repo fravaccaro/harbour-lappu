@@ -106,6 +106,7 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     , m_busy(false)
     , m_pullAfter(false)
     , m_announce(false)
+    , m_owedWhileBusy(false)
     , m_pushed(0)
     , m_syncedOnStart(false)
 {
@@ -366,6 +367,7 @@ void Session::sync()
     setError(QString());
     m_pullAfter = true;
     m_announce = true;
+    m_owedWhileBusy = false;
     m_pushed = 0;
     m_pending = m_cache.dirtyNotes();
     setBusy(true);
@@ -376,8 +378,15 @@ void Session::sync()
 // reached is not worth saying anything about: the note keeps waiting.
 void Session::pushDirty()
 {
-    if (!m_config->isConfigured() || m_busy)
+    if (!m_config->isConfigured())
         return;
+
+    // The run going out took its queue when it started, so this note is not
+    // in it. It is written down instead and sent once that run ends.
+    if (m_busy) {
+        m_owedWhileBusy = true;
+        return;
+    }
 
     m_pending = m_cache.dirtyNotes();
     if (m_pending.isEmpty())
@@ -385,9 +394,19 @@ void Session::pushDirty()
 
     m_pullAfter = false;
     m_announce = false;
+    m_owedWhileBusy = false;
     m_pushed = 0;
     setBusy(true);
     pushNext();
+}
+
+void Session::flushOwed()
+{
+    if (!m_owedWhileBusy)
+        return;
+
+    m_owedWhileBusy = false;
+    pushDirty();
 }
 
 void Session::pushNext()
@@ -431,6 +450,7 @@ void Session::queueDrained()
 
     setBusy(false);
     reloadModels();
+    flushOwed();
 }
 
 void Session::fetchNotes()
@@ -447,6 +467,8 @@ void Session::onNotesReady(const QVector<LocalNote> &notes)
     // The wait counts from the last sync rather than from when it was asked for.
     if (m_syncTimer.isActive())
         m_syncTimer.start();
+
+    flushOwed();
 }
 
 void Session::onCreated(qint64 localId, const LocalNote &note)

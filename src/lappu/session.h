@@ -149,6 +149,9 @@ private:
     bool takeConflict(qint64 noteId, QPair<LocalNote, LocalNote> *pair);
     void store(const LocalNote &note);
     void pushDirty();
+    // Sends what the user marked while a run was going out, which pushDirty()
+    // could only note down at the time.
+    void flushOwed();
     void pushNext();
     LocalNote takeNextOwed();
     void queueDrained();
@@ -176,6 +179,11 @@ private:
     // A flush the user did not ask for keeps quiet about a server that cannot
     // be reached; the note simply stays owed.
     bool m_announce;
+    // A note written or deleted while a run was in flight. The run that ends
+    // sends it, rather than leaving it for the next sync. Only an edit of the
+    // user's sets this, so a note the server keeps refusing cannot spin a run
+    // of its own.
+    bool m_owedWhileBusy;
     int m_pushed;
     // The sync a launch asks for is wanted once, not again every time the
     // credentials are applied.

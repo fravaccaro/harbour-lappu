@@ -138,6 +138,10 @@ A footnote is the one mark whose meaning is not local, so `previewBlocks()` read
 
 `qml/notes/NotesStore.qml` is the QML-side view of the synced notes: it owns the filtering, search, sort, category and cover state, and is filled through `ingest()` from `Notes.notes()`. It writes nothing itself; every edit is handed to `Lappu`. The two pieces of that state the user expects to outlast a restart — the sort order and the pinned note — are bindings onto `Lappu.sortMode` and `Lappu.coverNoteId`, which `Config` keeps in `settings.conf`, so neither may be assigned imperatively.
 
+`visibleNotes`, the model every view binds to, is **edited in place** by `syncRows()` and never cleared and refilled. A clear destroys every delegate, and a delegate is where a Silica remorse lives, so redrawing the list after one delete would throw away a delete the user had already started on another note.
+
+A run takes its queue when it starts. `pushDirty()` therefore cannot send a note marked while one is in flight; it sets `m_owedWhileBusy`, and `flushOwed()` sends it at the end of `queueDrained()` and `onNotesReady()`. Only a user's edit sets that flag, so a row the server keeps refusing still waits for the next sync rather than spinning a run on every drain.
+
 How the notes are laid out is not part of that state, because nothing but the drawing depends on it: `NotesPage` reads `Lappu.viewMode` itself and loads either a `SilicaListView` of rows or a `SilicaGridView` of cards. They are two kinds of view rather than one drawn two ways — a `GridView` gives every cell the same height, which the rows do not have — so only the chosen one is built, and the three things they would otherwise each hold a copy of live in `qml/components/` instead. A cell measures itself off `Screen.width` rather than a column count, so two fit across the narrow side of any screen and a wider one gets more of them rather than wider ones.
 
 Sailjail private directories follow `OrganizationName` / `ApplicationName`:
