@@ -9,7 +9,9 @@
 
     Lines are not wrapped, since where a line of code breaks carries meaning.
     One too wide for the screen is reached by flicking the panel sideways, and
-    the note it sits in keeps still while that happens.
+    the note it sits in keeps still while that happens. Because a panel that
+    scrolls does not say so, it nudges itself once when it is built, through a
+    \l ScrollHint; a block whose longest line fits does not move.
 
     \qml
     MarkdownCode {
@@ -28,6 +30,15 @@ Item {
 
     width: parent ? parent.width : Screen.width
     height: viewport.height
+    Component.onCompleted: moreHint.start()
+
+    // A line wider than the note slides off and comes back once, so a reader
+    // is shown the block goes on past the edge rather than ending there.
+    ScrollHint {
+        id: moreHint
+
+        flickable: viewport
+    }
 
     Rectangle {
         anchors.fill: viewport
@@ -46,6 +57,7 @@ Item {
         flickableDirection: Flickable.HorizontalFlick
         boundsBehavior: Flickable.StopAtBounds
         clip: true
+        onMovementStarted: moreHint.stop()
 
         Label {
             id: codeText

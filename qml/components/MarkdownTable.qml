@@ -10,7 +10,9 @@ import "../notes/NoteFormat.js" as Format
 
     Columns are as wide as their widest cell and no wider than the note, and
     the grid flicks sideways when the columns together want more room than
-    that. A cell keeps its inline Markdown, links included, and a tapped link
+    that. Because a grid that scrolls does not say so, it nudges itself once
+    when it is built, through a \l ScrollHint; one the note has room for does
+    not move. A cell keeps its inline Markdown, links included, and a tapped link
     is only re-emitted through \c linkActivated: the text came from the
     server, so the owner decides what happens to it.
 
@@ -31,15 +33,23 @@ Item {
     property string content
     property var columnWidths: []
     readonly property var table: Format.tableOf(root.content)
-    readonly property var rows: root.table !== null ? root.table.rows : []
-    readonly property var alignments: root.table !== null ? root.table.alignments : []
+    readonly property var rows: root.table ? root.table.rows : []
+    readonly property var alignments: root.table ? root.table.alignments : []
     readonly property int columnCount: root.alignments.length
 
     signal linkActivated(string link)
 
     // Text cannot be measured declaratively, and nothing outside this file
     // reads the widths, so they are the one thing assigned rather than bound.
+    //
+    // Both handlers that call this fire while the component is still being
+    // built - the loader sets content and width as it creates it - and that is
+    // before the bindings above have been evaluated, so there is no table to
+    // measure yet. The measure made on completion is the one that counts.
     function remeasure() {
+        if (root.rows === undefined)
+            return ;
+
         var widths = [];
         for (var c = 0; c < root.columnCount; ++c) widths.push(0)
         for (var r = 0; r < root.rows.length; ++r) widths = widerRow(widths, root.rows[r])
@@ -93,7 +103,21 @@ Item {
     height: viewport.height
     onContentChanged: root.remeasure()
     onWidthChanged: root.remeasure()
-    Component.onCompleted: root.remeasure()
+    // Measured before it is hinted at: until the columns have widths there is
+    // no telling whether anything is hidden. The hint's own pause covers
+    // whatever else of the layout is still settling.
+    Component.onCompleted: {
+        root.remeasure();
+        moreHint.start();
+    }
+
+    // A grid wider than the note slides off and comes back once, so a reader
+    // is shown there is more of it sideways. A table that fits does not move.
+    ScrollHint {
+        id: moreHint
+
+        flickable: viewport
+    }
 
     // A Label rather than TextMetrics, so the ruler carries the very font the
     // cells are drawn in instead of a copy of it kept in step by hand.
@@ -115,6 +139,7 @@ Item {
         flickableDirection: Flickable.HorizontalFlick
         boundsBehavior: Flickable.StopAtBounds
         clip: true
+        onMovementStarted: moreHint.stop()
 
         Column {
             id: grid

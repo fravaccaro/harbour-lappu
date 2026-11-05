@@ -102,7 +102,7 @@ This document is a living contract. Keeping it accurate is part of the implement
 | `src/lappu/types.h` | Plain data structs (`LocalNote`) |
 | `qml/pages/*` | Silica pages, including the notes the server is holding shut and how to unlock them (`LockedNotesPage.qml`) |
 | `qml/notes/*` | Notes view model (`NotesStore.qml`) and markdown helpers (`NoteFormat.js`) |
-| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the markdown bar (which opens with undo and redo) and one stop of it (`ToolbarStop.qml`), the edit history, the note body, a markdown table (`MarkdownTable.qml`), a code block (`MarkdownCode.qml`), one side of a conflict (`ConflictVersion.qml`), and the three pieces both notes layouts share — the pulley menu (`NotesPullDownMenu.qml`), the header (`NotesListHeader.qml`, which carries the conflict and locked rows) and a note's own menu (`NoteContextMenu.qml`) |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the markdown bar (which opens with undo and redo) and one stop of it (`ToolbarStop.qml`), the nudge that tells a flickable it scrolls (`ScrollHint.qml`), the edit history, the note body, a markdown table (`MarkdownTable.qml`), a code block (`MarkdownCode.qml`), one side of a conflict (`ConflictVersion.qml`), and the three pieces both notes layouts share — the pulley menu (`NotesPullDownMenu.qml`), the header (`NotesListHeader.qml`, which carries the conflict and locked rows) and a note's own menu (`NoteContextMenu.qml`) |
 | `qml/cover/*` | Cover page |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe, and LinkHandler modules |
 | `docs/*` | The documentation site, built by Jekyll from `_config.yml`; `README.md` is its home page |

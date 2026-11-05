@@ -25,7 +25,7 @@ nav_order: 1
 | `qml/pages/ConflictPage.qml` | The two versions of a note that changed on both sides, and the three answers to it |
 | `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category and cover state |
 | `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, and the subset of HTML a Silica `Label` draws |
-| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar and one stop of it, the edit history, the note body, a Markdown table, a code block, one side of a conflict, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar and one stop of it, the nudge that tells a flickable it scrolls, the edit history, the note body, a Markdown table, a code block, one side of a conflict, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
 | `qml/cover/*` | The cover page and its glyph |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe and LinkHandler modules |
 
@@ -125,7 +125,7 @@ A failed sign-in is the exception: `loginFailed` reaches the sign-in pages, whic
 
 `NoteFormat.previewBlocks()` turns the content into the rows `NoteBody` draws. Most rows are one line, but a table and a fenced code block are each a single row standing for every line they were written on, so **a row is not a line** and each one carries the `lineIndex` it began at. `taskClicked` reports that number rather than the row, because `NotesStore.flipLine()` indexes the content by line and a row number would tick the wrong box under any block.
 
-`blockAt()` asks about a fence before a table. Inside a fence nothing is Markdown: a row of pipes is code, a hash is a hash, and `MarkdownCode` draws the lines as `Text.PlainText`, which is both why nothing needs escaping there and why nothing can be read by mistake. An unclosed fence takes the rest of the note, as it does everywhere else.
+`blockAt()` asks about a fence before a table. Inside a fence nothing is Markdown: a row of pipes is code, a hash is a hash, and `MarkdownCode` draws the lines as `Text.PlainText`, which is both why nothing needs escaping there and why nothing can be read by mistake. The panel takes a `ScrollHint` like the grid and the Markdown bar, since a line too wide to show is the one thing a block that does not wrap has to admit to. An unclosed fence takes the rest of the note, as it does everywhere else.
 
 Inside a line the same rule holds one level down. `richText()` splits the backquoted spans out first and marks up only what lies between them, so the asterisks of a snippet are not read as emphasis:
 
@@ -141,7 +141,7 @@ What makes a table a table is the row of dashes directly beneath its header, wit
 
 The row carries the Markdown of the block rather than a model of cells, and `MarkdownTable` parses it again where it is drawn. Nothing between the two has to agree on a shape, and the component can be handed any block at all: it draws nothing for one that is not a table.
 
-Columns are measured, which QML offers no declarative way to do. `MarkdownTable.remeasure()` runs on a change of content or width and assigns `columnWidths`; the measuring is done in the header's **bold** so a column cannot clip the name above it, by a hidden `Label` rather than a `TextMetrics`, which keeps the ruler in the very font the cells are drawn in. No column is allowed past the width of the note, so one long cell wraps instead of pushing the rest out of reach, and the grid flicks sideways when the columns together want more room than the page has. `NoteBody` puts the grid behind a `Loader`, unlike its other rows, since a note of a hundred lines should not build a hundred of them.
+Columns are measured, which QML offers no declarative way to do. `MarkdownTable.remeasure()` runs on a change of content or width and assigns `columnWidths`; the measuring is done in the header's **bold** so a column cannot clip the name above it, by a hidden `Label` rather than a `TextMetrics`, which keeps the ruler in the very font the cells are drawn in. No column is allowed past the width of the note, so one long cell wraps instead of pushing the rest out of reach, and the grid flicks sideways when the columns together want more room than the page has. A grid that scrolls does not say so while it sits still, so it is nudged once when it is built, by the same `ScrollHint` the Markdown bar uses - started after `remeasure()`, since until the columns have widths there is no telling whether anything is hidden, and capped at what is actually hidden, so a table the note has room for does not move. `NoteBody` puts the grid behind a `Loader`, unlike its other rows, since a note of a hundred lines should not build a hundred of them.
 
 ### Footnotes
 
