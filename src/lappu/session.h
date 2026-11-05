@@ -97,6 +97,10 @@ public:
     // Keeps both: the server's version takes the note back, and the text
     // written here goes on as a note of its own.
     Q_INVOKABLE void resolveKeepBoth(int noteId);
+    // Lets go of an edit the server has not taken and puts the note back the
+    // way the server holds it. Only a note the server knows can be discarded:
+    // one it has never seen has no version to fall back on.
+    Q_INVOKABLE void discardLocal(int noteId);
 
 signals:
     void readyChanged();
@@ -142,8 +146,21 @@ private:
     void onCreated(qint64 localId, const LocalNote &note);
     void onUpdated(const LocalNote &note);
     void onDeleted(qint64 id);
+    // Takes the answer to a write onto the row it was made from, settling it
+    // unless the user has written to that row again in the meantime.
+    void settleWritten(const LocalNote &saved);
+    // Moves the row onto the id and version the server just gave it while
+    // leaving it owed, for when a newer edit is waiting on it.
+    void keepOwedOver(const LocalNote &saved);
+    // Starts an owed edit again as a note of its own, for when the server
+    // turns out no longer to have the note it was made on.
+    void restartOwed(const LocalNote &mine);
     void onConflict(const LocalNote &remote);
     void onRefused(const QString &error);
+    // Lets go of what is owed on one note and asks for the version the server
+    // holds, for when the user would rather have the note back than go on
+    // waiting for a change to be taken.
+    void abandonOwed(qint64 noteId);
     void settleOrAsk(const LocalNote &mine, const LocalNote &theirs);
     int indexOfConflict(qint64 noteId) const;
     bool takeConflict(qint64 noteId, QPair<LocalNote, LocalNote> *pair);
@@ -165,6 +182,10 @@ private:
     QTimer m_syncTimer;
     // What is still owed to the server in this run.
     QVector<LocalNote> m_pending;
+    // The note the request now in flight was built from. The answer is taken
+    // against this rather than against the row, which the user may have
+    // written to again while the answer was on its way.
+    LocalNote m_inFlight;
     // The notes that changed on both sides and have not been settled, as the
     // version written here paired with the one the server answered with.
     // Deliberately kept nowhere else: the local side of a pair is the dirty

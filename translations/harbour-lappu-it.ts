@@ -344,6 +344,10 @@
         <source>Delete</source>
         <translation>Elimina</translation>
     </message>
+    <message>
+        <source>Discard waiting change</source>
+        <translation>Annulla la modifica in attesa</translation>
+    </message>
 </context>
 <context>
     <name>NoteEditPage</name>
@@ -426,6 +430,18 @@
         <source>Pin to cover</source>
         <translation>Aggiungi alla cover</translation>
     </message>
+    <message>
+        <source>Discarding</source>
+        <translation>Annullamento</translation>
+    </message>
+    <message>
+        <source>Discard waiting change</source>
+        <translation>Annulla la modifica in attesa</translation>
+    </message>
+    <message>
+        <source>A change to this note has not reached the server yet.</source>
+        <translation>Una modifica a questa nota non è ancora arrivata al server.</translation>
+    </message>
 </context>
 <context>
     <name>NotesApi</name>
@@ -469,6 +485,10 @@
     <message>
         <source>Pull down to add a note</source>
         <translation>Scorri in basso per aggiungere una nota</translation>
+    </message>
+    <message>
+        <source>Discarding</source>
+        <translation>Annullamento</translation>
     </message>
 </context>
 <context>
@@ -766,8 +786,8 @@
         <translation>%1 (la mia versione)</translation>
     </message>
     <message>
-        <source>The note is locked on the server. The change is still waiting and will be sent again.</source>
-        <translation>La nota è bloccata sul server. La modifica è in attesa e verrà inviata di nuovo.</translation>
+        <source>The note is locked on the server. The change is waiting and will be sent once the file is unlocked in Nextcloud.</source>
+        <translation>La nota è bloccata sul server. La modifica è in attesa e verrà inviata quando il file sarà sbloccato in Nextcloud.</translation>
     </message>
 </context>
 <context>
@@ -775,6 +795,10 @@
     <message>
         <source>%1 changed on the server as well. Choose which version to keep.</source>
         <translation>%1 è stata modificata anche sul server. Scegli quale versione mantenere.</translation>
+    </message>
+    <message>
+        <source>%1 was deleted on the server. The change made here is kept as a new note.</source>
+        <translation>%1 è stata eliminata sul server. La modifica fatta qui è conservata come nuova nota.</translation>
     </message>
 </context>
 <context>

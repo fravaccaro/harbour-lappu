@@ -58,16 +58,6 @@ bool isLocalOnly(const LocalNote &note)
     return note.id <= 0;
 }
 
-// Two notes the user could not tell apart. The stamps differ whenever both
-// sides were touched, and the version does too, so neither is worth comparing.
-bool sameNote(const LocalNote &mine, const LocalNote &theirs)
-{
-    return mine.title == theirs.title
-            && mine.content == theirs.content
-            && mine.category == theirs.category
-            && mine.favorite == theirs.favorite;
-}
-
 // The edit made here as a note of its own, for when the server's version is
 // given the original note back. The version is dropped along with the id it
 // belonged to, and only the title is labelled: a marker line in the content
@@ -413,6 +403,9 @@ void Session::flushOwed()
 void Session::pushNext()
 {
     const LocalNote note = takeNextOwed();
+    // Kept so the answer can be told from the row it was made from: the user
+    // may write to that row again before the answer arrives.
+    m_inFlight = note;
     if (note.id == 0) {
         queueDrained();
         return;
@@ -475,8 +468,9 @@ void Session::onNotesReady(const QVector<LocalNote> &notes)
 void Session::onCreated(qint64 localId, const LocalNote &note)
 {
     ++m_pushed;
-    m_cache.markClean(localId, note);
-    // The note the cover points at has just been given its server id.
+    settleWritten(note);
+    // The note the cover points at has just been given its server id. Both
+    // ways of taking the answer leave the row under that id.
     if (m_config->coverNoteId() == localId)
         m_config->setCoverNoteId(note.id);
 
@@ -487,17 +481,75 @@ void Session::onCreated(qint64 localId, const LocalNote &note)
 void Session::onUpdated(const LocalNote &note)
 {
     ++m_pushed;
-    m_cache.markClean(note.id, note);
+    settleWritten(note);
     reloadModels();
     pushNext();
 }
 
+// A delete the user asked for is simply done. A note the server says it no
+// longer has, while an edit of the user's was still waiting on it, is another
+// thing altogether: the note is gone, but the change is theirs and was never
+// offered to anybody, so it starts again as a note the server has never seen
+// rather than going down with the one it was made on.
 void Session::onDeleted(qint64 id)
 {
     ++m_pushed;
+    const LocalNote mine = m_cache.note(id);
     m_cache.remove(id);
+    if (!mine.deleted && mine.dirty)
+        restartOwed(mine);
+
     reloadModels();
     pushNext();
+}
+
+void Session::settleWritten(const LocalNote &saved)
+{
+    const LocalNote now = m_cache.note(m_inFlight.id);
+    // A row written to again while the answer travelled: settling it against
+    // the server's echo would throw that newer edit away and, worse, clear the
+    // very mark that was to send it. A delete made meanwhile counts the same,
+    // since settling would unmark it.
+    const bool writtenAgain = now.id != 0
+            && (now.deleted || !sameNote(now, m_inFlight));
+    if (writtenAgain) {
+        keepOwedOver(saved);
+        return;
+    }
+
+    m_cache.markClean(m_inFlight.id, saved);
+}
+
+// The server's id and version are adopted so the next run writes over what
+// this one just wrote, rather than being refused for holding an older version
+// or starting a second copy of a note that now exists.
+void Session::keepOwedOver(const LocalNote &saved)
+{
+    LocalNote owed = m_cache.note(m_inFlight.id);
+    if (owed.id != saved.id)
+        m_cache.remove(owed.id);
+
+    owed.id = saved.id;
+    owed.etag = saved.etag;
+    m_cache.upsertLocal(owed);
+}
+
+void Session::restartOwed(const LocalNote &mine)
+{
+    LocalNote fresh = mine;
+    // A note the server has never seen, which is what this edit has become:
+    // no id of its own to be refused over, and no version to match against.
+    fresh.id = m_cache.nextTempId();
+    fresh.etag.clear();
+    fresh.deleted = false;
+    m_cache.upsertLocal(fresh);
+    // It goes out in this run, as the new note it now is.
+    m_pending.append(fresh);
+    if (m_config->coverNoteId() == mine.id)
+        m_config->setCoverNoteId(fresh.id);
+
+    emit notice(tr("%1 was deleted on the server. The change made here is kept "
+                   "as a new note.").arg(mine.title));
 }
 
 // A refused write is not a failure: the server answered, and answered well,
@@ -642,13 +694,52 @@ void Session::resolveKeepBoth(int noteId)
 // next one owed is offered, and nothing is thrown away. A locked note is the
 // ordinary reason, and a lock a user placed is held until it is lifted on the
 // server, so the row waits however long that takes rather than being retried
-// into anything: there is nothing the app could do about it from here.
+// into anything: there is nothing the app could do about it from here, and a
+// file nobody can write is also a file nobody can change, so the edit kept
+// waiting hides no version of the note but the one it was made from.
+//
+// The reason is always said, unlike a server that could not be reached: the
+// edit was the user's own, and a tick that did not land is worth knowing about
+// whether or not the sync was asked for. It goes out on notice() for the
+// reason a conflict does - errorMessage would hold back the second of two
+// identical refusals, which is exactly what ticking a box on a locked note
+// twice would earn.
 void Session::onRefused(const QString &error)
 {
-    if (m_announce)
-        setError(error);
-
+    emit notice(error);
     pushNext();
+}
+
+// Only a note the server knows can be put back the way the server holds it,
+// which is why a note it has never seen is turned away here as well as by
+// its caller.
+void Session::abandonOwed(qint64 noteId)
+{
+    if (noteId <= 0)
+        return;
+
+    QPair<LocalNote, LocalNote> asked;
+    if (takeConflict(noteId, &asked))
+        emit conflictsChanged();
+
+    m_cache.abandonOwed(noteId);
+    // The row is left holding the edit until the server's own version is
+    // fetched over it, a pull being the only thing that carries one.
+    m_pullAfter = true;
+    reloadModels();
+}
+
+void Session::discardLocal(int noteId)
+{
+    const LocalNote note = m_cache.note(noteId);
+    if (note.id <= 0 || !(note.dirty || note.deleted))
+        return;
+
+    abandonOwed(note.id);
+    // With a run in flight the pull it was just promised carries the note
+    // back; with nothing going out there is no drain to wait for.
+    if (!m_busy)
+        fetchNotes();
 }
 
 // The rest of the run is abandoned: whatever was owed stays owed, and is

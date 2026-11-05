@@ -13,6 +13,10 @@ QVariantMap mapOf(const LocalNote &note)
     map.insert(QStringLiteral("category"), note.category);
     map.insert(QStringLiteral("favorite"), note.favorite);
     map.insert(QStringLiteral("locked"), note.readOnly);
+    // Carries an edit the server has not taken, which is the one state a note
+    // can be offered out of: the pages show discarding it only for a note that
+    // has something to discard.
+    map.insert(QStringLiteral("dirty"), note.dirty);
     map.insert(QStringLiteral("modified"), note.modified);
     return map;
 }

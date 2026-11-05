@@ -104,6 +104,8 @@ In the notes list and on the cover, where there is no room for any of this, the 
 
 A note the server marks read-only says so and cannot be edited. An empty note says that too, rather than showing a blank page.
 
+A tick is a change like any other and goes to the server straight away. If the server will not take it - a locked file is the usual reason - you are told why, and the tick waits on the phone until the next refresh can send it; see [Sync, files and permissions](files).
+
 ## Categories and favourites
 
 **Category** opens a picker holding the categories the notes already use, with room to type a new one. A note created from inside a category starts in that category.
@@ -115,3 +117,5 @@ The **star** at the end of the Title field marks the note a favourite, the same 
 ## Deleting
 
 **Delete** is offered in the menu of a note and on the note itself. It asks for a moment first, so a mistaken tap can be called back before the note goes. Deleting the note that is pinned to the cover gives the cover back to the notes list.
+
+**Discard waiting change** stands beside it while a note is carrying a change the server has not taken yet, and gives the note back the version the server holds. The note itself says when it is carrying one. See [Sync, files and permissions](files).

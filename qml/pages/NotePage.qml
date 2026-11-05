@@ -12,6 +12,9 @@ Page {
     property string category
     property bool favorite
     property bool locked
+    // Carries an edit the server has not taken, which is the only state there
+    // is anything to discard from.
+    property bool dirty
     property int modified
 
     function load() {
@@ -28,6 +31,7 @@ Page {
         page.category = note.category;
         page.favorite = note.favorite;
         page.locked = note.locked;
+        page.dirty = note.dirty;
         page.modified = note.modified;
     }
 
@@ -48,6 +52,14 @@ Page {
         });
     }
 
+    // The page stays open: the note is not going anywhere, it is only going
+    // back to the version the server holds, which the pull brings in.
+    function discard() {
+        remorse.execute(qsTr("Discarding"), function() {
+            app.notes.discardLocal(page.noteId);
+        });
+    }
+
     allowedOrientations: Orientation.All
     Component.onCompleted: page.load()
     onStatusChanged: {
@@ -64,6 +76,12 @@ Page {
             MenuItem {
                 text: qsTr("Delete")
                 onClicked: page.remove()
+            }
+
+            MenuItem {
+                visible: page.dirty
+                text: qsTr("Discard waiting change")
+                onClicked: page.discard()
             }
 
             MenuItem {
@@ -110,6 +128,22 @@ Page {
                 text: qsTr("This note is read-only.")
             }
 
+            // A change the server has not taken is said on the note itself and
+            // not only in its menu. A note that looks ordinary while carrying
+            // one is what made a refused edit feel like a fault here rather
+            // than an answer from the server. Nothing is said while a run is
+            // going out, or every ordinary save would show this on its way
+            // through.
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                visible: page.dirty && !app.notes.busy
+                wrapMode: Text.WordWrap
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeSmall
+                text: qsTr("A change to this note has not reached the server yet.")
+            }
+
             NoteBody {
                 width: parent.width
                 visible: page.content !== ""
@@ -141,6 +175,16 @@ Page {
 
     RemorsePopup {
         id: remorse
+    }
+
+    // A note is read while the server is still being talked to, so a version
+    // that arrives while the page is open is drawn where it stands: a pull
+    // putting back what a refused edit was discarded from is the whole point
+    // of discarding it, and waiting for the page to be left and opened again
+    // would leave the note showing a change that is no longer there.
+    Connections {
+        target: Lappu
+        onNotesChanged: page.load()
     }
 
 }

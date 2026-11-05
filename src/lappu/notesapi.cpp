@@ -86,12 +86,15 @@ QString statusError(int status)
     if (status == 412)
         return QObject::tr("The note changed on the server, which did not say how.");
     // The Notes app answers 423 for a file Nextcloud has locked, after trying
-    // five times itself. A user lock has no expiry, so the one thing the message
-    // must carry is the word the server means: the file is locked, and only
-    // unlocking it there will do. Nothing is wrong with the edit, which waits.
-    if (status == 423)
-        return QObject::tr("The note is locked on the server. The change is still "
-                           "waiting and will be sent again.");
+    // five times itself. A user lock has no expiry, so the message carries the
+    // word the server means - the file is locked, and only unlocking it there
+    // will do - and then what the user most needs to know, which is that the
+    // change is not lost and needs nothing further from them.
+    if (status == 423) {
+        return QObject::tr("The note is locked on the server. The change is "
+                           "waiting and will be sent once the file is unlocked "
+                           "in Nextcloud.");
+    }
 
     return QObject::tr("The server refused the change (%1).").arg(status);
 }

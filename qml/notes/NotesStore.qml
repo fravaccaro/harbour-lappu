@@ -166,6 +166,7 @@ QtObject {
             "favorite": note.favorite,
             "modified": note.modified,
             "locked": note.locked,
+            "dirty": note.dirty,
             "excerpt": Format.excerpt(note.content),
             "categoryLabel": Format.categoryLabel(note.category)
         };
@@ -333,6 +334,12 @@ QtObject {
             unpinNote();
 
         Lappu.deleteNote(noteId);
+    }
+
+    // Letting go of an edit the server never took is handed over like every
+    // other change to a note: the store writes nothing itself.
+    function discardLocal(noteId) {
+        Lappu.discardLocal(noteId);
     }
 
     // The title is the note's name and is passed in rather than worked out, so

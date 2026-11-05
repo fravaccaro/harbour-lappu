@@ -344,6 +344,10 @@
         <source>Delete</source>
         <translation>Delete</translation>
     </message>
+    <message>
+        <source>Discard waiting change</source>
+        <translation>Discard waiting change</translation>
+    </message>
 </context>
 <context>
     <name>NoteEditPage</name>
@@ -426,6 +430,18 @@
         <source>Pin to cover</source>
         <translation>Pin to cover</translation>
     </message>
+    <message>
+        <source>Discarding</source>
+        <translation>Discarding</translation>
+    </message>
+    <message>
+        <source>Discard waiting change</source>
+        <translation>Discard waiting change</translation>
+    </message>
+    <message>
+        <source>A change to this note has not reached the server yet.</source>
+        <translation>A change to this note has not reached the server yet.</translation>
+    </message>
 </context>
 <context>
     <name>NotesApi</name>
@@ -469,6 +485,10 @@
     <message>
         <source>Pull down to add a note</source>
         <translation>Pull down to add a note</translation>
+    </message>
+    <message>
+        <source>Discarding</source>
+        <translation>Discarding</translation>
     </message>
 </context>
 <context>
@@ -764,8 +784,8 @@
         <translation>%1 (my version)</translation>
     </message>
     <message>
-        <source>The note is locked on the server. The change is still waiting and will be sent again.</source>
-        <translation>The note is locked on the server. The change is still waiting and will be sent again.</translation>
+        <source>The note is locked on the server. The change is waiting and will be sent once the file is unlocked in Nextcloud.</source>
+        <translation>The note is locked on the server. The change is waiting and will be sent once the file is unlocked in Nextcloud.</translation>
     </message>
 </context>
 <context>
@@ -773,6 +793,10 @@
     <message>
         <source>%1 changed on the server as well. Choose which version to keep.</source>
         <translation>%1 changed on the server as well. Choose which version to keep.</translation>
+    </message>
+    <message>
+        <source>%1 was deleted on the server. The change made here is kept as a new note.</source>
+        <translation>%1 was deleted on the server. The change made here is kept as a new note.</translation>
     </message>
 </context>
 <context>

@@ -71,6 +71,12 @@ Page {
                     });
                 }
 
+                function discard() {
+                    remorseAction(qsTr("Discarding"), function() {
+                        app.notes.discardLocal(noteId);
+                    });
+                }
+
                 contentHeight: block.height + 2 * Theme.paddingMedium
                 onClicked: app.openNote(noteId)
 
@@ -146,10 +152,12 @@ Page {
                     favorite: model.favorite
                     locked: model.locked
                     pinned: app.notes.pinnedNoteId === model.noteId
+                    dirty: model.dirty
                     onFavoriteToggled: app.notes.toggleFavorite(model.noteId)
                     onPinToggled: app.togglePin(model.noteId)
                     onEditClicked: app.editNote(model.noteId)
                     onDeleteClicked: item.remove()
+                    onDiscardClicked: item.discard()
                 }
 
             }
@@ -213,6 +221,12 @@ Page {
                 function remove() {
                     remorseAction(qsTr("Deleting"), function() {
                         app.notes.removeNote(noteId);
+                    });
+                }
+
+                function discard() {
+                    remorseAction(qsTr("Discarding"), function() {
+                        app.notes.discardLocal(noteId);
                     });
                 }
 
@@ -298,10 +312,12 @@ Page {
                     favorite: model.favorite
                     locked: model.locked
                     pinned: app.notes.pinnedNoteId === model.noteId
+                    dirty: model.dirty
                     onFavoriteToggled: app.notes.toggleFavorite(model.noteId)
                     onPinToggled: app.togglePin(model.noteId)
                     onEditClicked: app.editNote(model.noteId)
                     onDeleteClicked: cell.remove()
+                    onDiscardClicked: cell.discard()
                 }
 
             }

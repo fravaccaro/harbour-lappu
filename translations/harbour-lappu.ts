@@ -343,6 +343,10 @@
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Discard waiting change</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NoteEditPage</name>
@@ -425,6 +429,18 @@
         <source>Pin to cover</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Discarding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discard waiting change</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A change to this note has not reached the server yet.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NotesApi</name>
@@ -466,6 +482,10 @@
     </message>
     <message>
         <source>Pull down to add a note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discarding</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -757,7 +777,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The note is locked on the server. The change is still waiting and will be sent again.</source>
+        <source>The note is locked on the server. The change is waiting and will be sent once the file is unlocked in Nextcloud.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -765,6 +785,10 @@
     <name>Session</name>
     <message>
         <source>%1 changed on the server as well. Choose which version to keep.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 was deleted on the server. The change made here is kept as a new note.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

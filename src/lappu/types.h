@@ -39,4 +39,14 @@ struct LocalNote
     }
 };
 
+// Two notes the user could not tell apart. The stamps differ whenever both
+// sides were touched, and the version does too, so neither is worth comparing.
+inline bool sameNote(const LocalNote &mine, const LocalNote &theirs)
+{
+    return mine.title == theirs.title
+            && mine.content == theirs.content
+            && mine.category == theirs.category
+            && mine.favorite == theirs.favorite;
+}
+
 #endif

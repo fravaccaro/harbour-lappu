@@ -35,6 +35,21 @@ QString createSql()
                           "modified INTEGER DEFAULT 0)");
 }
 
+// An edit of ours still owed to the server outranks what it sent - unless the
+// server already says exactly what we were going to tell it, which is a write
+// that landed and whose answer never reached us. Taking the note then settles
+// the row, where leaving it owed would offer the same edit again against a
+// version that has since moved on and earn a conflict worth nobody's time. A
+// delete is never settled this way: the note still being listed is the whole
+// of what is owed.
+bool stillOwed(const LocalNote &mine, const LocalNote &theirs)
+{
+    if (!mine.dirty && !mine.deleted)
+        return false;
+
+    return mine.deleted || !sameNote(mine, theirs);
+}
+
 QStringList idList(const QVector<LocalNote> &notes)
 {
     QStringList ids;
@@ -186,6 +201,20 @@ void NotesCache::markDeleted(qint64 id)
     query.exec();
 }
 
+// The edit is let go of and the row is left holding what it holds until the
+// next pull writes the server's version over it. The delete goes with it: a
+// note whose delete the server refused is still there to be shown.
+void NotesCache::abandonOwed(qint64 id)
+{
+    if (!isOpen())
+        return;
+
+    QSqlQuery query(m_db);
+    query.prepare(QStringLiteral("UPDATE notes SET dirty = 0, deleted = 0 WHERE id = ?"));
+    query.addBindValue(id);
+    query.exec();
+}
+
 void NotesCache::setEtag(qint64 id, const QString &etag)
 {
     if (!isOpen())
@@ -240,8 +269,7 @@ void NotesCache::applyRemote(const QVector<LocalNote> &notes)
     m_db.transaction();
     for (int i = 0; i < notes.size(); ++i) {
         const LocalNote mine = note(notes.at(i).id);
-        // An edit of ours still owed to the server outranks what it sent.
-        if (mine.id != 0 && (mine.dirty || mine.deleted))
+        if (mine.id != 0 && stillOwed(mine, notes.at(i)))
             continue;
 
         write(notes.at(i));
