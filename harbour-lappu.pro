@@ -76,6 +76,7 @@ DISTFILES += \
     qml/pages/CategoriesPage.qml \
     qml/pages/CategoryPickerPage.qml \
     qml/pages/ConflictPage.qml \
+    qml/pages/LockedNotesPage.qml \
     qml/pages/LoginPage.qml \
     qml/pages/NoteEditPage.qml \
     qml/pages/NotePage.qml \

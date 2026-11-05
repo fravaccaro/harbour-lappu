@@ -257,6 +257,49 @@
     </message>
 </context>
 <context>
+    <name>LockedNotesPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Locked notes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>These files are locked in Nextcloud and cannot sync. Open Nextcloud > Files > Notes, and choose Unlock for each file. Your changes are saved locally and will upload automatically as soon as they are unlocked.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This note is read-only. Your changes are saved locally and will upload automatically once edit access is granted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discarding</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read-only on the server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Locked on the server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discard waiting change</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nothing is locked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A file locked on Nextcloud will re-appear after the next refresh.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>LoginFlow</name>
     <message>
         <source>Enter a server address.</source>
@@ -464,6 +507,12 @@
     <message>
         <source>Search notes</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n note(s) locked on the server</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -777,7 +826,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The note is locked on the server. The change is waiting and will be sent once the file is unlocked in Nextcloud.</source>
+        <source>%1 is locked on the server. The change is waiting until the file is unlocked in Nextcloud.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 is read-only on the server. The change is waiting.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

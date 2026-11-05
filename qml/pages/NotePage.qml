@@ -11,7 +11,7 @@ Page {
     property string content
     property string category
     property bool favorite
-    property bool locked
+    property bool readOnly
     // Carries an edit the server has not taken, which is the only state there
     // is anything to discard from.
     property bool dirty
@@ -30,7 +30,7 @@ Page {
         page.content = note.content;
         page.category = note.category;
         page.favorite = note.favorite;
-        page.locked = note.locked;
+        page.readOnly = note.readOnly;
         page.dirty = note.dirty;
         page.modified = note.modified;
     }
@@ -98,7 +98,7 @@ Page {
             }
 
             MenuItem {
-                visible: !page.locked
+                visible: !page.readOnly
                 text: qsTr("Edit")
                 onClicked: app.editNote(page.noteId)
             }
@@ -121,7 +121,7 @@ Page {
             Label {
                 x: Theme.horizontalPageMargin
                 width: parent.width - 2 * Theme.horizontalPageMargin
-                visible: page.locked
+                visible: page.readOnly
                 wrapMode: Text.WordWrap
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeSmall
@@ -148,7 +148,7 @@ Page {
                 width: parent.width
                 visible: page.content !== ""
                 content: page.content
-                locked: page.locked
+                readOnly: page.readOnly
                 onTaskClicked: page.toggleTask(lineIndex)
                 // A link in a note came from the server, so it is offered
                 // rather than opened, the way every other link in the app is.

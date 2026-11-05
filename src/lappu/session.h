@@ -39,6 +39,8 @@ class Session : public QObject
     Q_PROPERTY(QString viewMode READ viewMode WRITE setViewMode NOTIFY viewModeChanged)
     // How many notes changed on both sides and are waiting to be settled.
     Q_PROPERTY(int conflictCount READ conflictCount NOTIFY conflictsChanged)
+    // How many notes the server is holding shut, by a lock or by a permission.
+    Q_PROPERTY(int lockedCount READ lockedCount NOTIFY lockedChanged)
 
 public:
     explicit Session(Config *config, NotesModel *notes, QObject *parent = nullptr);
@@ -69,6 +71,7 @@ public:
     QString viewMode() const;
     void setViewMode(const QString &mode);
     int conflictCount() const { return m_conflicts.size(); }
+    int lockedCount() const { return m_locked.size(); }
 
     Q_INVOKABLE void startLogin(const QString &serverUrl);
     Q_INVOKABLE void cancelLogin();
@@ -89,6 +92,9 @@ public:
     // The unsettled notes as plain rows, each carrying both versions, the way
     // NotesModel::notes() hands the notes themselves to QML.
     Q_INVOKABLE QVariantList conflicts() const;
+    // The notes the server would not change, as plain rows carrying the name
+    // of each and why it is being held shut.
+    Q_INVOKABLE QVariantList lockedNotes() const;
     // Keeps the edit made here and offers it again against the version the
     // server answered with.
     Q_INVOKABLE void resolveKeepMine(int noteId);
@@ -123,6 +129,7 @@ signals:
     void loginFailed(const QString &error);
     void notesChanged();
     void conflictsChanged();
+    void lockedChanged();
     // Something the user is owed an explanation of, but that is not an error:
     // it goes its own way rather than through errorMessage, which would hold
     // a second identical notice back.
@@ -156,7 +163,13 @@ private:
     // turns out no longer to have the note it was made on.
     void restartOwed(const LocalNote &mine);
     void onConflict(const LocalNote &remote);
-    void onRefused(const QString &error);
+    void onRefused(int status, const QString &error);
+    // Remembers the note now in flight as one the server is holding shut.
+    void rememberLocked(int status);
+    // Forgets every note that owes the server nothing any more, which is the
+    // one thing that can mean it is no longer being held back.
+    void pruneLocked();
+    int indexOfLocked(qint64 noteId) const;
     // Lets go of what is owed on one note and asks for the version the server
     // holds, for when the user would rather have the note back than go on
     // waiting for a change to be taken.
@@ -192,6 +205,12 @@ private:
     // row in the cache, so an app closed before the user answers loses only
     // the question, and the next sync's refused write asks it again.
     QVector<QPair<LocalNote, LocalNote> > m_conflicts;
+    // The notes the server would not change, as the id of each paired with the
+    // status it was refused with. The id rather than the note, so the rows
+    // handed to QML are read from the cache and no name goes stale. Kept
+    // nowhere else for the reason the conflicts are: the row is still owed, so
+    // the next run earns the same refusal and makes the list again.
+    QVector<QPair<qint64, int> > m_locked;
     QString m_loginUrl;
     QString m_error;
     bool m_busy;

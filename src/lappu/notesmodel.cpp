@@ -12,7 +12,9 @@ QVariantMap mapOf(const LocalNote &note)
     map.insert(QStringLiteral("content"), note.content);
     map.insert(QStringLiteral("category"), note.category);
     map.insert(QStringLiteral("favorite"), note.favorite);
-    map.insert(QStringLiteral("locked"), note.readOnly);
+    // Named as the field is, and apart from the notes the server is holding
+    // shut: this one is the note's own permission, not a change being refused.
+    map.insert(QStringLiteral("readOnly"), note.readOnly);
     // Carries an edit the server has not taken, which is the one state a note
     // can be offered out of: the pages show discarding it only for a note that
     // has something to discard.

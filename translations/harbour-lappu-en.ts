@@ -258,6 +258,49 @@
     </message>
 </context>
 <context>
+    <name>LockedNotesPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation>Refresh</translation>
+    </message>
+    <message>
+        <source>Locked notes</source>
+        <translation>Locked notes</translation>
+    </message>
+    <message>
+        <source>These files are locked in Nextcloud and cannot sync. Open Nextcloud > Files > Notes, and choose Unlock for each file. Your changes are saved locally and will upload automatically as soon as they are unlocked.</source>
+        <translation>These files are locked in Nextcloud and cannot sync. Open Nextcloud > Files > Notes, and choose Unlock for each file. Your changes are saved locally and will upload automatically as soon as they are unlocked.</translation>
+    </message>
+    <message>
+        <source>This note is read-only. Your changes are saved locally and will upload automatically once edit access is granted.</source>
+        <translation>This note is read-only. Your changes are saved locally and will upload automatically once edit access is granted.</translation>
+    </message>
+    <message>
+        <source>Discarding</source>
+        <translation>Discarding</translation>
+    </message>
+    <message>
+        <source>Read-only on the server</source>
+        <translation>Read-only on the server</translation>
+    </message>
+    <message>
+        <source>Locked on the server</source>
+        <translation>Locked on the server</translation>
+    </message>
+    <message>
+        <source>Discard waiting change</source>
+        <translation>Discard waiting change</translation>
+    </message>
+    <message>
+        <source>Nothing is locked</source>
+        <translation>Nothing is locked</translation>
+    </message>
+    <message>
+        <source>A file locked on Nextcloud will re-appear after the next refresh.</source>
+        <translation>A file locked on Nextcloud will re-appear after the next refresh.</translation>
+    </message>
+</context>
+<context>
     <name>LoginFlow</name>
     <message>
         <source>Enter a server address.</source>
@@ -466,6 +509,13 @@
     <message>
         <source>Search notes</source>
         <translation>Search notes</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n note(s) locked on the server</source>
+        <translation>
+            <numerusform>%n note locked on the server</numerusform>
+            <numerusform>%n notes locked on the server</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -784,8 +834,12 @@
         <translation>%1 (my version)</translation>
     </message>
     <message>
-        <source>The note is locked on the server. The change is waiting and will be sent once the file is unlocked in Nextcloud.</source>
-        <translation>The note is locked on the server. The change is waiting and will be sent once the file is unlocked in Nextcloud.</translation>
+        <source>%1 is locked on the server. The change is waiting until the file is unlocked in Nextcloud.</source>
+        <translation>%1 is locked on the server. The change is waiting until the file is unlocked in Nextcloud.</translation>
+    </message>
+    <message>
+        <source>%1 is read-only on the server. The change is waiting.</source>
+        <translation>%1 is read-only on the server. The change is waiting.</translation>
     </message>
 </context>
 <context>

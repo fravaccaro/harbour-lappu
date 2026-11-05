@@ -62,7 +62,7 @@ ApplicationWindow {
 
     function editNote(noteId) {
         var note = notes.noteById(noteId);
-        if (!note || note.locked)
+        if (!note || note.readOnly)
             return ;
 
         pushEditor(note);

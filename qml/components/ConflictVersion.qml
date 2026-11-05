@@ -81,7 +81,7 @@ Column {
         width: root.width
         visible: root.content !== ""
         content: root.content
-        locked: true
+        readOnly: true
         onLinkActivated: root.linkActivated(link)
     }
 

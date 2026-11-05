@@ -165,7 +165,7 @@ QtObject {
             "category": note.category,
             "favorite": note.favorite,
             "modified": note.modified,
-            "locked": note.locked,
+            "readOnly": note.readOnly,
             "dirty": note.dirty,
             "excerpt": Format.excerpt(note.content),
             "categoryLabel": Format.categoryLabel(note.category)
@@ -288,7 +288,7 @@ QtObject {
 
     function toggleTask(noteId, lineIndex) {
         var note = noteById(noteId);
-        if (!note || note.locked)
+        if (!note || note.readOnly)
             return ;
 
         var content = flipLine(note.content, lineIndex);

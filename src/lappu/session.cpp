@@ -88,6 +88,42 @@ QVariantMap conflictRow(const QPair<LocalNote, LocalNote> &pair)
     return map;
 }
 
+// The two refusals that hold a note shut rather than merely going wrong the
+// once: a lock, which the user can lift, and a permission, which they have to
+// be given. Either way the note goes on being refused until something changes
+// on the server, which is what makes it worth listing rather than only saying.
+bool heldShut(int status)
+{
+    return status == 403 || status == 423;
+}
+
+// The note named, since a refusal the user cannot place is one they cannot act
+// on. The Notes app answers 423 for a file Nextcloud has locked, after trying
+// five times itself, and a lock a user placed has no expiry, so the sentence
+// says where it has to be lifted and that nothing here needs redoing.
+QString refusalNotice(int status, const QString &title, const QString &error)
+{
+    if (status == 423) {
+        return QObject::tr("%1 is locked on the server. The change is waiting "
+                           "until the file is unlocked in Nextcloud.").arg(title);
+    }
+    if (status == 403)
+        return QObject::tr("%1 is read-only on the server. The change is waiting.").arg(title);
+
+    return error;
+}
+
+QVariantMap lockedRow(const LocalNote &note, int status)
+{
+    QVariantMap map;
+    map.insert(QStringLiteral("noteId"), note.id);
+    map.insert(QStringLiteral("title"), note.title);
+    map.insert(QStringLiteral("modified"), note.modified);
+    map.insert(QStringLiteral("reason"),
+               status == 403 ? QStringLiteral("readOnly") : QStringLiteral("locked"));
+    return map;
+}
+
 }
 
 Session::Session(Config *config, NotesModel *notes, QObject *parent)
@@ -259,6 +295,8 @@ void Session::setError(const QString &error)
 void Session::reloadModels()
 {
     m_notes->setNotes(m_cache.notes());
+    // A note that owes the server nothing is not being held back by it.
+    pruneLocked();
 }
 
 void Session::applyApiSettings()
@@ -338,9 +376,13 @@ void Session::logout()
     m_cache.clear();
     m_notes->reload();
     // The local side of a pair was one of the rows just dropped, so there is
-    // nothing left for an answer to settle.
+    // nothing left for an answer to settle, and nothing left owed for the
+    // server to be holding shut. Said here rather than left to pruneLocked(),
+    // which the cache is emptied without going through.
     m_conflicts.clear();
     emit conflictsChanged();
+    m_locked.clear();
+    emit lockedChanged();
 }
 
 void Session::reloadSecrets()
@@ -704,10 +746,68 @@ void Session::resolveKeepBoth(int noteId)
 // reason a conflict does - errorMessage would hold back the second of two
 // identical refusals, which is exactly what ticking a box on a locked note
 // twice would earn.
-void Session::onRefused(const QString &error)
+void Session::onRefused(int status, const QString &error)
 {
-    emit notice(error);
+    rememberLocked(status);
+    emit notice(refusalNotice(status, m_inFlight.title, error));
     pushNext();
+}
+
+// The note that was sent is the one that was refused, which is how a refusal
+// comes by a name at all: NotesApi knows the status and nothing else.
+void Session::rememberLocked(int status)
+{
+    if (!heldShut(status) || m_inFlight.id == 0)
+        return;
+
+    const int at = indexOfLocked(m_inFlight.id);
+    const QPair<qint64, int> held = qMakePair(m_inFlight.id, status);
+    if (at >= 0) {
+        if (m_locked.at(at) == held)
+            return;
+
+        m_locked[at] = held;
+    } else {
+        m_locked.append(held);
+    }
+    emit lockedChanged();
+}
+
+// Called wherever the models are reloaded, so one rule stands for every way a
+// note stops being held: the write landed, the change was discarded, the note
+// was deleted. A row that owes the server nothing is a row nothing is keeping
+// from it.
+void Session::pruneLocked()
+{
+    const int was = m_locked.size();
+    for (int i = m_locked.size() - 1; i >= 0; --i) {
+        const LocalNote note = m_cache.note(m_locked.at(i).first);
+        if (note.id == 0 || !(note.dirty || note.deleted))
+            m_locked.remove(i);
+    }
+
+    if (m_locked.size() != was)
+        emit lockedChanged();
+}
+
+int Session::indexOfLocked(qint64 noteId) const
+{
+    for (int i = 0; i < m_locked.size(); ++i) {
+        if (m_locked.at(i).first == noteId)
+            return i;
+    }
+
+    return -1;
+}
+
+QVariantList Session::lockedNotes() const
+{
+    QVariantList list;
+    list.reserve(m_locked.size());
+    for (int i = 0; i < m_locked.size(); ++i)
+        list.append(lockedRow(m_cache.note(m_locked.at(i).first), m_locked.at(i).second));
+
+    return list;
 }
 
 // Only a note the server knows can be put back the way the server holds it,

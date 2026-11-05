@@ -3,7 +3,7 @@
     \brief What can be done with one note, held open behind it.
 
     The menu reads no model of its own: the owner says what the note currently
-    is through \c favorite, \c locked, \c pinned and \c dirty, which is all the
+    is through \c favorite, \c readOnly, \c pinned and \c dirty, which is all the
     labels, the one disabled entry and the one hidden entry need, and answers
     the five signals.
 
@@ -13,7 +13,7 @@
     \qml
     menu: NoteContextMenu {
         favorite: model.favorite
-        locked: model.locked
+        readOnly: model.readOnly
         pinned: notes.pinnedNoteId === model.noteId
         dirty: model.dirty
         onFavoriteToggled: notes.toggleFavorite(model.noteId)
@@ -31,7 +31,7 @@ ContextMenu {
     id: root
 
     property bool favorite: false
-    property bool locked: false
+    property bool readOnly: false
     property bool pinned: false
     // Carries an edit the server has not taken, which is the only state there
     // is anything to discard from.
@@ -54,7 +54,7 @@ ContextMenu {
     }
 
     MenuItem {
-        enabled: !root.locked
+        enabled: !root.readOnly
         text: qsTr("Edit")
         onClicked: root.editClicked()
     }

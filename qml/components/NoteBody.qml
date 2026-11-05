@@ -22,7 +22,7 @@ import Sailfish.Silica 1.0
     table or a code block stands for several lines at once, so that number is
     the line within \c content rather than the row it was drawn in.
 
-    Task rows are disabled while \c locked is true.
+    Task rows are disabled while \c readOnly is true.
 
     A note carries its whole text, its name being the file's rather than the
     text's, so every line is drawn, including a first line that repeats the
@@ -32,7 +32,7 @@ import Sailfish.Silica 1.0
     NoteBody {
         width: parent.width
         content: note.content
-        locked: note.locked
+        readOnly: note.readOnly
         onTaskClicked: store.toggleTask(note.noteId, lineIndex)
         onLinkActivated: L.LinkHandler.openOrCopyUrl(link)
     }
@@ -42,7 +42,7 @@ Column {
     id: root
 
     property string content
-    property bool locked
+    property bool readOnly
 
     signal taskClicked(int lineIndex)
     signal linkActivated(string link)
@@ -87,7 +87,7 @@ Column {
                 width: parent.width
                 height: Math.max(Theme.itemSizeSmall, taskLabel.height + 2 * Theme.paddingSmall)
                 visible: kind === "task"
-                enabled: !root.locked
+                enabled: !root.readOnly
                 onClicked: root.taskClicked(model.lineIndex)
 
                 Label {

@@ -258,6 +258,49 @@
     </message>
 </context>
 <context>
+    <name>LockedNotesPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation>Ricarica</translation>
+    </message>
+    <message>
+        <source>Locked notes</source>
+        <translation>Note bloccate</translation>
+    </message>
+    <message>
+        <source>These files are locked in Nextcloud and cannot sync. Open Nextcloud &gt; Files &gt; Notes, and choose Unlock for each file. Your changes are saved locally and will upload automatically as soon as they are unlocked. </source>
+        <translation>Questi file sono bloccati su Nextcloud e non possono essere inviati. Apri Nextcloud &gt; File &gt; Note e seleziona Sblocca per ogni file. Le modifiche sono salvate sul dispositivo e si sincronizzeranno automaticamente dopo lo sblocco.</translation>
+    </message>
+    <message>
+        <source>This note is read-only. Your changes are saved locally and will upload automatically once edit access is granted.</source>
+        <translation>Questa nota è in sola lettura. Le tue modifiche sono salvate localmente e si sincronizzeranno non appena riceverai l&apos;accesso in scrittura.</translation>
+    </message>
+    <message>
+        <source>Discarding</source>
+        <translation>Annullamento</translation>
+    </message>
+    <message>
+        <source>Read-only on the server</source>
+        <translation>Di sola lettura sul server</translation>
+    </message>
+    <message>
+        <source>Locked on the server</source>
+        <translation>Bloccata sul server</translation>
+    </message>
+    <message>
+        <source>Discard waiting change</source>
+        <translation>Annulla la modifica in attesa</translation>
+    </message>
+    <message>
+        <source>Nothing is locked</source>
+        <translation>Nessuna nota bloccata</translation>
+    </message>
+    <message>
+        <source>A file locked on Nextcloud will re-appear after the next refresh.</source>
+        <translation>Un nota bloccata su Nextcloud riapparirà al prossimo aggiornamento.</translation>
+    </message>
+</context>
+<context>
     <name>LoginFlow</name>
     <message>
         <source>Enter a server address.</source>
@@ -466,6 +509,13 @@
     <message>
         <source>Search notes</source>
         <translation>Cerca note</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n note(s) locked on the server</source>
+        <translation>
+            <numerusform>%n nota bloccata sul server</numerusform>
+            <numerusform>%n note bloccate sul server</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -786,8 +836,12 @@
         <translation>%1 (la mia versione)</translation>
     </message>
     <message>
-        <source>The note is locked on the server. The change is waiting and will be sent once the file is unlocked in Nextcloud.</source>
-        <translation>La nota è bloccata sul server. La modifica è in attesa e verrà inviata quando il file sarà sbloccato in Nextcloud.</translation>
+        <source>%1 is locked on the server. The change is waiting until the file is unlocked in Nextcloud.</source>
+        <translation>%1 è bloccata sul server. La modifica è in attesa finché il file non viene sbloccato in Nextcloud.</translation>
+    </message>
+    <message>
+        <source>%1 is read-only on the server. The change is waiting.</source>
+        <translation>%1 è di sola lettura sul server. La modifica è in attesa.</translation>
     </message>
 </context>
 <context>

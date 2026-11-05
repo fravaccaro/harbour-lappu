@@ -54,8 +54,10 @@ signals:
     void conflicted(const LocalNote &remote);
     // A write the server answered with a status of its own. It travels apart
     // from failed() because the server is plainly well: whatever else is owed
-    // can still be offered, and the note stays owed for the next run.
-    void refused(const QString &error);
+    // can still be offered, and the note stays owed for the next run. The
+    // status goes with it because what a refusal means for the note is the
+    // caller's to say: it knows which note was sent, and this does not.
+    void refused(int status, const QString &error);
 
 private:
     void onFinished(int status, const QByteArray &body);

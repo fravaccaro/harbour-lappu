@@ -56,9 +56,11 @@ Page {
                 width: listView.width
                 title: app.notes.listTitle
                 conflictCount: Lappu.conflictCount
+                lockedCount: Lappu.lockedCount
                 searchVisible: page.searchVisible
                 searchText: app.notes.searchText
                 onConflictClicked: pageStack.push(Qt.resolvedUrl("ConflictPage.qml"))
+                onLockedClicked: pageStack.push(Qt.resolvedUrl("LockedNotesPage.qml"))
                 onSearchRequested: app.notes.searchText = text
             }
 
@@ -150,7 +152,7 @@ Page {
 
                 menu: NoteContextMenu {
                     favorite: model.favorite
-                    locked: model.locked
+                    readOnly: model.readOnly
                     pinned: app.notes.pinnedNoteId === model.noteId
                     dirty: model.dirty
                     onFavoriteToggled: app.notes.toggleFavorite(model.noteId)
@@ -209,9 +211,11 @@ Page {
                 width: gridView.width
                 title: app.notes.listTitle
                 conflictCount: Lappu.conflictCount
+                lockedCount: Lappu.lockedCount
                 searchVisible: page.searchVisible
                 searchText: app.notes.searchText
                 onConflictClicked: pageStack.push(Qt.resolvedUrl("ConflictPage.qml"))
+                onLockedClicked: pageStack.push(Qt.resolvedUrl("LockedNotesPage.qml"))
                 onSearchRequested: app.notes.searchText = text
             }
 
@@ -310,7 +314,7 @@ Page {
 
                 menu: NoteContextMenu {
                     favorite: model.favorite
-                    locked: model.locked
+                    readOnly: model.readOnly
                     pinned: app.notes.pinnedNoteId === model.noteId
                     dirty: model.dirty
                     onFavoriteToggled: app.notes.toggleFavorite(model.noteId)

@@ -4,11 +4,13 @@
 
     Stands above the notes whichever way they are laid out, so the list and the
     grid share one of these rather than a copy each. It holds no model: the
-    caller passes \c title, \c conflictCount and \c searchText and answers the
-    signals.
+    caller passes \c title, \c conflictCount, \c lockedCount and \c searchText
+    and answers the signals.
 
-    The conflict row only appears while \c conflictCount is above zero. The
-    search field follows \c searchVisible, and the field looks after its own
+    Two rows sit under the title, each shown only while its count is above
+    zero: \c conflictCount for the notes that changed on both sides, and
+    \c lockedCount for the ones the server is holding shut. The search field
+    follows \c searchVisible, and the field looks after its own
     focus: showing it is a request to type in it, and hiding it calls the
     search off, which empties the field and so reports an empty \c searchRequested.
     \c searchText is what the field starts from when the header is built with
@@ -19,9 +21,11 @@
         width: parent.width
         title: notes.listTitle
         conflictCount: Lappu.conflictCount
+        lockedCount: Lappu.lockedCount
         searchVisible: page.searchVisible
         searchText: notes.searchText
         onConflictClicked: pageStack.push(Qt.resolvedUrl("ConflictPage.qml"))
+        onLockedClicked: pageStack.push(Qt.resolvedUrl("LockedNotesPage.qml"))
         onSearchRequested: notes.searchText = text
     }
     \endqml
@@ -34,10 +38,12 @@ Column {
 
     property string title
     property int conflictCount: 0
+    property int lockedCount: 0
     property bool searchVisible: false
     property string searchText: ""
 
     signal conflictClicked()
+    signal lockedClicked()
     signal searchRequested(string text)
 
     function applySearchVisible() {
@@ -77,6 +83,27 @@ Column {
             color: conflictRow.highlighted ? Theme.highlightColor : Theme.errorColor
             font.pixelSize: Theme.fontSizeSmall
             text: qsTr("%n note(s) changed on the server as well", "", root.conflictCount)
+        }
+
+    }
+
+    // Which notes are being held shut is the thing the message on its own
+    // could never say, so the row names them rather than only counting them.
+    BackgroundItem {
+        id: lockedRow
+
+        width: parent.width
+        visible: root.lockedCount > 0
+        onClicked: root.lockedClicked()
+
+        Label {
+            x: Theme.horizontalPageMargin
+            width: parent.width - 2 * Theme.horizontalPageMargin
+            anchors.verticalCenter: parent.verticalCenter
+            truncationMode: TruncationMode.Fade
+            color: lockedRow.highlighted ? Theme.highlightColor : Theme.errorColor
+            font.pixelSize: Theme.fontSizeSmall
+            text: qsTr("%n note(s) locked on the server", "", root.lockedCount)
         }
 
     }

@@ -37,11 +37,17 @@ A network that accepts the connection but never answers - a café or hotel Wi-Fi
 
 A refusal that names one note costs that note its turn and nothing more: the rest of what is owed still goes out in the same refresh, and the refused note stays owed for the next one. **Nothing you wrote is ever thrown away by a refusal**, whatever its reason. You are told the moment it happens, rather than only on some later refresh - the change was yours, and a box that did not stay ticked is worth a word.
 
-**The note is locked on the server** is the one worth recognising. Nextcloud lets a file be locked on purpose - the **Lock file** entry in the Files app - and a lock placed that way does not expire. While it stands, nothing can write to that note: not Lappu, not the web page, not the desktop client. The change waits on the phone and goes out by itself on the first refresh after the file is unlocked in Nextcloud, so there is nothing to redo here. The same message can also mean the server was briefly busy writing the file, which passes on its own, so it is worth one more refresh before going looking for a padlock.
+**A note is locked on the server** is the one worth recognising, and the message names it: *Shopping list is locked on the server*. Nextcloud lets a file be locked on purpose - the **Lock file** entry in the Files app - and a lock placed that way does not expire. While it stands, nothing can write to that note: not Lappu, not the web page, not the desktop client. The change waits on the phone and goes out by itself on the first refresh after the file is unlocked in Nextcloud, so there is nothing to redo here. The same message can also mean the server was briefly busy writing the file, which passes on its own, so it is worth one more refresh before going looking for a padlock.
 
 Waiting costs you nothing while the lock stands: a file nobody can write is also a file nobody can change, so the note on the phone is not hiding some newer version of itself. The note says so plainly while it waits - *A change to this note has not reached the server yet* - so a change that has not landed is never left looking like a note that simply went wrong.
 
 **The note is read-only on the server** is a different thing, and it is about permission rather than a lock: a note shared with you to read, or one whose folder you cannot write to. Lappu will not let you edit a note it already knows is read-only.
+
+## Which notes are locked
+
+A message is gone the moment it has been read, so the notes being held shut are also gathered in one place. A row at the top of the notes counts them - *2 notes locked on the server* - and opens a page that names each one and says whether it is locked or read-only. The page explains where to lift a lock, pulls down to refresh so the retry is where you are when you lift it, and offers **Discard waiting change** on any note you would rather have back than go on waiting for. Tapping a note opens it.
+
+The list is made by the refusals a refresh earns, not kept on the phone, so it is empty when Lappu starts and fills again with the first refresh. A note leaves it the moment its change lands.
 
 ## Letting a waiting change go
 
