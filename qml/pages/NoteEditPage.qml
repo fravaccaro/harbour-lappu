@@ -46,7 +46,7 @@ Dialog {
         id: flick
 
         anchors.fill: parent
-        contentHeight: column.height + Theme.paddingLarge
+        contentHeight: column.height + Theme.paddingSmall
 
         Column {
             id: column
@@ -147,7 +147,7 @@ Dialog {
                 // on the whole of it and the field grows with a longer one.
                 // The strip the arrows stand in is added to the writing, so
                 // the text never runs under them.
-                height: Math.max(implicitHeight + undoBar.height, page.height - y - Theme.paddingLarge)
+                height: Math.max(implicitHeight + undoBar.height, page.height - y - Theme.paddingMedium)
                 text: page.content
                 placeholderText: qsTr("Write a note...")
                 // A tap on the Markdown bar pulls focus off the field, and the
@@ -156,6 +156,10 @@ Dialog {
                 // slipping away; a deliberate swipe down still closes it.
                 focusOutBehavior: FocusBehavior.KeepFocus
                 wrapMode: TextEdit.Wrap
+                // The body has no label, but Silica reserves a line for one
+                // under every field and counts it into the margin below the
+                // writing. Saying there is none is what shortens that margin.
+                labelVisible: false
                 // The field reaches the foot of the page, so the line Silica
                 // draws under it would be a rule across the bottom.
                 backgroundStyle: TextEditor.NoBackground

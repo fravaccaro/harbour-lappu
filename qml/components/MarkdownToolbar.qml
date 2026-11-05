@@ -24,6 +24,11 @@
     the flickable nor a button takes focus, so dragging the bar leaves the
     keyboard up just as tapping it does.
 
+    Because a bar that is wider than the screen does not say so, it nudges
+    itself once when it is built: a stop's worth of slide and back again. The
+    nudge travels \c hintDistance, which is nothing at all when every button
+    already fits, so a wide screen sees no movement.
+
     \qml
     MarkdownToolbar {
         width: parent.width
@@ -46,6 +51,9 @@ Item {
     // A square stop, sized to the finger rather than to the screen: the bar
     // is dragged when the buttons want more room than there is.
     readonly property int buttonWidth: Theme.itemSizeSmall
+    // How far the opening nudge travels: one stop, or whatever is hidden if
+    // less than a stop is. Nothing is hidden, nothing moves.
+    readonly property real hintDistance: Math.min(buttonWidth, Math.max(0, viewport.contentWidth - viewport.width))
 
     function remember() {
         if (!target)
@@ -219,6 +227,35 @@ Item {
     }
 
     height: Theme.itemSizeSmall
+    Component.onCompleted: moreHint.start()
+
+    // The bar slides off and comes back when the page opens, so a writer is
+    // shown there is more of it than the screen holds. It waits for the page
+    // to settle first, and a drag of the writer's own calls it off.
+    SequentialAnimation {
+        id: moreHint
+
+        PauseAnimation {
+            duration: 700
+        }
+
+        NumberAnimation {
+            target: viewport
+            property: "contentX"
+            to: root.hintDistance
+            duration: 500
+            easing.type: Easing.InOutQuad
+        }
+
+        NumberAnimation {
+            target: viewport
+            property: "contentX"
+            to: 0
+            duration: 500
+            easing.type: Easing.InOutQuad
+        }
+
+    }
 
     Flickable {
         id: viewport
@@ -230,6 +267,7 @@ Item {
         // where the writer left it.
         boundsBehavior: Flickable.StopAtBounds
         clip: true
+        onMovementStarted: moreHint.stop()
 
         Row {
             id: bar

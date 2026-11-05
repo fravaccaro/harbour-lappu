@@ -25,7 +25,7 @@ If the first line of the body says exactly what the title says, it is not drawn 
 
 ## The Markdown bar
 
-The bar above the text applies Markdown to the selection, or, with nothing selected, inserts the markers and leaves the cursor between them. The buttons stand on one line, and when they want more room than the screen has the bar can be dragged sideways; the rest of the page stays where it is.
+The bar above the text applies Markdown to the selection, or, with nothing selected, inserts the markers and leaves the cursor between them. The buttons stand on one line, and when they want more room than the screen has the bar can be dragged sideways; the rest of the page stays where it is. It slides and comes back once as the page opens to say so, and stops the moment you drag it yourself. A screen wide enough for every button sees no such nudge.
 
 | Button | Writes |
 |---|---|
