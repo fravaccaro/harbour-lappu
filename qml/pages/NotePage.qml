@@ -94,7 +94,9 @@ Page {
             spacing: Theme.paddingMedium
 
             PageHeader {
-                title: page.title
+                // The star stands after the name here as it does in the list,
+                // so a favourite says so while it is being read too.
+                title: app.notes.starredTitle(page.title, page.favorite)
                 description: page.headerDescription()
             }
 

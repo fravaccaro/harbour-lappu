@@ -82,6 +82,8 @@ Typing is gathered into steps rather than recorded letter by letter, so one undo
 
 ## Reading a note
 
+The name of the note stands at the top of the page, with a star after it when the note is a favourite, as in the list.
+
 The note page draws the Markdown rather than showing the markers: emphasis and strikethrough as written, bullets as bullets, and a link as a link.
 
 A **heading** is set in its own size as well as in bold, so `#` is larger than `##`, and `###` and below read as bold at the size of the text around them.

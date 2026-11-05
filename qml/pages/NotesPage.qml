@@ -96,7 +96,7 @@ Page {
 
                             truncationMode: TruncationMode.Fade
                             color: item.highlighted ? Theme.highlightColor : Theme.primaryColor
-                            text: title + (favorite ? " \u2605" : "")
+                            text: app.notes.starredTitle(title, favorite)
 
                             anchors {
                                 left: parent.left
@@ -244,7 +244,7 @@ Page {
                             truncationMode: TruncationMode.Fade
                             color: cell.highlighted ? Theme.highlightColor : Theme.primaryColor
                             font.pixelSize: Theme.fontSizeSmall
-                            text: title + (favorite ? " \u2605" : "")
+                            text: app.notes.starredTitle(title, favorite)
                         }
 
                         Label {

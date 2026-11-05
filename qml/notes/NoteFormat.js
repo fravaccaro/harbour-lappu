@@ -99,6 +99,12 @@ function categoryLabel(category) {
     return String(category).split("/").join(" / ")
 }
 
+// The name of a note as it is shown above or beside it: a favourite carries
+// a star, wherever it is named - the rows, the cards and the note itself.
+function starredTitle(title, favorite) {
+    return favorite ? title + " \u2605" : title
+}
+
 // The level of an ATX heading, or 0 for a line that is not one. The size is
 // the drawing's business, so nothing is marked up here.
 function headingOf(line) {

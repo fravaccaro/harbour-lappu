@@ -37,6 +37,10 @@ QtObject {
         return Format.categoryLabel(category);
     }
 
+    function starredTitle(title, favorite) {
+        return Format.starredTitle(title, favorite);
+    }
+
     function filterTitle() {
         if (filterKind === "favorites")
             return qsTr("Favorites");
