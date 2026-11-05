@@ -68,6 +68,7 @@ DISTFILES += \
     qml/components/NoteContextMenu.qml \
     qml/components/NotesListHeader.qml \
     qml/components/NotesPullDownMenu.qml \
+    qml/components/ToolbarStop.qml \
     qml/cover/CoverPage.qml \
     qml/cover/cover-note.png \
     qml/notes/NoteFormat.js \

@@ -13,6 +13,13 @@
     and its note at the foot of the text, numbered with the lowest the note has
     not spent. The caret is left after the note's colon, ready for what it says.
 
+    The bar opens with undo and redo, divided from the marks by a rule. Both
+    work through \c history and are shown only while one is set, so a bar
+    standing on its own is made of marks alone. Neither restores the selection
+    the marks remember, the history setting the caret itself, and neither pulls
+    focus back to \c target: an arrow tapped after the keyboard was deliberately
+    put away does not call it up again.
+
     Every button restores focus to \c target before it edits, so the keyboard a
     writer had open stays open. The field keeps that focus through the edit with
     \c {focusOutBehavior: FocusBehavior.KeepFocus}.
@@ -33,6 +40,7 @@
     MarkdownToolbar {
         width: parent.width
         target: bodyField
+        history: editHistory
     }
     \endqml
 */
@@ -44,7 +52,8 @@ Item {
 
     property Item target
     // Optional. When set, each format tap is recorded as its own step rather
-    // than merging into the word last typed.
+    // than merging into the word last typed, and the bar opens with the undo
+    // and redo that step through it.
     property QtObject history
     property int savedStart: 0
     property int savedEnd: 0
@@ -277,6 +286,45 @@ Item {
             x: Math.max(Theme.horizontalPageMargin, (viewport.contentWidth - width) / 2)
             spacing: Theme.paddingSmall
 
+            // Undo and redo stand at the head of the bar, which is the end
+            // held against the page margin while the rest of it is off the
+            // screen: a step back is not something to have to drag for.
+            ToolbarStop {
+                width: root.buttonWidth
+                visible: root.history !== null
+                enabled: root.history !== null && root.history.canUndo
+                font.pixelSize: Theme.fontSizeLarge
+                text: "\u21a9"
+                onClicked: root.history.undo()
+            }
+
+            ToolbarStop {
+                width: root.buttonWidth
+                visible: root.history !== null
+                enabled: root.history !== null && root.history.canRedo
+                font.pixelSize: Theme.fontSizeLarge
+                text: "\u21aa"
+                onClicked: root.history.redo()
+            }
+
+            // Set apart from the marks by a rule rather than by a gap: a gap
+            // in a bar that scrolls reads as the end of it. Drawn the way
+            // NoteBody draws the bar beside a quote.
+            Item {
+                width: Theme.paddingLarge
+                height: root.buttonWidth
+                visible: root.history !== null
+
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: Math.round(Theme.paddingSmall / 3)
+                    height: parent.height / 2
+                    color: Theme.secondaryColor
+                    opacity: 0.6
+                }
+
+            }
+
             Repeater {
                 delegate: markButton
 
@@ -367,27 +415,17 @@ Item {
     Component {
         id: markButton
 
-        BackgroundItem {
-            id: stop
-
+        ToolbarStop {
             width: root.buttonWidth
-            height: Theme.itemSizeSmall
+            // The stop is drawn as the mark it writes, so the B is bold and
+            // the S struck through.
+            font.bold: kind === "bold"
+            font.italic: kind === "italic"
+            font.underline: kind === "underline"
+            font.strikeout: kind === "strike"
+            text: label
             onPressed: root.remember()
             onClicked: root.apply(kind)
-
-            Label {
-                anchors.centerIn: parent
-                font.pixelSize: Theme.fontSizeSmall
-                font.bold: kind === "bold"
-                font.italic: kind === "italic"
-                font.underline: kind === "underline"
-                font.strikeout: kind === "strike"
-                // The stop itself: a child of a background item is handed to
-                // an inner rectangle, which is never the one highlighted.
-                color: stop.highlighted ? Theme.highlightColor : Theme.primaryColor
-                text: label
-            }
-
         }
 
     }

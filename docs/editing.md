@@ -25,7 +25,7 @@ The body is shown in full, so a first line that repeats the title appears under 
 
 ## The Markdown bar
 
-The bar above the text applies Markdown to the selection, or, with nothing selected, inserts the markers and leaves the cursor between them. The buttons stand on one line, and when they want more room than the screen has the bar can be dragged sideways; the rest of the page stays where it is. It slides and comes back once as the page opens to say so, and stops the moment you drag it yourself. A screen wide enough for every button sees no such nudge.
+The bar above the text opens with undo and redo, and the rest of it applies Markdown to the selection, or, with nothing selected, inserts the markers and leaves the cursor between them. The buttons stand on one line, and when they want more room than the screen has the bar can be dragged sideways; the rest of the page stays where it is. It slides and comes back once as the page opens to say so, and stops the moment you drag it yourself. A screen wide enough for every button sees no such nudge.
 
 | Button | Writes |
 |---|---|
@@ -76,7 +76,7 @@ Nextcloud writes its comment threads using the same syntax, with names like `[^c
 
 ## Undo and redo
 
-The two arrows at the foot of the text field undo (↩) and redo (↪). An arrow is dimmed when there is nothing in that direction.
+The two arrows at the head of the Markdown bar undo (↩) and redo (↪). They stand before the formatting buttons, divided from them by a rule, and at the end of the bar that keeps its place against the margin - so they are reached without dragging the bar, however little of it the screen shows. An arrow is dimmed when there is nothing in that direction.
 
 Typing is gathered into steps rather than recorded letter by letter, so one undo takes back the last run of typing. Each tap on the Markdown bar is sealed as its own step, so formatting can be taken back without losing what was written before it.
 

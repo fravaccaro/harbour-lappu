@@ -16,7 +16,7 @@
     }
 
     // bodyField.onTextChanged: history.watch(text, cursorPosition)
-    // undoButton.onClicked: history.undo()
+    // markdownBar.history: history
     \endqml
 */
 import QtQuick 2.0

@@ -267,7 +267,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>These files are locked in Nextcloud and cannot sync. Open Nextcloud > Files > Notes, and choose Unlock for each file. Your changes are saved locally and will upload automatically as soon as they are unlocked.</source>
+        <source>These files are locked in Nextcloud and cannot sync. Open Nextcloud &gt; Files &gt; Notes, and choose Unlock for each file. Your changes are saved locally and will upload automatically as soon as they are unlocked.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

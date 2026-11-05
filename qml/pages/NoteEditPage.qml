@@ -14,8 +14,6 @@ Dialog {
     // The keyboard takes half the screen, so the page gives up what it can
     // spare while it is open: its own name and the category of the note.
     readonly property bool writing: Qt.inputMethod.visible
-    // What Silica dims a menu entry that cannot be chosen to.
-    readonly property color disabledColor: Theme.rgba(Theme.secondaryColor, Theme.opacityLow)
 
     function pickCategory() {
         var dialog = pageStack.push(Qt.resolvedUrl("CategoryPickerPage.qml"), {
@@ -149,9 +147,7 @@ Dialog {
                 width: parent.width
                 // What is left of the page, so a short note is still written
                 // on the whole of it and the field grows with a longer one.
-                // The strip the arrows stand in is added to the writing, so
-                // the text never runs under them.
-                height: Math.max(implicitHeight + undoBar.height, page.height - y - Theme.paddingMedium)
+                height: Math.max(implicitHeight, page.height - y - Theme.paddingMedium)
                 placeholderText: qsTr("Write a note...")
                 // A tap on the Markdown bar pulls focus off the field, and the
                 // default behaviour clears it a moment later, taking the keyboard
@@ -168,68 +164,6 @@ Dialog {
                 backgroundStyle: TextEditor.NoBackground
                 color: Theme.primaryColor
                 onTextChanged: editHistory.watch(text, cursorPosition)
-
-                // Silica sends a TextArea's children into its content area,
-                // which the field's own mouse area sits over. Parenting to the
-                // field instead, as Silica does for its own slot items, leaves
-                // the arrows on top where taps can reach them.
-                Row {
-                    id: undoBar
-
-                    parent: bodyField
-                    z: 1
-
-                    // The foot of the content area, so the arrows stand inside
-                    // the field and above the line that closes it.
-                    anchors {
-                        left: parent.left
-                        leftMargin: bodyField.textLeftMargin
-                        bottom: bodyField.contentItem.bottom
-                    }
-
-                    BackgroundItem {
-                        id: undoButton
-
-                        width: Theme.itemSizeSmall
-                        height: Theme.itemSizeSmall
-                        enabled: editHistory.canUndo
-                        onClicked: editHistory.undo()
-
-                        Label {
-                            anchors.centerIn: parent
-                            font.pixelSize: Theme.fontSizeLarge
-                            // The stop itself, never its parent: Silica hands
-                            // a background item's children to an inner
-                            // rectangle, which is neither disabled with the
-                            // stop nor highlighted with it. An arrow with
-                            // nothing left to step through is drawn the way
-                            // Silica draws a spent menu entry: the secondary
-                            // colour, faded.
-                            color: !undoButton.enabled ? page.disabledColor : (undoButton.highlighted ? Theme.highlightColor : Theme.primaryColor)
-                            text: "\u21a9"
-                        }
-
-                    }
-
-                    BackgroundItem {
-                        id: redoButton
-
-                        width: Theme.itemSizeSmall
-                        height: Theme.itemSizeSmall
-                        enabled: editHistory.canRedo
-                        onClicked: editHistory.redo()
-
-                        Label {
-                            anchors.centerIn: parent
-                            font.pixelSize: Theme.fontSizeLarge
-                            color: !redoButton.enabled ? page.disabledColor : (redoButton.highlighted ? Theme.highlightColor : Theme.primaryColor)
-                            text: "\u21aa"
-                        }
-
-                    }
-
-                }
-
             }
 
         }

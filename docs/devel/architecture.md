@@ -25,7 +25,7 @@ nav_order: 1
 | `qml/pages/ConflictPage.qml` | The two versions of a note that changed on both sides, and the three answers to it |
 | `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category and cover state |
 | `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, and the subset of HTML a Silica `Label` draws |
-| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar, the edit history, the note body, a Markdown table, a code block, one side of a conflict, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar and one stop of it, the edit history, the note body, a Markdown table, a code block, one side of a conflict, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
 | `qml/cover/*` | The cover page and its glyph |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe and LinkHandler modules |
 

@@ -268,10 +268,6 @@
         <translation>Note bloccate</translation>
     </message>
     <message>
-        <source>These files are locked in Nextcloud and cannot sync. Open Nextcloud &gt; Files &gt; Notes, and choose Unlock for each file. Your changes are saved locally and will upload automatically as soon as they are unlocked. </source>
-        <translation>Questi file sono bloccati su Nextcloud e non possono essere inviati. Apri Nextcloud &gt; File &gt; Note e seleziona Sblocca per ogni file. Le modifiche sono salvate sul dispositivo e si sincronizzeranno automaticamente dopo lo sblocco.</translation>
-    </message>
-    <message>
         <source>This note is read-only. Your changes are saved locally and will upload automatically once edit access is granted.</source>
         <translation>Questa nota è in sola lettura. Le tue modifiche sono salvate localmente e si sincronizzeranno non appena riceverai l&apos;accesso in scrittura.</translation>
     </message>
@@ -298,6 +294,10 @@
     <message>
         <source>A file locked on Nextcloud will re-appear after the next refresh.</source>
         <translation>Un nota bloccata su Nextcloud riapparirà al prossimo aggiornamento.</translation>
+    </message>
+    <message>
+        <source>These files are locked in Nextcloud and cannot sync. Open Nextcloud &gt; Files &gt; Notes, and choose Unlock for each file. Your changes are saved locally and will upload automatically as soon as they are unlocked.</source>
+        <translation>Questi file sono bloccati su Nextcloud e non possono essere inviati. Apri Nextcloud &gt; File &gt; Note e seleziona Sblocca per ogni file. Le modifiche sono salvate sul dispositivo e si sincronizzeranno automaticamente dopo lo sblocco.</translation>
     </message>
 </context>
 <context>

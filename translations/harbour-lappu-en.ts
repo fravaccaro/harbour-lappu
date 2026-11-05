@@ -268,8 +268,8 @@
         <translation>Locked notes</translation>
     </message>
     <message>
-        <source>These files are locked in Nextcloud and cannot sync. Open Nextcloud > Files > Notes, and choose Unlock for each file. Your changes are saved locally and will upload automatically as soon as they are unlocked.</source>
-        <translation>These files are locked in Nextcloud and cannot sync. Open Nextcloud > Files > Notes, and choose Unlock for each file. Your changes are saved locally and will upload automatically as soon as they are unlocked.</translation>
+        <source>These files are locked in Nextcloud and cannot sync. Open Nextcloud &gt; Files &gt; Notes, and choose Unlock for each file. Your changes are saved locally and will upload automatically as soon as they are unlocked.</source>
+        <translation>These files are locked in Nextcloud and cannot sync. Open Nextcloud &gt; Files &gt; Notes, and choose Unlock for each file. Your changes are saved locally and will upload automatically as soon as they are unlocked.</translation>
     </message>
     <message>
         <source>This note is read-only. Your changes are saved locally and will upload automatically once edit access is granted.</source>
