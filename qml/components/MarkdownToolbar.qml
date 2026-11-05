@@ -330,6 +330,8 @@ Item {
         id: markButton
 
         BackgroundItem {
+            id: stop
+
             width: root.buttonWidth
             height: Theme.itemSizeSmall
             onPressed: root.remember()
@@ -342,7 +344,9 @@ Item {
                 font.italic: kind === "italic"
                 font.underline: kind === "underline"
                 font.strikeout: kind === "strike"
-                color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
+                // The stop itself: a child of a background item is handed to
+                // an inner rectangle, which is never the one highlighted.
+                color: stop.highlighted ? Theme.highlightColor : Theme.primaryColor
                 text: label
             }
 

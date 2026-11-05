@@ -11,6 +11,11 @@ Dialog {
     property string category
     property bool favorite: false
     property string inheritCategory
+    // The keyboard takes half the screen, so the page gives up what it can
+    // spare while it is open: its own name and the category of the note.
+    readonly property bool writing: Qt.inputMethod.visible
+    // What Silica dims a menu entry that cannot be chosen to.
+    readonly property color disabledColor: Theme.rgba(Theme.secondaryColor, Theme.opacityLow)
 
     function pickCategory() {
         var dialog = pageStack.push(Qt.resolvedUrl("CategoryPickerPage.qml"), {
@@ -50,7 +55,19 @@ Dialog {
 
             DialogHeader {
                 acceptText: page.noteId === 0 ? qsTr("Add") : qsTr("Save")
-                title: page.noteId === 0 ? qsTr("New note") : qsTr("Edit note")
+                title: page.writing ? "" : (page.noteId === 0 ? qsTr("New note") : qsTr("Edit note"))
+
+                // Silica fades the title out by itself once it says nothing.
+                // The room it stood in is given back at the pace the keyboard
+                // arrives, which is what the accept strip rides on.
+                Behavior on height {
+                    NumberAnimation {
+                        duration: 200
+                        easing.type: Easing.InOutQuad
+                    }
+
+                }
+
             }
 
             // The name of the note, which is the name of the file on the
@@ -79,11 +96,41 @@ Dialog {
 
             }
 
-            ValueButton {
+            // The category stands in a slot of its own, so the button keeps
+            // the height Silica gives it and the slot is what closes.
+            Item {
+                id: categorySlot
+
                 width: parent.width
-                label: qsTr("Category")
-                value: page.category === "" ? qsTr("Uncategorized") : app.notes.categoryLabel(page.category)
-                onClicked: page.pickCategory()
+                height: page.writing ? 0 : categoryButton.height
+                clip: true
+                opacity: page.writing ? 0 : 1
+
+                Behavior on height {
+                    NumberAnimation {
+                        duration: 200
+                        easing.type: Easing.InOutQuad
+                    }
+
+                }
+
+                Behavior on opacity {
+                    FadeAnimation {
+                    }
+
+                }
+
+                ValueButton {
+                    id: categoryButton
+
+                    width: parent.width
+                    // Nothing is to reach a stop on its way out.
+                    enabled: !page.writing
+                    label: qsTr("Category")
+                    value: page.category === "" ? qsTr("Uncategorized") : app.notes.categoryLabel(page.category)
+                    onClicked: page.pickCategory()
+                }
+
             }
 
             MarkdownToolbar {
@@ -134,6 +181,8 @@ Dialog {
                     }
 
                     BackgroundItem {
+                        id: undoButton
+
                         width: Theme.itemSizeSmall
                         height: Theme.itemSizeSmall
                         enabled: editHistory.canUndo
@@ -142,14 +191,22 @@ Dialog {
                         Label {
                             anchors.centerIn: parent
                             font.pixelSize: Theme.fontSizeLarge
-                            color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
-                            opacity: parent.enabled ? 1 : Theme.opacityLow
+                            // The stop itself, never its parent: Silica hands
+                            // a background item's children to an inner
+                            // rectangle, which is neither disabled with the
+                            // stop nor highlighted with it. An arrow with
+                            // nothing left to step through is drawn the way
+                            // Silica draws a spent menu entry: the secondary
+                            // colour, faded.
+                            color: !undoButton.enabled ? page.disabledColor : (undoButton.highlighted ? Theme.highlightColor : Theme.primaryColor)
                             text: "\u21a9"
                         }
 
                     }
 
                     BackgroundItem {
+                        id: redoButton
+
                         width: Theme.itemSizeSmall
                         height: Theme.itemSizeSmall
                         enabled: editHistory.canRedo
@@ -158,8 +215,7 @@ Dialog {
                         Label {
                             anchors.centerIn: parent
                             font.pixelSize: Theme.fontSizeLarge
-                            color: parent.highlighted ? Theme.highlightColor : Theme.primaryColor
-                            opacity: parent.enabled ? 1 : Theme.opacityLow
+                            color: !redoButton.enabled ? page.disabledColor : (redoButton.highlighted ? Theme.highlightColor : Theme.primaryColor)
                             text: "\u21aa"
                         }
 

@@ -11,6 +11,8 @@ nav_order: 3
 
 Above the text sit the star of the note, beside its title, and the category below, so neither needs a second visit.
 
+While the keyboard is open the page gives the writing what room it can: the name of the page and the category fold away as the keyboard rises, and come back when it is closed. **Add** or **Save** stays where it is throughout.
+
 ## The title is the note's name
 
 The **Title** field at the top of the page is the name of the note, which on the server is the name of its file. It is not part of the text: the body below holds the whole document, and the two are kept apart exactly as Nextcloud keeps them.
