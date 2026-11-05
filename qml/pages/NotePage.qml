@@ -114,9 +114,6 @@ Page {
                 width: parent.width
                 visible: page.content !== ""
                 content: page.content
-                // The header above already says the name, so the body does
-                // not say it again when the note opens with it.
-                title: page.title
                 locked: page.locked
                 onTaskClicked: page.toggleTask(lineIndex)
                 // A link in a note came from the server, so it is offered

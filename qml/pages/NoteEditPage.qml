@@ -31,6 +31,11 @@ Dialog {
         if (page.noteId === 0 && page.inheritCategory !== "")
             page.category = page.inheritCategory;
 
+        // Assigned once rather than bound: a bound Silica field on Qt 5.6 can
+        // keep showing what was typed while its text still reads the opening
+        // value, so a save would write the old title or body back.
+        titleField.text = page.title;
+        bodyField.text = page.content;
         editHistory.reset(bodyField.text, bodyField.cursorPosition);
     }
     canAccept: true
@@ -77,7 +82,6 @@ Dialog {
                 id: titleField
 
                 width: parent.width
-                text: page.title
                 label: qsTr("Title")
                 placeholderText: qsTr("Add a title...")
                 // The star is part of the field, so tapping it must not take
@@ -148,7 +152,6 @@ Dialog {
                 // The strip the arrows stand in is added to the writing, so
                 // the text never runs under them.
                 height: Math.max(implicitHeight + undoBar.height, page.height - y - Theme.paddingMedium)
-                text: page.content
                 placeholderText: qsTr("Write a note...")
                 // A tap on the Markdown bar pulls focus off the field, and the
                 // default behaviour clears it a moment later, taking the keyboard

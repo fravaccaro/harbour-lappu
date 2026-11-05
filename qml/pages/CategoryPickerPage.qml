@@ -14,6 +14,9 @@ Dialog {
     }
 
     allowedOrientations: Orientation.All
+    // Seeded once rather than bound, so the field cannot snap back to the
+    // opening category and write it over a choice the user just made.
+    Component.onCompleted: newField.text = page.category
     onAccepted: page.category = newField.text.trim()
 
     SilicaFlickable {
@@ -34,7 +37,6 @@ Dialog {
                 id: newField
 
                 width: parent.width
-                text: page.category
                 label: qsTr("Category")
                 placeholderText: qsTr("Work/Meetings")
                 EnterKey.iconSource: "image://theme/icon-m-enter-accept"

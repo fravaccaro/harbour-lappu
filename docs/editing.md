@@ -21,7 +21,7 @@ Changing the title **renames the note**. Nothing else does - editing the body, t
 
 Leave the title empty and the note is named after the first line of the body instead, with a leading `#` or list marker taken off the way Nextcloud does. That way a note jotted down in a hurry still has a name, and it is listed under it straight away rather than waiting for the next refresh to learn what the server called it.
 
-If the first line of the body says exactly what the title says, it is not drawn twice: reading the note, and in the list, that line is left to the heading above. Notes written before Lappu had a title field, which usually repeat their name on the first line, therefore read as they always did.
+The body is shown in full, so a first line that repeats the title appears under it as well: the title is the file's name, kept apart from the text, and nothing in the body is hidden to avoid saying it twice.
 
 ## The Markdown bar
 

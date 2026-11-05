@@ -25,14 +25,13 @@ import Sailfish.Silica 1.0
     Task rows are disabled while \c locked is true.
 
     A note carries its whole text, its name being the file's rather than the
-    text's, so every line is drawn. The one exception is a first line that
-    says exactly \c title, which the owner is already showing above the body.
+    text's, so every line is drawn, including a first line that repeats the
+    name the owner may be showing above the body.
 
     \code
     NoteBody {
         width: parent.width
         content: note.content
-        title: note.title
         locked: note.locked
         onTaskClicked: store.toggleTask(note.noteId, lineIndex)
         onLinkActivated: L.LinkHandler.openOrCopyUrl(link)
@@ -43,10 +42,6 @@ Column {
     id: root
 
     property string content
-    // Optional. The note's name, when the owner draws it above the body: a
-    // first line that only repeats it is then left to that heading. A caller
-    // that gives none has every line drawn, which is what a conflict wants.
-    property string title
     property bool locked
 
     signal taskClicked(int lineIndex)
@@ -60,7 +55,7 @@ Column {
     }
 
     function rebuild() {
-        var rows = Format.previewBlocks(root.content, root.title);
+        var rows = Format.previewBlocks(root.content);
         lineModel.clear();
         for (var i = 0; i < rows.length; ++i) lineModel.append(rows[i])
     }
@@ -75,7 +70,6 @@ Column {
     }
 
     onContentChanged: root.rebuild()
-    onTitleChanged: root.rebuild()
     Component.onCompleted: root.rebuild()
 
     Repeater {

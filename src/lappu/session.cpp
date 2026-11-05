@@ -62,7 +62,8 @@ bool isLocalOnly(const LocalNote &note)
 // sides were touched, and the version does too, so neither is worth comparing.
 bool sameNote(const LocalNote &mine, const LocalNote &theirs)
 {
-    return mine.content == theirs.content
+    return mine.title == theirs.title
+            && mine.content == theirs.content
             && mine.category == theirs.category
             && mine.favorite == theirs.favorite;
 }

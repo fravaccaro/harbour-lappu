@@ -166,7 +166,7 @@ QtObject {
             "favorite": note.favorite,
             "modified": note.modified,
             "locked": note.locked,
-            "excerpt": Format.excerpt(note.content, note.title),
+            "excerpt": Format.excerpt(note.content),
             "categoryLabel": Format.categoryLabel(note.category)
         };
     }
@@ -282,7 +282,7 @@ QtObject {
     function applyPinned() {
         var note = pinnedNote();
         pinnedTitle = note ? note.title : "";
-        pinnedText = note ? Format.plainText(note.content, note.title) : "";
+        pinnedText = note ? Format.plainText(note.content) : "";
     }
 
     function toggleTask(noteId, lineIndex) {

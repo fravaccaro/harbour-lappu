@@ -51,7 +51,7 @@ Tapping that row opens the two versions, the phone's above the server's, with th
 * **Keep the server's version** - the server's text takes the note, and the edit made on the phone is let go of
 * **Keep both** - the server's version takes the note back, and the text written on the phone goes on as a **note of its own**
 
-Where both sides happened to end on the same text, category and star there is nothing to ask, so the note is settled without a word.
+Where both sides happened to end on the same name, text, category and star there is nothing to ask, so the note is settled without a word.
 
 A note **deleted** on the phone is deleted on the server whatever became of it there: a delete is never refused over a version.
 

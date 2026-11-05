@@ -47,7 +47,11 @@ QVector<LocalNote> notesFrom(const QByteArray &body)
 // from the content: it is the note's file name, and a write that leaves it out
 // has the server fall back to "New note". `Session` names the note after its
 // first line, and the server hands the sanitised name back for the cache to
-// adopt. The modified stamp is left for the server to set.
+// adopt. The modified stamp is sent too: the server bumps the file's own on a
+// content change but not on a title- or category-only edit, so leaving it out
+// would have such an edit keep its old time and drop back down a list sorted
+// by it. `Session` stamps the edit with the current time, and the server
+// adopts what it is given.
 QByteArray bodyFor(const LocalNote &note)
 {
     QJsonObject object;
@@ -55,6 +59,7 @@ QByteArray bodyFor(const LocalNote &note)
     object.insert(QStringLiteral("content"), note.content);
     object.insert(QStringLiteral("category"), note.category);
     object.insert(QStringLiteral("favorite"), note.favorite);
+    object.insert(QStringLiteral("modified"), static_cast<double>(note.modified));
     return QJsonDocument(object).toJson(QJsonDocument::Compact);
 }
 
