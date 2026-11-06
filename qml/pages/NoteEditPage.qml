@@ -12,7 +12,7 @@ Dialog {
     property bool favorite: false
     property string inheritCategory
     // The keyboard takes half the screen, so the page gives up what it can
-    // spare while it is open: its own name and the category of the note.
+    // spare while it is open: its own name, the star and the category.
     readonly property bool writing: Qt.inputMethod.visible
 
     function pickCategory() {
@@ -88,12 +88,40 @@ Dialog {
                 EnterKey.iconSource: "image://theme/icon-m-enter-next"
                 EnterKey.onClicked: bodyField.forceActiveFocus()
 
-                // Silica sets a field's right item against the text line and
-                // shortens the writing room to match, so the name never runs
-                // under the star.
-                rightItem: IconButton {
-                    icon.source: page.favorite ? "image://theme/icon-m-favorite-selected" : "image://theme/icon-m-favorite"
-                    onClicked: page.favorite = !page.favorite
+                // The star leaves with the keyboard. Silica shortens the writing
+                // room to the right item, and gives that room back the moment
+                // the item has faded, so the slot closes with the fade and
+                // the name never runs under it.
+                rightItem: Item {
+                    id: favoriteSlot
+
+                    width: page.writing ? 0 : favoriteButton.width
+                    height: favoriteButton.height
+                    clip: true
+                    opacity: page.writing ? 0 : 1
+
+                    Behavior on width {
+                        NumberAnimation {
+                            duration: 200
+                            easing.type: Easing.InOutQuad
+                        }
+
+                    }
+
+                    Behavior on opacity {
+                        FadeAnimation {
+                        }
+
+                    }
+
+                    IconButton {
+                        id: favoriteButton
+
+                        icon.source: page.favorite ? "image://theme/icon-m-favorite-selected" : "image://theme/icon-m-favorite"
+                        // Disabled would dim the icon at once, ahead of the fade.
+                        onClicked: if (!page.writing) page.favorite = !page.favorite
+                    }
+
                 }
 
             }

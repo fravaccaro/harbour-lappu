@@ -11,7 +11,7 @@ nav_order: 3
 
 Above the text sit the star of the note, beside its title, and the category below, so neither needs a second visit.
 
-While the keyboard is open the page gives the writing what room it can: the name of the page and the category fold away as the keyboard rises, and come back when it is closed. **Add** or **Save** stays where it is throughout.
+While the keyboard is open the page gives the writing what room it can: the name of the page, the star and the category fold away as the keyboard rises, and come back when it is closed. **Add** or **Save** stays where it is throughout.
 
 ## The title is the note's name
 
@@ -112,7 +112,7 @@ A tick is a change like any other and goes to the server straight away. If the s
 
 Nextcloud writes a nested category with slashes in it, and Lappu shows it the same way with the separator spelled out.
 
-The **star** at the end of the Title field marks the note a favourite, the same star the notes list draws beside the name. Tapping it fills it in or empties it, and like everything else on the page it is only written when you accept the dialog; the menu of a note offers the same thing without opening the editor.
+The **star** at the end of the Title field marks the note a favourite, the same star the notes list draws beside the name. It folds away with the keyboard, and the title takes the room it stood in. Tapping it fills it in or empties it, and like everything else on the page it is only written when you accept the dialog; the menu of a note offers the same thing without opening the editor.
 
 ## Deleting
 

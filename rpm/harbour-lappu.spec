@@ -7,8 +7,8 @@ Name:       harbour-lappu
 %define __provides_exclude_from ^%{_datadir}/.*$
 
 Summary:    Nextcloud Notes for Sailfish OS
-Version:    0.1.0
-Release:    13
+Version:    0.2.0
+Release:    1
 License:    GPLv3
 URL:        https://github.com/fravaccaro/harbour-lappu
 Source0:    %{name}-%{version}.tar.bz2

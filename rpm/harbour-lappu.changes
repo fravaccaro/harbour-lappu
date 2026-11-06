@@ -1,3 +1,12 @@
+* Fri Nov 6 2026 fravaccaro 0.2.0-1
+- ConflictPage for conflicts resolution
+- LockedNotesPage for locked notes detection
+- Markdown toolbar redesign
+- Separate note title and body
+- NoteEditPage redesign
+- Footnote support
+- Scroll hints for toolbar and columns
+- Better error handling on login
 
 * Sun Nov 1 2026 fravaccaro 0.1.0-5
 - First release
