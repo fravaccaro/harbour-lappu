@@ -84,6 +84,14 @@ ApplicationWindow {
             return ;
         }
         pendingNewNote = false;
+        // An editor left open from an earlier tap is raised by activate()
+        // rather than buried under a second, empty copy of itself. A share is
+        // never held back this way: skipping its push would drop the body.
+        if (pageStack.find(function(item) {
+            return item.objectName === "noteEditPage";
+        }))
+            return ;
+
         pageStack.push(Qt.resolvedUrl("pages/NoteEditPage.qml"), {
             "inheritCategory": inheritCategory()
         });

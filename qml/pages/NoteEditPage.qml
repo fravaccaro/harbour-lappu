@@ -5,6 +5,9 @@ import Sailfish.Silica 1.0
 Dialog {
     id: page
 
+    // Named so that a cover tap can tell an editor is already open rather
+    // than burying it under a second, empty copy of itself.
+    objectName: "noteEditPage"
     property int noteId: 0
     property string title
     property string content
