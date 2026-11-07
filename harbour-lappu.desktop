@@ -6,7 +6,7 @@ X-Nemo-Application-Type=silica-qt5
 Icon=harbour-lappu
 Exec=harbour-lappu
 Name=Lappu
-Comment[it]=Note Nextcloud
+Comment[it]=Nextcloud Note
 Comment=Nextcloud Notes
 X-Share-Methods=note;
 

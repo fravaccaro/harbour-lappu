@@ -21,7 +21,7 @@ msgstr ""
 #. Translators: the line under the app's name in the launcher.
 #: harbour-lappu.desktop.in:8
 msgid "Nextcloud Notes"
-msgstr "Note Nextcloud"
+msgstr "Nextcloud Note"
 
 #. Translators: what Lappu is called in the system's sharing list, where
 #. choosing it opens a new note holding what was shared.
