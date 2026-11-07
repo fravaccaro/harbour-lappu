@@ -118,7 +118,7 @@ ApplicationWindow {
             return true;
 
         var name = page.objectName;
-        return name === "startPage" || name === "loginPage" || name === "webLoginPage";
+        return name === "startPage" || name === "loginPage" || name === "webLoginPage" || name === "accountPickerPage";
     }
 
     // Held back until the app knows where it is going: until the settings have
@@ -248,6 +248,40 @@ ApplicationWindow {
 
     LappuNotification {
         id: globalNotification
+    }
+
+    // The password of a Nextcloud account of the settings, read at every
+    // start and kept nowhere. Loaded only where that is how the app signs
+    // in, so nothing opens the accounts database for a user who signs in
+    // through the server's own page. Loading it is itself the first read:
+    // choosing an account is what brings this into being.
+    Loader {
+        active: Lappu.authSource === "account"
+
+        sourceComponent: Component {
+
+            NextcloudSignIn {
+                id: accountSignIn
+
+                onCredentialsReady: Lappu.applyAccountCredentials(server, user, password)
+                onFailed: Lappu.reportAccountFailure(error)
+                Component.onCompleted: {
+                    if (Lappu.pendingAccountId > 0)
+                        accountSignIn.read(Lappu.pendingAccountId);
+
+                }
+
+                // Only a password the server has refused asks again; the
+                // first read of a run is the one above.
+                Connections {
+                    target: Lappu
+                    onAccountSignInNeeded: accountSignIn.read(accountId)
+                }
+
+            }
+
+        }
+
     }
 
     // Text and links shared from other apps. They are shaped into a note body

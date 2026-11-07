@@ -13,6 +13,7 @@ nav_order: 1
 |---|---|
 | `src/lappu/config.*` | Server URL, user name, TLS preference, the sort, view and sync settings and the pinned note, in `~/.config/org.frapps/harbour-lappu/settings.conf` |
 | `src/lappu/secretsstore.*` | The app password in a device-lock collection of Sailfish Secrets |
+| `src/lappu/accountstore.*` | The Nextcloud accounts of the Sailfish OS settings, and the password of one of them read from signond through Accounts & SSO |
 | `src/lappu/loginflow.*` | Nextcloud login flow v2: ask for a login page, then poll until the server hands over an app password or twenty minutes pass |
 | `src/lappu/httpclient.*` | `QNetworkAccessManager` wrapper: basic auth, custom methods, TLS preference |
 | `src/lappu/notesapi.*` | Nextcloud Notes API v1 client under `/index.php/apps/notes/api/v1/notes` |
@@ -24,6 +25,7 @@ nav_order: 1
 | `src/lappu/types.h` | Plain data structs (`LocalNote`) |
 | `qml/pages/*` | Silica UI |
 | `qml/pages/ConflictPage.qml` | The two versions of a note that changed on both sides, and the three answers to it |
+| `qml/pages/AccountPickerPage.qml` | The Nextcloud accounts of the Sailfish OS settings, and signing in as one of them |
 | `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category and cover state |
 | `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, and the subset of HTML a Silica `Label` draws |
 | `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar and one stop of it, the nudge that tells a flickable it scrolls, the edit history, the note body, a Markdown table, a code block, one side of a conflict, the receiver for what other apps share, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
@@ -31,6 +33,24 @@ nav_order: 1
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe and LinkHandler modules |
 
 `src/main.cpp` publishes two context properties - `Lappu` (the session) and `Notes` - and the pages bind to those. It also adds `qml/modules` to the QML import path so the bundled Opal modules resolve at runtime. Networking stays in C++; QML holds no request and parses no server response.
+
+## Where the password comes from
+
+There are two sources, named by `Config::authSource` and remembered in `settings.conf`.
+
+`loginflow` is the original: `LoginFlow` polls the server until it hands over an app password, and `SecretsStore` keeps it in a device-lock collection. `account` is a Nextcloud account the user added under *Settings → Accounts*: only its id is stored, and `AccountStore` asks signond for the password **on every run**, so the app keeps no copy of it anywhere.
+
+Both ends meet at `Config::applyStoredPassword()`, the single place `ready` is set, so `Session`, `NotesApi` and the pages see no difference. `Config::setPassword()` writes to Secrets and is therefore the login-flow writer alone — which is why the account path calls `applyStoredPassword()` directly, and why `Session::onUnauthorized()` goes through `Config::forgetPassword()` instead of clearing the password itself. The two sources are exclusive: `useAccount()` removes any stored app password, and `applyLoginFlowPassword()` forgets any chosen account.
+
+`AccountStore` works the way Jolla's own `AccountAuthenticator` does. It takes the first service of the account that is switched on and names a `server_address`, every Nextcloud service of an account sharing the one credential, reads the method and mechanism from that service's `authData()` rather than naming `password` itself, and processes the session with `NoUserInteractionPolicy` — this runs while the app is starting, where a dialog would arrive in front of nothing. An account that answers with an access token and no password is refused with a reason: `NotesApi` sends basic auth, and a token is not something it can carry.
+
+A failure on either side is reported through the one `credentialsError`, and `authSource` is what lets `StartPage` word it. Before `ready` the start page shows it and offers **Try again** through `reloadCredentials()`; after `ready` the password is let go of instead, so the user lands back on the sign-in page with a reason.
+
+A `401` against an account is answered by asking signond once more before anything else, since that password was not chosen here and may have been changed in the settings while the app held the old one. `Session::m_askedAccountAgain` allows one retry per working password, `Config::accountSignedIn()` reports the answer — apart from `passwordChanged()`, because the password may well be the same and the abandoned run still has to be started again — and only the second refusal reaches `forgetPassword()`.
+
+Signing out clears the binding, never the account: it belongs to the settings, where the calendar and the files sign in with it too.
+
+Reading an account links `accounts-qt5` and `libsignon-qt5` and needs the `Accounts` Sailjail permission. Neither library is on the [Harbour allowed list](https://docs.sailfishos.org/Develop/Apps/Harbour/Allowed_APIs/), so `sfdk check` fails on them: the package is for the GitHub releases and Chum, not the Jolla Store. Harbour does allow the `Sailfish.Accounts 1.0` QML module, which is the route to take if the store ever becomes the target.
 
 ## One writer
 
@@ -188,4 +208,4 @@ Sailjail gives the app three private directories, named after the `OrganizationN
 * `~/.local/share/org.frapps/harbour-lappu` - `notes.sqlite`
 * `~/.cache/org.frapps/harbour-lappu` - whatever the web view leaves behind; nothing the app writes itself
 
-The permissions are `Internet`, `Secrets` and `WebView`; no document or picture directory is asked for, and receiving a share needs none - sharing is open to every app, and a Harbour package is refused for asking for it by name. The config and share directories are declared for the system backup through `X-HarbourBackup`.
+The permissions are `Internet`, `Secrets`, `WebView` and `Accounts` - the last for signing in as a Nextcloud account of the settings, which grants the accounts database and signond; no document or picture directory is asked for, and receiving a share needs none - sharing is open to every app, and a Harbour package is refused for asking for it by name. The config and share directories are declared for the system backup through `X-HarbourBackup`.

@@ -82,8 +82,8 @@ Page {
                 wrapMode: Text.WordWrap
                 color: Theme.errorColor
                 font.pixelSize: Theme.fontSizeExtraSmall
-                visible: page.errorMessage !== ""
-                text: page.errorMessage
+                visible: text !== ""
+                text: page.errorMessage !== "" ? page.errorMessage : Lappu.credentialsError
             }
 
             Button {
@@ -100,6 +100,23 @@ Page {
                 color: Theme.secondaryColor
                 font.pixelSize: Theme.fontSizeExtraSmall
                 text: qsTr("The server opens inside the app. Sign in as you would in a browser. Lappu will save the password the server creates.")
+            }
+
+            // The other way in: an account the user has already added to
+            // Sailfish OS, whose password Lappu reads rather than keeps.
+            Button {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Use a Nextcloud account")
+                onClicked: pageStack.push(Qt.resolvedUrl("AccountPickerPage.qml"))
+            }
+
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                wrapMode: Text.WordWrap
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeExtraSmall
+                text: qsTr("Signs in as an account from Settings > Accounts. Lappu reads its password from Sailfish OS each time it starts and keeps no copy of it.")
             }
 
         }

@@ -11,7 +11,7 @@ has_toc: true
 
 Lappu is a native client for the notes of a Nextcloud server you already run. The notes live on the server in its Notes app; the phone keeps a copy of them, so they can be read and written while the server is out of reach.
 
-Lappu does not use the Nextcloud account in the Sailfish OS settings. That account syncs the calendar and the files, neither of which carries the notes, so this app signs in on its own.
+Lappu syncs the notes itself. The Nextcloud account in the Sailfish OS settings syncs the calendar and the files, neither of which carries the notes, so the notes are this app's own business either way. Its sign-in, though, can be borrowed: Lappu signs in either through the server's own page, keeping the password it is given, or as an account from the settings, reading that account's password at every start and keeping none.
 
 ## Requirements
 
@@ -20,7 +20,7 @@ Lappu does not use the Nextcloud account in the Sailfish OS settings. That accou
 
 ## The pages
 
-* **[Signing in](signin)** - the server address, the sign-in page of the server, and what Lappu keeps afterwards
+* **[Signing in](signin)** - the server address, the sign-in page of the server, signing in as a Nextcloud account of Sailfish OS, and what Lappu keeps afterwards
 * **[Notes and categories](notes)** - the list or grid, the All, Favorites and Uncategorized views, searching, and the cover
 * **[Writing a note](editing)** - the title field, text shared in from other apps, the Markdown bar, footnotes, undo and redo, task lines, tables and categories
 * **[Sync, files and permissions](files)** - when the notes are refreshed, what happens offline, where the copy is kept, and why the app asks for each permission

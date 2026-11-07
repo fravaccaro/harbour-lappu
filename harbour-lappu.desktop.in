@@ -11,7 +11,11 @@ X-Share-Methods=note;
 [X-Sailjail]
 OrganizationName=org.frapps
 ApplicationName=harbour-lappu
-Permissions=Internet;Secrets;WebView
+# Accounts: lets the app sign in as a Nextcloud account the user already
+# added in Settings, through Accounts & SSO. It grants access to the accounts
+# database and to signond, which hands over the password, so that way of
+# signing in keeps no copy of its own.
+Permissions=Internet;Secrets;WebView;Accounts;Privileged
 ExecDBus=harbour-lappu
 
 [X-Share Method note]

@@ -19,6 +19,12 @@ Requires:   nemo-qml-plugin-notifications-qt5
 Requires:   nemo-qml-plugin-configuration-qt5
 # A link shared to the app is read off the session bus through Nemo.DBus.
 Requires:   nemo-qml-plugin-dbus-qt5
+# Signing in as a Nextcloud account of the Sailfish OS settings reads it
+# through Sailfish.Accounts, which is the route to Accounts & SSO a Harbour
+# package may take: accounts-qt5 and libsignon-qt5 are not on the allowed
+# library list, the QML module is. Named as the module rather than as the
+# package that holds it, which is how Harbour allows it.
+Requires:   qml(Sailfish.Accounts)
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(sailfishsecrets)
 BuildRequires:  pkgconfig(Qt5Core)

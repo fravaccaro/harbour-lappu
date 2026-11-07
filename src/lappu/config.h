@@ -24,7 +24,9 @@ class Config : public QObject
     Q_PROPERTY(QString viewMode READ viewMode WRITE setViewMode NOTIFY viewModeChanged)
     Q_PROPERTY(bool configured READ isConfigured NOTIFY configuredChanged)
     Q_PROPERTY(bool ready READ isReady NOTIFY readyChanged)
-    Q_PROPERTY(QString secretsError READ secretsError NOTIFY secretsErrorChanged)
+    Q_PROPERTY(QString authSource READ authSource NOTIFY authSourceChanged)
+    Q_PROPERTY(int pendingAccountId READ pendingAccountId NOTIFY pendingAccountIdChanged)
+    Q_PROPERTY(QString credentialsError READ credentialsError NOTIFY credentialsErrorChanged)
 
 public:
     explicit Config(QObject *parent = nullptr);
@@ -65,10 +67,42 @@ public:
 
     bool isConfigured() const;
     bool isReady() const { return m_ready; }
-    QString secretsError() const { return m_secretsError; }
+
+    // Where the password comes from: "loginflow" for one the server's own
+    // sign-in page made and this app stored, "account" for one read from a
+    // Nextcloud account in the Sailfish OS settings.
+    QString authSource() const { return m_authSource; }
+    // The account whose password QML is to ask signond for, or 0 when the
+    // app does not sign in that way.
+    int pendingAccountId() const { return static_cast<int>(m_accountId); }
+    bool usesAccount() const;
+    QString credentialsError() const { return m_credentialsError; }
+
+    // The password a sign-in through the server's own page created. Storing
+    // it is what makes that the way the app signs in, so an account chosen
+    // earlier is let go of.
+    void applyLoginFlowPassword(const QString &password);
+    // Lets the password go without touching where it came from: a stored one
+    // is removed, an account's is simply not held any more.
+    void forgetPassword();
 
     Q_INVOKABLE void clearCredentials();
-    Q_INVOKABLE void reloadSecrets();
+    // Asks for the password again, from wherever this app signs in.
+    Q_INVOKABLE void reloadCredentials();
+    // Signs in as one of the Nextcloud accounts of the Sailfish OS settings
+    // from now on, which is remembered. Reading its password is QML's, which
+    // answers the choice by loading the component that asks signond.
+    Q_INVOKABLE void useAccount(int accountId);
+    // What that component reports back. Said from QML because an account's
+    // sign-in is read through Sailfish.Accounts, the only route to it a
+    // Harbour package may take.
+    Q_INVOKABLE void applyAccountCredentials(const QString &server, const QString &user,
+                                             const QString &password);
+    Q_INVOKABLE void reportAccountFailure(const QString &error);
+    // The way back from an account that cannot be signed in to: the app
+    // signs in through the server's own page again, and is ready either
+    // way, since a start page nothing can leave is a trap.
+    Q_INVOKABLE void useLoginFlow();
     Q_INVOKABLE static QString normalizeServerUrl(const QString &input);
 
 signals:
@@ -84,20 +118,37 @@ signals:
     void viewModeChanged();
     void configuredChanged();
     void readyChanged();
-    void secretsErrorChanged();
+    void authSourceChanged();
+    void pendingAccountIdChanged();
+    void credentialsErrorChanged();
+    // Asks QML to read an account's password again. Not said at startup,
+    // where the component does its own first read as it loads.
+    void accountSignInNeeded(int accountId);
+    // An account's password has just been read from signond. Said apart
+    // from passwordChanged() because the password may well be the same one
+    // and the run that asked for it still needs starting again.
+    void accountSignedIn();
 
 private:
     void store(const QString &key, const QVariant &value);
     void applyStoredPassword(const QString &password);
+    // Asks whichever side holds the password for it.
+    void loadCredentials();
+    void setCredentialsError(const QString &error);
+    // Stops signing in as an account, leaving the account itself alone: it
+    // belongs to the settings and is not this app's to remove.
+    void forgetAccount();
 
     QSettings m_settings;
     SecretsStore m_secrets;
     QString m_serverUrl;
     QString m_username;
     QString m_password;
-    QString m_secretsError;
+    QString m_credentialsError;
     QString m_sortMode;
     QString m_viewMode;
+    QString m_authSource;
+    uint m_accountId;
     bool m_ignoreSslErrors;
     bool m_syncOnStart;
     int m_syncInterval;

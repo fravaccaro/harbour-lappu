@@ -87,16 +87,17 @@ Sailjail gives Lappu three private directories of its own, named after the organ
 | `~/.local/share/org.frapps/harbour-lappu` | `notes.sqlite` - the copy of the notes |
 | `~/.cache/org.frapps/harbour-lappu` | whatever the web view leaves behind while signing in; nothing the app writes itself |
 
-The app password is not in any of these. It is kept in Sailfish Secrets, in a collection locked with the device lock.
+The app password is not in any of these. It is kept in Sailfish Secrets, in a collection locked with the device lock. Where you signed in as a Nextcloud account of the Sailfish OS settings instead, there is no password of Lappu's anywhere: only the account it was told to use is remembered, and the password is read from Sailfish OS at every start.
 
 The config and data directories are declared for the system backup, so a backup made by Sailfish OS carries the settings and the local copy of the notes.
 
 ## Permissions
 
-Lappu asks for three:
+Lappu asks for four:
 
 * **Internet** - to reach your server; there is nothing to show without it
 * **Secrets** - to keep the app password in the device-lock storage rather than in a plain file
 * **WebView** - to show the sign-in page of the server inside the app, so your own password is never typed into Lappu
+* **Accounts** - to sign in as a Nextcloud account you added under *Settings → Accounts*, which is how Lappu reads that account's password instead of keeping one of its own
 
 No document, picture or other directory of the device is asked for. Receiving text and links shared from other apps asks for nothing further: every app may be shared with, and Lappu takes no files, only what another app hands it directly.

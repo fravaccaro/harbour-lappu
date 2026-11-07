@@ -13,7 +13,7 @@ X-Share-Methods=note;
 [X-Sailjail]
 OrganizationName=org.frapps
 ApplicationName=harbour-lappu
-Permissions=Internet;Secrets;WebView
+Permissions=Internet;Secrets;WebView;Accounts;Privileged
 ExecDBus=harbour-lappu
 
 [X-Share Method note]

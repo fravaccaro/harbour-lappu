@@ -22,7 +22,11 @@ class Session : public QObject
     Q_PROPERTY(bool configured READ isConfigured NOTIFY configuredChanged)
     Q_PROPERTY(bool busy READ isBusy NOTIFY busyChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
-    Q_PROPERTY(QString secretsError READ secretsError NOTIFY secretsErrorChanged)
+    Q_PROPERTY(QString credentialsError READ credentialsError NOTIFY credentialsErrorChanged)
+    // Where the password comes from: "loginflow" or "account".
+    Q_PROPERTY(QString authSource READ authSource NOTIFY authSourceChanged)
+    // The account QML is to read the password of, or 0 when there is none.
+    Q_PROPERTY(int pendingAccountId READ pendingAccountId NOTIFY pendingAccountIdChanged)
     Q_PROPERTY(QString loginUrl READ loginUrl NOTIFY loginUrlChanged)
     Q_PROPERTY(QString serverUrl READ serverUrl NOTIFY serverUrlChanged)
     // The account the app password belongs to, as the server named it.
@@ -49,7 +53,9 @@ public:
     bool isConfigured() const;
     bool isBusy() const { return m_busy; }
     QString errorMessage() const { return m_error; }
-    QString secretsError() const;
+    QString credentialsError() const;
+    QString authSource() const;
+    int pendingAccountId() const;
     QString loginUrl() const { return m_loginUrl; }
     QString serverUrl() const;
     QString username() const;
@@ -76,7 +82,19 @@ public:
     Q_INVOKABLE void startLogin(const QString &serverUrl);
     Q_INVOKABLE void cancelLogin();
     Q_INVOKABLE void logout();
-    Q_INVOKABLE void reloadSecrets();
+    Q_INVOKABLE void reloadCredentials();
+    // Signs in as one of the Nextcloud accounts of the Sailfish OS settings.
+    // The password is read from signond here and on every later run, and is
+    // kept by this app nowhere.
+    Q_INVOKABLE void useAccount(int accountId);
+    // What the QML that reads an account reports back.
+    Q_INVOKABLE void applyAccountCredentials(const QString &server, const QString &user,
+                                             const QString &password);
+    Q_INVOKABLE void reportAccountFailure(const QString &error);
+    // Goes back to signing in through the server's own page, for when the
+    // chosen account cannot be read and the start page would otherwise have
+    // nothing but Try again on it.
+    Q_INVOKABLE void useLoginFlow();
     // Sends what is owed to the server, then pulls the whole account and keeps
     // the answer on the device.
     Q_INVOKABLE void sync();
@@ -118,7 +136,12 @@ signals:
     void configuredChanged();
     void busyChanged();
     void errorMessageChanged();
-    void secretsErrorChanged();
+    void credentialsErrorChanged();
+    void authSourceChanged();
+    void pendingAccountIdChanged();
+    // Asks the QML that reads an account to read it again, which only a
+    // password the server has refused ever calls for.
+    void accountSignInNeeded(int accountId);
     void loginUrlChanged();
     void serverUrlChanged();
     void usernameChanged();
@@ -149,6 +172,9 @@ private:
     void syncIfStartupWanted();
     void reloadModels();
     void onConfiguredChanged();
+    // Takes up the run a refusal abandoned, once the account has been asked
+    // for its password a second time and answered.
+    void onAccountSignedIn();
     void onLoginUrl(const QString &url);
     void onLoggedIn(const QString &server, const QString &user, const QString &password);
     void onLoginFailed(const QString &error);
@@ -233,6 +259,10 @@ private:
     // The sync a launch asks for is wanted once, not again every time the
     // credentials are applied.
     bool m_syncedOnStart;
+    // Whether the password of an account has already been asked for again
+    // over one refusal. Only the first 401 of a run is worth a second ask;
+    // a second would spin signond for a password the server will not take.
+    bool m_askedAccountAgain;
 };
 
 #endif

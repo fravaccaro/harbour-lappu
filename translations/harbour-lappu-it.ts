@@ -37,6 +37,25 @@
     </message>
 </context>
 <context>
+    <name>AccountPickerPage</name>
+    <message>
+        <source>Nextcloud accounts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lappu reads the password of the account you choose from Sailfish OS every time it starts, and keeps no copy of it. Changing the account password in Settings is enough.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No Nextcloud account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add one in Settings &gt; Accounts, then come back. Or sign in to Lappu on its own.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AskForSupport</name>
     <message>
         <source>Please take a moment to consider if you can contribute to this project in one way or another.</source>
@@ -353,12 +372,38 @@
         <source>The server opens inside the app. Sign in as you would in a browser. Lappu will save the password the server creates.</source>
         <translation>Il server si apre all&apos;interno dell&apos;app. Accedi come faresti in un browser. Lappu salverà la password creata dal server.</translation>
     </message>
+    <message>
+        <source>Use a Nextcloud account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Signs in as an account from Settings &gt; Accounts. Lappu reads its password from Sailfish OS each time it starts and keeps no copy of it.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MarkdownToolbar</name>
     <message>
         <source>Column</source>
         <translation>Colonna</translation>
+    </message>
+</context>
+<context>
+    <name>NextcloudSignIn</name>
+    <message>
+        <source>That Nextcloud account has nothing switched on to sign in to.</source>
+        <extracomment>Shown when the chosen Nextcloud account has no service turned on</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>That Nextcloud account does not sign in with a password.</source>
+        <extracomment>Shown when the Nextcloud account signs in some way the app cannot use</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>That Nextcloud account is no longer in the settings.</source>
+        <extracomment>Shown when the account the app signs in as is gone from the settings</extracomment>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -952,6 +997,10 @@
         <source>Grid</source>
         <translation>Griglia</translation>
     </message>
+    <message>
+        <source>Through a Nextcloud account of the Sailfish OS settings. Lappu reads its password at every start and keeps no copy; signing out here leaves the account itself alone.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>StartPage</name>
@@ -962,6 +1011,14 @@
     <message>
         <source>Try again</source>
         <translation>Riprova</translation>
+    </message>
+    <message>
+        <source>The password could not be read from the Nextcloud account in the Sailfish OS settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sign in to Lappu instead</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

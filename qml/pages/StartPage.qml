@@ -7,7 +7,7 @@ Page {
     // Named so a share waiting for the app to leave this page can tell it
     // from the notes: a dialog pushed here is thrown away by showMain().
     objectName: "startPage"
-    readonly property bool stalled: !Lappu.ready && Lappu.secretsError !== ""
+    readonly property bool stalled: !Lappu.ready && Lappu.credentialsError !== ""
 
     allowedOrientations: Orientation.All
 
@@ -30,7 +30,7 @@ Page {
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
             color: Theme.highlightColor
-            text: qsTr("The password could not be read from the secure storage of Sailfish OS.")
+            text: Lappu.authSource === "account" ? qsTr("The password could not be read from the Nextcloud account in the Sailfish OS settings.") : qsTr("The password could not be read from the secure storage of Sailfish OS.")
         }
 
         Label {
@@ -40,13 +40,22 @@ Page {
             horizontalAlignment: Text.AlignHCenter
             font.pixelSize: Theme.fontSizeExtraSmall
             color: Theme.secondaryColor
-            text: Lappu.secretsError
+            text: Lappu.credentialsError
         }
 
         Button {
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("Try again")
-            onClicked: Lappu.reloadSecrets()
+            onClicked: Lappu.reloadCredentials()
+        }
+
+        // An account that cannot be read would otherwise leave nothing but
+        // Try again on this page, and no way through to the sign-in.
+        Button {
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: Lappu.authSource === "account"
+            text: qsTr("Sign in to Lappu instead")
+            onClicked: Lappu.useLoginFlow()
         }
 
     }

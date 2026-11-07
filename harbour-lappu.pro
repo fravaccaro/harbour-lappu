@@ -71,6 +71,7 @@ DISTFILES += \
     qml/components/MarkdownCode.qml \
     qml/components/MarkdownTable.qml \
     qml/components/MarkdownToolbar.qml \
+    qml/components/NextcloudSignIn.qml \
     qml/components/NoteBody.qml \
     qml/components/NoteContextMenu.qml \
     qml/components/NotesListHeader.qml \
@@ -83,6 +84,7 @@ DISTFILES += \
     qml/notes/NoteFormat.js \
     qml/notes/NotesStore.qml \
     qml/pages/AboutPage.qml \
+    qml/pages/AccountPickerPage.qml \
     qml/pages/CategoriesPage.qml \
     qml/pages/CategoryPickerPage.qml \
     qml/pages/ConflictPage.qml \

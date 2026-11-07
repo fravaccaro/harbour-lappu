@@ -163,6 +163,16 @@ Page {
                 text: qsTr("Signed in as %1").arg(Lappu.username)
             }
 
+            Label {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                visible: Lappu.authSource === "account"
+                wrapMode: Text.WordWrap
+                font.pixelSize: Theme.fontSizeExtraSmall
+                color: Theme.secondaryColor
+                text: qsTr("Through a Nextcloud account of the Sailfish OS settings. Lappu reads its password at every start and keeps no copy; signing out here leaves the account itself alone.")
+            }
+
             TextSwitch {
                 width: parent.width
                 text: qsTr("Ignore certificate errors")

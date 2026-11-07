@@ -137,6 +137,7 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     , m_owedWhileBusy(false)
     , m_pushed(0)
     , m_syncedOnStart(false)
+    , m_askedAccountAgain(false)
 {
     m_syncTimer.setSingleShot(false);
     connect(&m_syncTimer, &QTimer::timeout, this, &Session::sync);
@@ -154,7 +155,11 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(m_notes, &NotesModel::changed, this, &Session::notesChanged);
     connect(m_config, &Config::readyChanged, this, &Session::readyChanged);
     connect(m_config, &Config::configuredChanged, this, &Session::onConfiguredChanged);
-    connect(m_config, &Config::secretsErrorChanged, this, &Session::secretsErrorChanged);
+    connect(m_config, &Config::credentialsErrorChanged, this, &Session::credentialsErrorChanged);
+    connect(m_config, &Config::authSourceChanged, this, &Session::authSourceChanged);
+    connect(m_config, &Config::pendingAccountIdChanged, this, &Session::pendingAccountIdChanged);
+    connect(m_config, &Config::accountSignInNeeded, this, &Session::accountSignInNeeded);
+    connect(m_config, &Config::accountSignedIn, this, &Session::onAccountSignedIn);
     connect(m_config, &Config::serverUrlChanged, this, &Session::serverUrlChanged);
     connect(m_config, &Config::usernameChanged, this, &Session::usernameChanged);
     connect(m_config, &Config::ignoreSslErrorsChanged, this, &Session::ignoreSslErrorsChanged);
@@ -188,9 +193,19 @@ bool Session::isConfigured() const
     return m_config->isConfigured();
 }
 
-QString Session::secretsError() const
+QString Session::credentialsError() const
 {
-    return m_config->secretsError();
+    return m_config->credentialsError();
+}
+
+QString Session::authSource() const
+{
+    return m_config->authSource();
+}
+
+int Session::pendingAccountId() const
+{
+    return m_config->pendingAccountId();
 }
 
 QString Session::serverUrl() const
@@ -309,6 +324,8 @@ void Session::applyApiSettings()
 
 void Session::applyCredentials()
 {
+    // A password that works again earns the next refusal a second ask.
+    m_askedAccountAgain = false;
     applyApiSettings();
     reloadModels();
     applySyncTimer();
@@ -349,6 +366,18 @@ void Session::onConfiguredChanged()
     syncIfStartupWanted();
 }
 
+// Only after a refusal: the password may be a new one or the same, and
+// either way the run it interrupted was abandoned and the timer stopped,
+// so nothing but this would set the app going again.
+void Session::onAccountSignedIn()
+{
+    if (!m_askedAccountAgain || !m_config->isConfigured())
+        return;
+
+    applyCredentials();
+    sync();
+}
+
 void Session::startLogin(const QString &serverUrl)
 {
     setError(QString());
@@ -386,9 +415,32 @@ void Session::logout()
     emit lockedChanged();
 }
 
-void Session::reloadSecrets()
+void Session::reloadCredentials()
 {
-    m_config->reloadSecrets();
+    m_config->reloadCredentials();
+}
+
+void Session::useAccount(int accountId)
+{
+    setError(QString());
+    m_config->useAccount(accountId);
+}
+
+void Session::applyAccountCredentials(const QString &server, const QString &user,
+                                      const QString &password)
+{
+    m_config->applyAccountCredentials(server, user, password);
+}
+
+void Session::reportAccountFailure(const QString &error)
+{
+    m_config->reportAccountFailure(error);
+}
+
+void Session::useLoginFlow()
+{
+    setError(QString());
+    m_config->useLoginFlow();
 }
 
 // What was written here goes first, so a note edited on the phone is the one
@@ -863,6 +915,11 @@ void Session::onApiFailed(const QString &error)
 // Only the password is let go of: the notes and anything still owed stay where
 // they are, so a fresh sign-in sends them rather than losing them. Being sent
 // back to the sign-in page always needs a reason, so this one is never silent.
+//
+// A password read from a Sailfish OS account was not chosen here and may have
+// been changed in the settings while the app held the old one, so it is asked
+// for once more before the user is sent anywhere. The second refusal is the
+// one that counts, and arrives here with the flag already set.
 void Session::onUnauthorized(const QString &error)
 {
     m_syncTimer.stop();
@@ -871,7 +928,13 @@ void Session::onUnauthorized(const QString &error)
     m_pullAfter = false;
     m_announce = false;
     setBusy(false);
-    m_config->setPassword(QString());
+    if (m_config->usesAccount() && !m_askedAccountAgain) {
+        m_askedAccountAgain = true;
+        m_config->reloadCredentials();
+        return;
+    }
+
+    m_config->forgetPassword();
     setError(error);
 }
 
@@ -953,7 +1016,7 @@ void Session::onLoggedIn(const QString &server, const QString &user,
 {
     m_config->setServerUrl(server);
     m_config->setUsername(user);
-    m_config->setPassword(password);
+    m_config->applyLoginFlowPassword(password);
     applyCredentials();
     // A fresh sign-in is worth a pull whatever the startup setting says.
     m_syncedOnStart = true;

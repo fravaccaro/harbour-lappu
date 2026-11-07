@@ -32,6 +32,7 @@ The SailfishOS Community Team is on Liberapay:
 - Browse by category, favourites, or everything at once, as a list of rows or a grid of cards, and search the title and body of every note.
 - Tick a task line straight from the note, without opening the editor.
 - Edit while offline: a note written with no server in reach is kept and sent by the next sync.
+- Sign in through the server's own page, or as a Nextcloud account you already added to Sailfish OS, whose password is read at every start and never copied.
 - Keep one note on the cover, where it survives a restart.
 
 ## Requirements

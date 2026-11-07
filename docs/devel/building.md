@@ -43,7 +43,9 @@ Harbour refuses an unstripped binary, and the SDK packaging path does not always
 
 The spec sets `__provides_exclude_from` for everything under the data directory, so the `qmldir` files of the bundled Opal modules do not turn into `Provides: qml(Opal.About)` and friends - Harbour forbids an application package from providing QML modules, and nothing outside this package imports them.
 
-The runtime dependencies are the Silica components, the WebView, and the notification QML plugin. Sailfish Secrets is linked through `pkgconfig(sailfishsecrets)` in `harbour-lappu.pro`, which also pulls in `QT += network sql` for the API client and the SQLite copy of the notes.
+The runtime dependencies are the Silica components, the WebView, and the notification QML plugin. Sailfish Secrets is linked through `pkgconfig(sailfishsecrets)` in `harbour-lappu.pro`, which also pulls in `QT += network sql` for the API client and the SQLite copy of the notes. Signing in as a Nextcloud account of the settings adds `pkgconfig(accounts-qt5)` and `pkgconfig(libsignon-qt5)`; rpm works the two libraries out of the binary by soname, so the spec names them under `BuildRequires` alone - an explicit `Requires` on a library package is what rpmlint calls `explicit-lib-dependency`.
+
+Those two are not on the Harbour allowed list, so `sfdk check` fails with *Cannot link to shared library* for each. That is expected: the package goes to the GitHub releases and Chum rather than the Jolla Store. The `Accounts` permission itself passes validation.
 
 `sailfishapp.prf` resolves `PKGCONFIG` itself after pulling in `link_pkgconfig`, so the `.pro` must not request `link_pkgconfig` directly - doing so drops `-lsailfishapp` from the link.
 
