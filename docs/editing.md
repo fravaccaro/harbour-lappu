@@ -13,6 +13,18 @@ Above the text sit the star of the note, beside its title, and the category belo
 
 While the keyboard is open the page gives the writing what room it can: the name of the page, the star and the category fold away as the keyboard rises, and come back when it is closed. **Add** or **Save** stays where it is throughout.
 
+## A note from another app
+
+Text and links can be sent to Lappu from wherever they already are: a page or a selection in the browser, a message, anything that offers **Share**. Lappu stands in that list as **New note**, and choosing it opens the very dialog the pulley menu opens, with what was shared already in the body.
+
+Sharing saves nothing by itself. The note is written when you accept with **Add**, exactly as one typed by hand is, so the text can be edited, named or given a category first - and navigating back keeps none of it.
+
+A page shared with its name arrives as a Markdown link, `[the name](the address)`, so the note reads as the name while the address is still there to tap. A page shared without one, and any address shared on its own, is written as the address alone. Only an address a tap could have followed is taken - `http`, `https` and `mailto` - and a share holding nothing else is turned away with *There was nothing in that to write down.*
+
+The Title field is left empty, so unless you fill it in the note is named after its first line, as any other note written here is.
+
+Sharing before signing in loses nothing either: Lappu says *Sign in, and what you shared opens as a new note*, and the dialog opens as soon as the account is in place.
+
 ## The title is the note's name
 
 The **Title** field at the top of the page is the name of the note, which on the server is the name of its file. It is not part of the text: the body below holds the whole document, and the two are kept apart exactly as Nextcloud keeps them.

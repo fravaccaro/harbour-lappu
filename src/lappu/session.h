@@ -87,6 +87,11 @@ public:
     // title alone falls back to the first line.
     Q_INVOKABLE void saveNote(int noteId, const QString &title, const QString &content,
                               const QString &category, bool favorite);
+    // The body a share makes, as plain text and as a link. Neither writes
+    // anything: the note is the editor's to save, as one typed by hand is.
+    // An empty answer means the share held nothing worth writing down.
+    Q_INVOKABLE QString sharedBody(const QString &text) const;
+    Q_INVOKABLE QString sharedLink(const QString &url, const QString &linkTitle) const;
     Q_INVOKABLE void setFavorite(int noteId, bool favorite);
     Q_INVOKABLE void deleteNote(int noteId);
     // The unsettled notes as plain rows, each carrying both versions, the way

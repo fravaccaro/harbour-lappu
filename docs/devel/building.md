@@ -54,5 +54,12 @@ Italian ships with the app. Translators work on the [Transifex project](https://
 1. Copy `translations/harbour-lappu.ts` to `translations/harbour-lappu-<code>.ts`.
 2. Add it to `TRANSLATIONS` in `harbour-lappu.pro`.
 3. Translate it with Qt Linguist and build; `sailfishapp_i18n` compiles and installs the `.qm`.
+4. Add the desktop file's own lines for the language by hand, as step 3 does not reach them: `Comment[<code>]` under `[Desktop Entry]`, and `Description[<code>]` in each of the two `[X-Share Method ...]` sections.
 
 Compiled `.qm` files are build artefacts and stay out of the repository.
+
+### The strings in the desktop file
+
+`harbour-lappu.desktop` carries four strings of its own: the app's `Comment`, and the `Description` of each share method, which is what the system's sharing list calls Lappu. They are **not** in the `.ts` files and never reach Transifex, so they are written into the file by hand, in the `Comment[it]` style the desktop entry specification defines. A language code alone covers its regions, so `Description[it]` is what an `it_IT` phone reads, and a line is only needed per region where the wording differs.
+
+There is no way round that in a Harbour package. `MDesktopEntry` can take a translation from a catalog instead, through an `X-Amber-Translation-Id-Description` key, but it loads the catalog from `/usr/share/translations`, and a Harbour package may install nothing outside `/usr/share/harbour-lappu`. The Sailfish Share documentation says as much: a method description is localised with desktop entry keys, and falls back to the unlocalised value when the language has none.

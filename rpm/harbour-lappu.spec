@@ -17,9 +17,12 @@ Requires:   sailfish-components-webview-qt5
 Requires:   nemo-qml-plugin-notifications-qt5
 # Opal.SupportMe remembers whether it has asked through Nemo.Configuration.
 Requires:   nemo-qml-plugin-configuration-qt5
+# A link shared to the app is read off the session bus through Nemo.DBus.
+Requires:   nemo-qml-plugin-dbus-qt5
 BuildRequires:  pkgconfig(sailfishapp) >= 1.0.2
 BuildRequires:  pkgconfig(sailfishsecrets)
 BuildRequires:  pkgconfig(Qt5Core)
+BuildRequires:  pkgconfig(Qt5DBus)
 BuildRequires:  pkgconfig(Qt5Network)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)

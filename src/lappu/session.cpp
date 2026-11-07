@@ -6,6 +6,7 @@
 #include <QVariantMap>
 
 #include "notesmodel.h"
+#include "sharedtext.h"
 
 namespace {
 
@@ -900,6 +901,16 @@ void Session::saveNote(int noteId, const QString &title, const QString &content,
     note.favorite = favorite;
     note.modified = QDateTime::currentDateTimeUtc().toTime_t();
     store(note);
+}
+
+QString Session::sharedBody(const QString &text) const
+{
+    return SharedText::body(text);
+}
+
+QString Session::sharedLink(const QString &url, const QString &linkTitle) const
+{
+    return SharedText::linkBody(url, linkTitle);
 }
 
 void Session::setFavorite(int noteId, bool favorite)

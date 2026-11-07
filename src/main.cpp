@@ -2,6 +2,7 @@
 #include <QtQuick>
 #endif
 
+#include <QDBusConnection>
 #include <QGuiApplication>
 #include <QLocale>
 #include <QQmlContext>
@@ -46,5 +47,13 @@ int main(int argc, char *argv[])
 
     view->setSource(SailfishApp::pathTo(QStringLiteral("qml/harbour-lappu.qml")));
     view->show();
+
+    // The name a share is delivered to, which is the organisation and
+    // application names of the desktop file joined by a dot. It is claimed
+    // here rather than from QML, and only once the window has loaded, so that
+    // the objects the share receiver puts on the bus are in place before
+    // anything can call them.
+    QDBusConnection::sessionBus().registerService(QStringLiteral("org.frapps.harbour-lappu"));
+
     return app->exec();
 }

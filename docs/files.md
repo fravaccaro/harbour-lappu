@@ -99,4 +99,4 @@ Lappu asks for three:
 * **Secrets** - to keep the app password in the device-lock storage rather than in a plain file
 * **WebView** - to show the sign-in page of the server inside the app, so your own password is never typed into Lappu
 
-No document, picture or other directory of the device is asked for.
+No document, picture or other directory of the device is asked for. Receiving text and links shared from other apps asks for nothing further: every app may be shared with, and Lappu takes no files, only what another app hands it directly.

@@ -1000,5 +1000,13 @@
         <source>That note is no longer here.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>There was nothing in that to write down.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sign in, and what you shared opens as a new note.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 </TS>

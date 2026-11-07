@@ -6,11 +6,25 @@ Exec=harbour-lappu
 Name=Lappu
 Comment=Nextcloud Notes
 Comment[it]=Note Nextcloud
+X-Share-Methods=text;link;
 
 [X-Sailjail]
 OrganizationName=org.frapps
 ApplicationName=harbour-lappu
 Permissions=Internet;Secrets;WebView
+ExecDBus=harbour-lappu
+
+[X-Share Method text]
+Description=New note
+Description[it]=Nuova nota
+Capabilities=text/plain;
+SupportsMultipleFiles=no
+
+[X-Share Method link]
+Description=New note
+Description[it]=Nuova nota
+Capabilities=text/x-url;
+SupportsMultipleFiles=no
 
 [X-HarbourBackup]
 BackupPathList=.config/org.frapps/harbour-lappu/:.local/share/org.frapps/harbour-lappu/

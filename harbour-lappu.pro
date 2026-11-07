@@ -1,7 +1,7 @@
 TARGET = harbour-lappu
 
 CONFIG += sailfishapp sailfishapp_i18n c++11
-QT += network sql
+QT += dbus network sql
 
 # sailfishapp.prf pulls in link_pkgconfig and resolves PKGCONFIG afterwards, so
 # requesting link_pkgconfig here instead would drop -lsailfishapp from the link.
@@ -28,6 +28,7 @@ SOURCES += \
     src/lappu/notesmodel.cpp \
     src/lappu/secretsstore.cpp \
     src/lappu/session.cpp \
+    src/lappu/sharedtext.cpp \
     src/lappu/url.cpp
 
 HEADERS += \
@@ -39,6 +40,7 @@ HEADERS += \
     src/lappu/notesmodel.h \
     src/lappu/secretsstore.h \
     src/lappu/session.h \
+    src/lappu/sharedtext.h \
     src/lappu/types.h \
     src/lappu/url.h
 
@@ -69,6 +71,7 @@ DISTFILES += \
     qml/components/NotesListHeader.qml \
     qml/components/NotesPullDownMenu.qml \
     qml/components/ScrollHint.qml \
+    qml/components/ShareReceiver.qml \
     qml/components/ToolbarStop.qml \
     qml/cover/CoverPage.qml \
     qml/cover/cover-note.png \

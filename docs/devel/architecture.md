@@ -20,12 +20,13 @@ nav_order: 1
 | `src/lappu/notesmodel.*` | Holds the notes of the last pull, and hands them to QML as plain rows through `notes()` |
 | `src/lappu/session.*` | QML-facing controller: login, sync, save, favourite, delete |
 | `src/lappu/url.*` | Server URL normalisation |
+| `src/lappu/sharedtext.*` | The note body a share makes, out of plain text or a link |
 | `src/lappu/types.h` | Plain data structs (`LocalNote`) |
 | `qml/pages/*` | Silica UI |
 | `qml/pages/ConflictPage.qml` | The two versions of a note that changed on both sides, and the three answers to it |
 | `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category and cover state |
 | `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, and the subset of HTML a Silica `Label` draws |
-| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar and one stop of it, the nudge that tells a flickable it scrolls, the edit history, the note body, a Markdown table, a code block, one side of a conflict, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar and one stop of it, the nudge that tells a flickable it scrolls, the edit history, the note body, a Markdown table, a code block, one side of a conflict, the receiver for what other apps share, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
 | `qml/cover/*` | The cover page and its glyph |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe and LinkHandler modules |
 
@@ -159,6 +160,18 @@ List excerpts and the cover have no room for any of this, so `stripMarkdown()` t
 
 An excerpt is the note as written: `excerpt()` strips the markup from the whole content, so a note whose first line repeats its name shows that line here too. The cover reads the same way through `plainText()`.
 
+## Shares from other apps
+
+The desktop file declares two share methods, `text` for `text/plain` and `link` for `text/x-url`, and `ShareReceiver.qml` holds the receiving end of both. It knows nothing of notes: it reports what arrived through `textShared` and `linkShared`, which is what lets it be dropped into a test harness, and `qml/harbour-lappu.qml` makes a note body of it through `Lappu.sharedBody()` or `Lappu.sharedLink()`.
+
+Only the text method is a `ShareProvider`. A link is read off the bus by hand, through a `DBusAdaptor` on `/share/link` and the `org.sailfishos.share` interface, because the browser sends a link as `status` and `linkTitle` rather than the `name` and `data` a `ShareResource` is specified with ([sailfish-components-webview#180](https://github.com/sailfishos/sailfish-components-webview/issues/180)); `ShareProvider` discards it as unusable before any handler is reached. The system's own mail and messages apps take the same route, and a `ShareAction` is kept beside the adaptor only to read a configuration into resources.
+
+The bus name - `org.frapps.harbour-lappu`, the organisation and application names of the desktop file joined by a dot - is claimed in `main.cpp` after the window has loaded, which is what the Share documentation asks for: claiming it from QML races with the objects the receiver puts on the bus. `ExecDBus` in the desktop file is what starts the app for a share when it is not already running.
+
+`SharedText` shapes the body and nothing else writes: text keeps its lines, with `\r\n` and `\r` made into `\n`; a link becomes `[name](address)` when it was named, and the bare address otherwise, since the renderer's link ends at the first `)` or `]`. An address no tap could have followed gives an empty string, which the window reports as nothing worth writing down - the app reads no directory of the device, so a `file:` path is turned away rather than written into a note that could not open it.
+
+A share is never saved by itself. `openSharedNote()` holds it in `pendingShare` and `writeShare()` pushes `NoteEditPage` with the body in it, so the share is an edit waiting to be accepted like any other. The wait matters twice over: on a cold start the window is still on `StartPage` and the navigation that follows would throw a dialog away, and a share arriving before anyone has signed in has nowhere to go until `configuredChanged` says otherwise. `shareAgain` is the same hundred-millisecond retry `navigateAgain` uses against a busy page stack.
+
 ## Links
 
 No link is handed to the browser by the app. `Opal.LinkHandler` shows it first, which matters most for the links inside a note, since those came from the server rather than from the app. `NoteBody` only re-emits `linkActivated`, so the page that holds it decides, and both the page and the component's own example call `LinkHandler.openOrCopyUrl()`.
@@ -171,4 +184,4 @@ Sailjail gives the app three private directories, named after the `OrganizationN
 * `~/.local/share/org.frapps/harbour-lappu` - `notes.sqlite`
 * `~/.cache/org.frapps/harbour-lappu` - whatever the web view leaves behind; nothing the app writes itself
 
-The permissions are `Internet`, `Secrets` and `WebView`; no document or picture directory is asked for. The config and share directories are declared for the system backup through `X-HarbourBackup`.
+The permissions are `Internet`, `Secrets` and `WebView`; no document or picture directory is asked for, and receiving a share needs none - sharing is open to every app, and a Harbour package is refused for asking for it by name. The config and share directories are declared for the system backup through `X-HarbourBackup`.

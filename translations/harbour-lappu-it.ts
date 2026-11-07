@@ -1011,5 +1011,13 @@
         <source>That note is no longer here.</source>
         <translation>Questa nota non è più disponibile.</translation>
     </message>
+    <message>
+        <source>There was nothing in that to write down.</source>
+        <translation>Non c&apos;era nulla da annotare.</translation>
+    </message>
+    <message>
+        <source>Sign in, and what you shared opens as a new note.</source>
+        <translation>Accedi e ciò che hai condiviso si aprirà come nuova nota.</translation>
+    </message>
 </context>
 </TS>

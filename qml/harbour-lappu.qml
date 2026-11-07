@@ -9,6 +9,8 @@ ApplicationWindow {
     id: app
 
     property alias notes: store
+    // Text shared from another app that has nowhere to go yet.
+    property string pendingShare
 
     function showMain() {
         if (pageStack.busy) {
@@ -49,6 +51,49 @@ ApplicationWindow {
 
         activate();
         pageStack.push(Qt.resolvedUrl("pages/NoteEditPage.qml"), {
+            "inheritCategory": inheritCategory()
+        });
+    }
+
+    // A share arrives from outside, so it may find the app signed out, or on a
+    // cold start still deciding what page it opens on. It waits here instead
+    // of being dropped, and the latest one is the one that opens.
+    function openSharedNote(body) {
+        if (body === "") {
+            showToast(qsTr("There was nothing in that to write down."));
+            return ;
+        }
+        pendingShare = body;
+        activate();
+        writeShare();
+    }
+
+    // Held back until the app knows where it is going: until the settings have
+    // been read there is no telling whether there is an account to write to,
+    // and a dialog pushed over the start page is thrown away by the navigation
+    // that follows it.
+    function writeShare() {
+        if (pendingShare === "" || !Lappu.ready)
+            return ;
+
+        if (!Lappu.configured) {
+            showToast(qsTr("Sign in, and what you shared opens as a new note."));
+            return ;
+        }
+        if (pageStack.busy) {
+            shareAgain.restart();
+            return ;
+        }
+        pushSharedNote();
+    }
+
+    // The share is let go of as the editor takes it, so a note saved and a
+    // note abandoned both leave nothing behind to open a second time.
+    function pushSharedNote() {
+        var body = pendingShare;
+        pendingShare = "";
+        pageStack.push(Qt.resolvedUrl("pages/NoteEditPage.qml"), {
+            "content": body,
             "inheritCategory": inheritCategory()
         });
     }
@@ -97,6 +142,13 @@ ApplicationWindow {
         onTriggered: app.showMain()
     }
 
+    Timer {
+        id: shareAgain
+
+        interval: 100
+        onTriggered: app.writeShare()
+    }
+
     Component {
         id: startPage
 
@@ -124,14 +176,17 @@ ApplicationWindow {
     Connections {
         target: Lappu
         onReadyChanged: {
-            if (Lappu.ready)
-                app.showMain();
+            if (!Lappu.ready)
+                return ;
 
+            app.showMain();
+            app.writeShare();
         }
         onConfiguredChanged: {
-            if (!Lappu.configured)
+            if (Lappu.configured)
+                app.writeShare();
+            else
                 app.showMain();
-
         }
         onNotesChanged: app.notes.ingest(Notes.notes())
         onBusyChanged: app.notes.busy = Lappu.busy
@@ -141,6 +196,14 @@ ApplicationWindow {
 
     LappuNotification {
         id: globalNotification
+    }
+
+    // Text and links shared from other apps. They are shaped into a note body
+    // by the session and opened in the editor, never saved on their own: what
+    // another app sent is the writer's to look at before it is kept.
+    ShareReceiver {
+        onTextShared: app.openSharedNote(Lappu.sharedBody(text))
+        onLinkShared: app.openSharedNote(Lappu.sharedLink(url, linkTitle))
     }
 
     // Asks for support once the app has been used for a while, and not again
