@@ -10,11 +10,10 @@
 
     Everything is taken off the bus through a \c DBusAdaptor on
     \c /share/note, rather than a \c ShareProvider. A \c ShareProvider would
-    claim the same path, and the browser's links arrive as \c status and
-    \c linkTitle rather than the \c name and \c data a \c ShareResource is
-    specified with, so a provider would drop them before any handler ran. One
-    adaptor handles both shapes, which is also what keeps a share working when
-    the app is already open.
+    claim the same path, and it hands on \c ShareResource objects, which carry
+    only a \c name and \c data and so have nowhere to put the address and the
+    page title a link is made of. One adaptor handles every shape, which is
+    also what keeps a share working when the app is already open.
 
     The application must claim its own bus name - the organisation and
     application names of the desktop file joined by a dot - from C++ once the
@@ -60,17 +59,20 @@ Item {
 
     }
 
-    // A resource from the bus may be a browser link ({status, linkTitle}) or
-    // ordinary text ({name, data}). loadConfiguration() turns type into the
-    // ShareResource enum, an integer, so comparing it to "text/x-url" never
-    // matches; a status without data is what actually recognises a browser
-    // link. The string test is kept only in case a raw map ever arrives.
+    // What the share says it is comes first. A resource read off the bus is a
+    // plain map rather than a ShareResource, and carries the keys the system's
+    // own share pages read - `type`, which is a mime type here, beside
+    // `status` and `linkTitle`. A passage shared from the browser arrives as
+    // text/plain with its text in `status` and no `data`, so guessing from the
+    // fields alone would take it for an address and throw it away as one no
+    // note could follow. Only a share naming no type is guessed at.
     function takeShared(resources) {
         if (resources.length === 0)
             return ;
 
         var item = resources[0];
-        if ((item.status && !item.data) || item.type === "text/x-url")
+        var link = item.type ? item.type === "text/x-url" : (item.status && !item.data);
+        if (link)
             receiver.takeLink(resources);
         else
             receiver.takeText(resources);
