@@ -33,15 +33,6 @@ PullDownMenu {
     signal searchToggled()
     signal newNoteClicked()
 
-    MenuItem {
-        text: qsTr("About")
-        onClicked: root.aboutClicked()
-    }
-
-    MenuItem {
-        text: qsTr("Settings")
-        onClicked: root.settingsClicked()
-    }
 
     MenuItem {
         text: qsTr("Refresh")

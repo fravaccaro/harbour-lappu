@@ -53,11 +53,6 @@ Page {
 
         }
 
-        ViewPlaceholder {
-            enabled: listView.count === 0
-            text: qsTr("No categories")
-        }
-
         VerticalScrollDecorator {
         }
 
