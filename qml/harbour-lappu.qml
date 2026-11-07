@@ -11,6 +11,8 @@ ApplicationWindow {
     property alias notes: store
     // Text shared from another app that has nowhere to go yet.
     property string pendingShare
+    // A New note asked for from the cover before the app was ready to open one.
+    property bool pendingNewNote: false
 
     function showMain() {
         if (pageStack.busy) {
@@ -18,11 +20,16 @@ ApplicationWindow {
             return ;
         }
         pageStack.replaceAbove(null, Lappu.configured ? notesPage : loginPage);
-        // A share may have been waiting on the start page: try once the
-        // stack has been pointed at the notes or the sign-in. writeShare()
-        // still waits while the replace is busy, so the dialog is not
-        // pushed under a wipe.
+        // A share or a cover New note may have been waiting on the start
+        // page: try once the stack has been pointed at the notes or the
+        // sign-in. Both still wait while the replace is busy, so a dialog
+        // is not pushed under a wipe.
+        flushPending();
+    }
+
+    function flushPending() {
         writeShare();
+        writeNewNote();
     }
 
     function showToast(text) {
@@ -49,12 +56,34 @@ ApplicationWindow {
         return notes.filterKind === "category" ? notes.filterCategory : "";
     }
 
-    // Reachable from the cover, which can be tapped before anyone has signed in.
+    // Reachable from the cover, which can be tapped before the settings have
+    // been read and before anyone has signed in. It waits for the notes the
+    // way a share does, rather than being dropped on a cold start.
     function openNewNote() {
-        if (!Lappu.configured)
+        pendingNewNote = true;
+        activate();
+        writeNewNote();
+    }
+
+    function writeNewNote() {
+        if (!pendingNewNote)
             return ;
 
-        activate();
+        if (!Lappu.ready) {
+            pendingAgain.restart();
+            return ;
+        }
+        // The cover offers New note before an account exists; nothing to say,
+        // and nothing to keep waiting for once we know there is no account.
+        if (!Lappu.configured) {
+            pendingNewNote = false;
+            return ;
+        }
+        if (pageStack.busy || shareBlocked()) {
+            pendingAgain.restart();
+            return ;
+        }
+        pendingNewNote = false;
         pageStack.push(Qt.resolvedUrl("pages/NoteEditPage.qml"), {
             "inheritCategory": inheritCategory()
         });
@@ -98,7 +127,7 @@ ApplicationWindow {
             return ;
         }
         if (pageStack.busy || shareBlocked()) {
-            shareAgain.restart();
+            pendingAgain.restart();
             return ;
         }
         pushSharedNote();
@@ -160,10 +189,10 @@ ApplicationWindow {
     }
 
     Timer {
-        id: shareAgain
+        id: pendingAgain
 
         interval: 100
-        onTriggered: app.writeShare()
+        onTriggered: app.flushPending()
     }
 
     Component {
@@ -199,7 +228,7 @@ ApplicationWindow {
         }
         onConfiguredChanged: {
             if (Lappu.configured)
-                app.writeShare();
+                app.flushPending();
             else
                 app.showMain();
         }

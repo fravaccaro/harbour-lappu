@@ -52,4 +52,4 @@ Everything else is the same in both: the pulley menu, the search field, the chos
 
 **Pin to cover**, in the menu of a note, puts that note on the app cover: its title and body, with the Markdown taken out so it reads as plain text. Only one note sits there, so pinning another replaces it, and **Unpin from cover** gives the cover back to the notes list. The pin is remembered, so the note is still on the cover after the app is restarted, and pinning a note that has not reached the server yet still works - the pin follows it once the server has given it an id.
 
-With nothing pinned, the cover shows the current view and the notes in it. The two cover actions write a new note and refresh; neither does anything until an account has been signed in.
+With nothing pinned, the cover shows the current view and the notes in it. The two cover actions write a new note and refresh; neither does anything until an account has been signed in. A **New note** tapped while the app is still starting is kept until the notes are up, rather than being dropped.

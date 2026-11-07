@@ -61,15 +61,16 @@ Item {
     }
 
     // A resource from the bus may be a browser link ({status, linkTitle}) or
-    // ordinary text ({name, data}). The type string is what tells them apart
-    // when present; a status without data is treated as a link as well, which
-    // is the shape the browser still sends.
+    // ordinary text ({name, data}). loadConfiguration() turns type into the
+    // ShareResource enum, an integer, so comparing it to "text/x-url" never
+    // matches; a status without data is what actually recognises a browser
+    // link. The string test is kept only in case a raw map ever arrives.
     function takeShared(resources) {
         if (resources.length === 0)
             return ;
 
         var item = resources[0];
-        if (item.type === "text/x-url" || (item.status && !item.data))
+        if ((item.status && !item.data) || item.type === "text/x-url")
             receiver.takeLink(resources);
         else
             receiver.takeText(resources);
