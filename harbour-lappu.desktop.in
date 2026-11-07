@@ -1,0 +1,25 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Icon=harbour-lappu
+Exec=harbour-lappu
+Name=Lappu
+# Translators: the line under the app's name in the launcher.
+Comment=Nextcloud Notes
+X-Share-Methods=note;
+
+[X-Sailjail]
+OrganizationName=org.frapps
+ApplicationName=harbour-lappu
+Permissions=Internet;Secrets;WebView
+ExecDBus=harbour-lappu
+
+[X-Share Method note]
+# Translators: what Lappu is called in the system's sharing list, where
+# choosing it opens a new note holding what was shared.
+Description=New note
+Capabilities=text/plain;text/x-url;
+SupportsMultipleFiles=no
+
+[X-HarbourBackup]
+BackupPathList=.config/org.frapps/harbour-lappu/:.local/share/org.frapps/harbour-lappu/

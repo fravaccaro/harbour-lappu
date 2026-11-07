@@ -18,6 +18,11 @@ ApplicationWindow {
             return ;
         }
         pageStack.replaceAbove(null, Lappu.configured ? notesPage : loginPage);
+        // A share may have been waiting on the start page: try once the
+        // stack has been pointed at the notes or the sign-in. writeShare()
+        // still waits while the replace is busy, so the dialog is not
+        // pushed under a wipe.
+        writeShare();
     }
 
     function showToast(text) {
@@ -68,10 +73,22 @@ ApplicationWindow {
         writeShare();
     }
 
+    // Pages whose next navigation would throw a dialog away: the start page
+    // on a cold start, and the sign-in pages before the notes replace them.
+    function shareBlocked() {
+        var page = pageStack.currentPage;
+        if (!page)
+            return true;
+
+        var name = page.objectName;
+        return name === "startPage" || name === "loginPage" || name === "webLoginPage";
+    }
+
     // Held back until the app knows where it is going: until the settings have
     // been read there is no telling whether there is an account to write to,
-    // and a dialog pushed over the start page is thrown away by the navigation
-    // that follows it.
+    // and a dialog pushed over the start or sign-in pages is thrown away by
+    // the navigation that follows them. pendingShare is kept until the push
+    // lands, so a wipe cannot drop the only copy of the body.
     function writeShare() {
         if (pendingShare === "" || !Lappu.ready)
             return ;
@@ -80,7 +97,7 @@ ApplicationWindow {
             showToast(qsTr("Sign in, and what you shared opens as a new note."));
             return ;
         }
-        if (pageStack.busy) {
+        if (pageStack.busy || shareBlocked()) {
             shareAgain.restart();
             return ;
         }
@@ -176,11 +193,9 @@ ApplicationWindow {
     Connections {
         target: Lappu
         onReadyChanged: {
-            if (!Lappu.ready)
-                return ;
+            if (Lappu.ready)
+                app.showMain();
 
-            app.showMain();
-            app.writeShare();
         }
         onConfiguredChanged: {
             if (Lappu.configured)

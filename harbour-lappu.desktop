@@ -1,12 +1,14 @@
+# Generated from harbour-lappu.desktop.in by scripts/desktop-translations.sh.
+# Edit the template or the translations under translations/desktop, never this file.
 [Desktop Entry]
 Type=Application
 X-Nemo-Application-Type=silica-qt5
 Icon=harbour-lappu
 Exec=harbour-lappu
 Name=Lappu
-Comment=Nextcloud Notes
 Comment[it]=Note Nextcloud
-X-Share-Methods=text;link;
+Comment=Nextcloud Notes
+X-Share-Methods=note;
 
 [X-Sailjail]
 OrganizationName=org.frapps
@@ -14,16 +16,10 @@ ApplicationName=harbour-lappu
 Permissions=Internet;Secrets;WebView
 ExecDBus=harbour-lappu
 
-[X-Share Method text]
-Description=New note
+[X-Share Method note]
 Description[it]=Nuova nota
-Capabilities=text/plain;
-SupportsMultipleFiles=no
-
-[X-Share Method link]
 Description=New note
-Description[it]=Nuova nota
-Capabilities=text/x-url;
+Capabilities=text/plain;text/x-url;
 SupportsMultipleFiles=no
 
 [X-HarbourBackup]

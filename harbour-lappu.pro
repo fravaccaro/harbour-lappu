@@ -56,6 +56,11 @@ TRANSLATIONS += \
 
 DISTFILES += \
     harbour-lappu.desktop \
+    harbour-lappu.desktop.in \
+    scripts/desktop-translations.sh \
+    translations/desktop/LINGUAS \
+    translations/desktop/harbour-lappu.pot \
+    translations/desktop/it.po \
     icons/harbour-lappu.svg \
     qml/harbour-lappu.qml \
     qml/components/ConflictVersion.qml \

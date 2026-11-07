@@ -54,12 +54,28 @@ Italian ships with the app. Translators work on the [Transifex project](https://
 1. Copy `translations/harbour-lappu.ts` to `translations/harbour-lappu-<code>.ts`.
 2. Add it to `TRANSLATIONS` in `harbour-lappu.pro`.
 3. Translate it with Qt Linguist and build; `sailfishapp_i18n` compiles and installs the `.qm`.
-4. Add the desktop file's own lines for the language by hand, as step 3 does not reach them: `Comment[<code>]` under `[Desktop Entry]`, and `Description[<code>]` in each of the two `[X-Share Method ...]` sections.
+4. Add the language to the desktop file's strings too, which are a resource of their own: write the code into `translations/desktop/LINGUAS`, create the `.po` beside it with `msginit`, and run `scripts/desktop-translations.sh`.
 
 Compiled `.qm` files are build artefacts and stay out of the repository.
 
 ### The strings in the desktop file
 
-`harbour-lappu.desktop` carries four strings of its own: the app's `Comment`, and the `Description` of each share method, which is what the system's sharing list calls Lappu. They are **not** in the `.ts` files and never reach Transifex, so they are written into the file by hand, in the `Comment[it]` style the desktop entry specification defines. A language code alone covers its regions, so `Description[it]` is what an `it_IT` phone reads, and a line is only needed per region where the wording differs.
+`harbour-lappu.desktop` carries two strings of its own: the app's `Comment`, and the `Description` of the share method, which is what the system's sharing list calls Lappu. Neither can come from the `.ts` files. A desktop file is read by the launcher and the sharing dialog rather than by the app, and each language needs a line of its own in the file - `Comment[it]`, `Description[it]` - in the style the desktop entry specification defines. A language code covers its regions, so `Description[it]` is what an `it_IT` phone reads, and a region needs a line only where the wording differs.
 
-There is no way round that in a Harbour package. `MDesktopEntry` can take a translation from a catalog instead, through an `X-Amber-Translation-Id-Description` key, but it loads the catalog from `/usr/share/translations`, and a Harbour package may install nothing outside `/usr/share/harbour-lappu`. The Sailfish Share documentation says as much: a method description is localised with desktop entry keys, and falls back to the unlocalised value when the language has none.
+There is no way round that in a Harbour package. `MDesktopEntry` can take a translation from a catalog instead, through an `X-Amber-Translation-Id-Description` key, but it loads the catalog from `/usr/share/translations`, and a Harbour package may install nothing outside `/usr/share/harbour-lappu`. The Sailfish Share documentation says as much: a method description is localised with desktop entry keys and falls back to the unlocalised value.
+
+So they travel as **gettext**, a second Transifex resource beside the Qt one:
+
+| File | Is |
+|---|---|
+| `harbour-lappu.desktop.in` | the template, which holds the English and the notes to the translators |
+| `translations/desktop/harbour-lappu.pot` | the source resource, uploaded to Transifex |
+| `translations/desktop/<code>.po` | what a translator sends back |
+| `translations/desktop/LINGUAS` | the languages the next run should write |
+| `harbour-lappu.desktop` | **generated**, and committed |
+
+`scripts/desktop-translations.sh` does the whole round trip: `xgettext` rewrites the `.pot` from the template, `msgmerge` brings each `.po` up to date with it, and `msgfmt --desktop` writes the desktop file with a translated line above every source one. Run it after editing the template or pulling translations, and commit what it changes.
+
+The desktop file is generated **and committed** on purpose: the package is built by the SDK, by GitHub Actions and by OBS, and none of them should need gettext to produce a file that changes twice a year. The file says at the top that it is generated, since an edit made in it rather than in the template would be dropped by the next run.
+
+The app's own **New note**, in the pulley menu, is a different string in a different resource and is translated separately.

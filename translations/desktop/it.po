@@ -1,0 +1,30 @@
+# Italian translations for harbour-lappu package
+# Traduzioni italiane per il pacchetto harbour-lappu.
+# Copyright (C) 2026 THE harbour-lappu'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the harbour-lappu package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: harbour-lappu\n"
+"Report-Msgid-Bugs-To: https://github.com/fravaccaro/harbour-lappu/issues\n"
+"POT-Creation-Date: 2026-11-07 14:39+0200\n"
+"PO-Revision-Date: 2026-11-07 14:22+0200\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Translators: the line under the app's name in the launcher.
+#: harbour-lappu.desktop.in:8
+msgid "Nextcloud Notes"
+msgstr "Note Nextcloud"
+
+#. Translators: what Lappu is called in the system's sharing list, where
+#. choosing it opens a new note holding what was shared.
+#: harbour-lappu.desktop.in:20
+msgid "New note"
+msgstr "Nuova nota"
