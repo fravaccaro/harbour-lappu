@@ -40,7 +40,7 @@
     <name>AskForSupport</name>
     <message>
         <source>Please take a moment to consider if you can contribute to this project in one way or another.</source>
-        <translation>Prenditi un momento per valutare se puoi contribuire a questo progetto in un modo o nell&amp;amp;apos;altro.</translation>
+        <translation>Prenditi un momento per valutare se puoi contribuire a questo progetto in un modo o nell&apos;altro.</translation>
     </message>
 </context>
 <context>
@@ -184,7 +184,7 @@
     <name>ExternalUrlPage</name>
     <message>
         <source>Swipe left to preview.</source>
-        <translation>Scorri a sinistra per l&amp;amp;apos;anteprima.</translation>
+        <translation>Scorri a sinistra per l&apos;anteprima.</translation>
     </message>
     <message>
         <source>You are using a mobile data connection.</source>
@@ -247,7 +247,7 @@
     </message>
     <message>
         <source>Report what breaks, suggest what is missing, or tell other Nextcloud users about the app.</source>
-        <translation>Segnala ciò che si rompe, proponi ciò che manca o parla dell&amp;apos;app ad altri utenti di Nextcloud.</translation>
+        <translation>Segnala ciò che si rompe, proponi ciò che manca o parla dell&apos;app ad altri utenti di Nextcloud.</translation>
     </message>
 </context>
 <context>
@@ -957,7 +957,7 @@
     <name>StartPage</name>
     <message>
         <source>The password could not be read from the secure storage of Sailfish OS.</source>
-        <translation>Non è stato possibile leggere la password dall&amp;apos;archivio sicuro di Sailfish OS</translation>
+        <translation>Non è stato possibile leggere la password dall&apos;archivio sicuro di Sailfish OS</translation>
     </message>
     <message>
         <source>Try again</source>
