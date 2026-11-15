@@ -137,6 +137,7 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     , m_owedWhileBusy(false)
     , m_pushed(0)
     , m_syncedOnStart(false)
+    , m_qownNotes(false)
 {
     m_syncTimer.setSingleShot(false);
     connect(&m_syncTimer, &QTimer::timeout, this, &Session::sync);
@@ -151,6 +152,8 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(&m_api, &NotesApi::unauthorized, this, &Session::onUnauthorized);
     connect(&m_api, &NotesApi::conflicted, this, &Session::onConflict);
     connect(&m_api, &NotesApi::refused, this, &Session::onRefused);
+    connect(&m_qown, &QownNotesApi::probed, this, &Session::setQownNotes);
+    connect(&m_qown, &QownNotesApi::unauthorized, this, &Session::onUnauthorized);
     connect(m_notes, &NotesModel::changed, this, &Session::notesChanged);
     connect(m_config, &Config::readyChanged, this, &Session::readyChanged);
     connect(m_config, &Config::configuredChanged, this, &Session::onConfiguredChanged);
@@ -305,11 +308,28 @@ void Session::applyApiSettings()
     m_api.setServer(m_config->serverUrl());
     m_api.setCredentials(m_config->username(), m_config->password());
     m_api.setIgnoreSslErrors(m_config->ignoreSslErrors());
+    m_qown.setServer(m_config->serverUrl());
+    m_qown.setCredentials(m_config->username(), m_config->password());
+    m_qown.setIgnoreSslErrors(m_config->ignoreSslErrors());
 }
 
+void Session::setQownNotes(bool present)
+{
+    if (present == m_qownNotes)
+        return;
+
+    m_qownNotes = present;
+    emit qownNotesChanged();
+}
+
+// The probe goes out as soon as the account is known, and is asked nothing of
+// beyond its answer: it leaves m_busy alone, so a server that never answers
+// it cannot hold back a sync, and says nothing of itself when the app is
+// simply not there, which is the ordinary case.
 void Session::applyCredentials()
 {
     applyApiSettings();
+    m_qown.probe();
     reloadModels();
     applySyncTimer();
     pushDirty();
@@ -384,6 +404,10 @@ void Session::logout()
     emit conflictsChanged();
     m_locked.clear();
     emit lockedChanged();
+    // What the server carries is the server's, and there is no longer one. A
+    // probe still travelling would answer about the account just left.
+    m_qown.forget();
+    setQownNotes(false);
 }
 
 void Session::reloadSecrets()

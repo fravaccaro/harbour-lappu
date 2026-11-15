@@ -16,6 +16,7 @@ nav_order: 1
 | `src/lappu/loginflow.*` | Nextcloud login flow v2: ask for a login page, then poll until the server hands over an app password or twenty minutes pass |
 | `src/lappu/httpclient.*` | `QNetworkAccessManager` wrapper: basic auth, custom methods, TLS preference |
 | `src/lappu/notesapi.*` | Nextcloud Notes API v1 client under `/index.php/apps/notes/api/v1/notes` |
+| `src/lappu/qownnotesapi.*` | QOwnNotes client: for now the one request that says whether the server carries the app |
 | `src/lappu/notescache.*` | SQLite copy of the notes, in `notes.sqlite` |
 | `src/lappu/notesmodel.*` | Holds the notes of the last pull, and hands them to QML as plain rows through `notes()` |
 | `src/lappu/session.*` | QML-facing controller: login, sync, save, favourite, delete |
@@ -97,6 +98,18 @@ Two paths lead into the push, and they differ in how loudly they fail:
 `applySyncTimer()` holds a `QTimer` that only ticks while the app runs; nothing in Sailfish OS wakes Lappu for a refresh. The timer is restarted at the end of `onNotesReady()` and `onApiFailed()`, so the interval is measured from the last run rather than from when it was set.
 
 The startup refresh is behind `syncIfStartupWanted()` and its `m_syncedOnStart` latch, because `applyCredentials()` runs again whenever credentials are re-applied and would otherwise pull more than once. A fresh sign-in is the exception: `onLoggedIn()` sets the latch and syncs regardless of the setting, since a new account has nothing to show until it does.
+
+## What the server carries
+
+A server with the QOwnNotes app installed can do more than one without it, and the features that need it are shown only where they would work. `Lappu.qownNotes` is the one boolean that says so, false until a probe says otherwise.
+
+`QownNotesApi::probe()` is that probe, and it is a single `GET /ocs/v1.php/cloud/capabilities`: the app publishes itself under `ocs.data.capabilities.qownnotes`, so nothing has to be guessed at from a path. Only the current app counts. The older `qownnotesapi` app publishes no capability and is **not supported**, so a server carrying nothing but that one is answered for as if it carried neither.
+
+Every other answer leaves the flag false - no such key, a status that is not `200`, a server that cannot be reached. A missing app is the ordinary case and is worth no message: the sync of the notes themselves says whatever is to be said about the server. `401` is the exception and goes to `Session::onUnauthorized()` like any other, because it is the account that was refused rather than the app, and a password the server has stopped taking has to send the user back to signing in even on a launch that syncs nothing.
+
+The probe leaves `m_busy` alone, so a capabilities request that stalls cannot leave `sync()` returning at its own guard. It goes out from `applyCredentials()`, which is where the server, the user and the app password are all known, and `probe()` ignores a call made while one is already on its way - signing in applies the credentials twice in a row. The answer is kept in memory alone and never written to `settings.conf`: it is a fact about this server rather than a setting of the user's, so it is asked again on the next launch. `logout()` puts it back to false and calls `forget()` first, since a probe still travelling would otherwise answer about the account just left.
+
+The notes themselves keep going to `/index.php/apps/notes/api/v1/`. The app serves a notes API of its own under the `api_base` it publishes, and pointing `NotesApi` at it is separate work: a server that carries the QOwnNotes app but not the Notes app will set this flag and still fail to sync.
 
 ## The title is the note's name
 

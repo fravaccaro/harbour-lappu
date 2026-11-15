@@ -25,6 +25,11 @@ public:
 
     explicit NotesApi(QObject *parent = nullptr);
 
+    // The sentence a password the server will not take earns. It is said from
+    // here wherever it is met, the account rather than the notes being what
+    // was refused: every client of the same server meets the same answer.
+    static QString passwordRefusedError();
+
     void setServer(const QString &serverUrl);
     void setCredentials(const QString &user, const QString &password);
     void setIgnoreSslErrors(bool ignore);

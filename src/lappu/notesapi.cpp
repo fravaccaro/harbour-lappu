@@ -78,7 +78,7 @@ QByteArray ifMatchValue(const QString &etag)
 QString statusError(int status)
 {
     if (status == 401)
-        return QObject::tr("The server refused the password. Sign in again.");
+        return NotesApi::passwordRefusedError();
     if (status == 403)
         return QObject::tr("The note is read-only on the server.");
     if (status == 404)
@@ -116,6 +116,13 @@ NotesApi::NotesApi(QObject *parent)
     m_http.setUserAgent(QStringLiteral("Lappu"));
     connect(&m_http, &HttpClient::finished, this, &NotesApi::onFinished);
     connect(&m_http, &HttpClient::failed, this, &NotesApi::onFailed);
+}
+
+// QObject::tr rather than this class's own, so the sentence stays the one the
+// translations already carry from when it was said inside statusError().
+QString NotesApi::passwordRefusedError()
+{
+    return QObject::tr("The server refused the password. Sign in again.");
 }
 
 void NotesApi::setServer(const QString &serverUrl)

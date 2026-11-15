@@ -26,6 +26,7 @@ SOURCES += \
     src/lappu/notesapi.cpp \
     src/lappu/notescache.cpp \
     src/lappu/notesmodel.cpp \
+    src/lappu/qownnotesapi.cpp \
     src/lappu/secretsstore.cpp \
     src/lappu/session.cpp \
     src/lappu/sharedtext.cpp \
@@ -38,6 +39,7 @@ HEADERS += \
     src/lappu/notesapi.h \
     src/lappu/notescache.h \
     src/lappu/notesmodel.h \
+    src/lappu/qownnotesapi.h \
     src/lappu/secretsstore.h \
     src/lappu/session.h \
     src/lappu/sharedtext.h \

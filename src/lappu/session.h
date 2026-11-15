@@ -11,6 +11,7 @@
 #include "loginflow.h"
 #include "notesapi.h"
 #include "notescache.h"
+#include "qownnotesapi.h"
 #include "types.h"
 
 class NotesModel;
@@ -41,6 +42,10 @@ class Session : public QObject
     Q_PROPERTY(int conflictCount READ conflictCount NOTIFY conflictsChanged)
     // How many notes the server is holding shut, by a lock or by a permission.
     Q_PROPERTY(int lockedCount READ lockedCount NOTIFY lockedChanged)
+    // Whether the server carries the QOwnNotes app, which the features that
+    // need it are shown by. Asked of the server once an account is known and
+    // kept nowhere: it is a fact about this server rather than a setting.
+    Q_PROPERTY(bool qownNotes READ qownNotes NOTIFY qownNotesChanged)
 
 public:
     explicit Session(Config *config, NotesModel *notes, QObject *parent = nullptr);
@@ -72,6 +77,7 @@ public:
     void setViewMode(const QString &mode);
     int conflictCount() const { return m_conflicts.size(); }
     int lockedCount() const { return m_locked.size(); }
+    bool qownNotes() const { return m_qownNotes; }
 
     Q_INVOKABLE void startLogin(const QString &serverUrl);
     Q_INVOKABLE void cancelLogin();
@@ -135,6 +141,7 @@ signals:
     void notesChanged();
     void conflictsChanged();
     void lockedChanged();
+    void qownNotesChanged();
     // Something the user is owed an explanation of, but that is not an error:
     // it goes its own way rather than through errorMessage, which would hold
     // a second identical notice back.
@@ -145,6 +152,7 @@ private:
     void setError(const QString &error);
     void applyCredentials();
     void applyApiSettings();
+    void setQownNotes(bool present);
     void applySyncTimer();
     void syncIfStartupWanted();
     void reloadModels();
@@ -196,6 +204,7 @@ private:
     NotesModel *m_notes;
     LoginFlow m_login;
     NotesApi m_api;
+    QownNotesApi m_qown;
     NotesCache m_cache;
     QTimer m_syncTimer;
     // What is still owed to the server in this run.
@@ -233,6 +242,9 @@ private:
     // The sync a launch asks for is wanted once, not again every time the
     // credentials are applied.
     bool m_syncedOnStart;
+    // Whether the QOwnNotes app answered for itself on this server, which is
+    // false until a probe says otherwise.
+    bool m_qownNotes;
 };
 
 #endif
