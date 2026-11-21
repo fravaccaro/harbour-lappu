@@ -142,6 +142,16 @@ QVariantMap tagRow(const QString &path, int count)
     return map;
 }
 
+// One version as the pages read it. The text travels with the row: it came
+// with the listing, so reading a version asks the server nothing.
+QVariantMap versionRow(const NoteVersion &version)
+{
+    QVariantMap map;
+    map.insert(QStringLiteral("timestamp"), version.timestamp);
+    map.insert(QStringLiteral("text"), version.text);
+    return map;
+}
+
 // A deleted note as the pages read it. Where it was is carried as well as
 // shown: it is half of what a restore names the note by.
 QVariantMap trashedRow(const TrashedNote &note)
@@ -185,6 +195,11 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     , m_tagSettled(0)
     , m_trashAvailable(false)
     , m_trashBusy(false)
+    , m_versionsAvailable(false)
+    , m_versionsNote(0)
+    , m_versionsWanted(0)
+    , m_versionsAsked(0)
+    , m_versionsBusy(false)
     , m_probeAnswered(false)
     , m_syncWhenProbed(false)
     , m_owedWhileProbing(false)
@@ -213,6 +228,8 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(&m_qown, &QownNotesApi::trashRestored, this, &Session::onTrashRestored);
     connect(&m_qown, &QownNotesApi::trashFailed, this, &Session::onTrashFailed);
     connect(&m_qown, &QownNotesApi::foldersReady, this, &Session::onFoldersReady);
+    connect(&m_qown, &QownNotesApi::versionsReady, this, &Session::onVersionsReady);
+    connect(&m_qown, &QownNotesApi::versionsFailed, this, &Session::onVersionsFailed);
     connect(m_notes, &NotesModel::changed, this, &Session::notesChanged);
     connect(m_config, &Config::readyChanged, this, &Session::readyChanged);
     connect(m_config, &Config::configuredChanged, this, &Session::onConfiguredChanged);
@@ -398,6 +415,7 @@ void Session::onProbed(const ServerApps &apps)
     setQownNotes(apps.present);
     setTagsAvailable(apps.present && apps.tags);
     setTrashAvailable(apps.present && apps.trash);
+    setVersionsAvailable(apps.present && apps.versions);
     m_api.setNotesRoot(apps.present ? apps.apiBase : QString());
     m_probeAnswered = true;
     flushProbeWaiters();
@@ -438,6 +456,29 @@ void Session::setTrashBusy(bool busy)
 
     m_trashBusy = busy;
     emit trashBusyChanged();
+}
+
+// A server keeping no history has none to hold here either, so what was read
+// of one goes with the flag.
+void Session::setVersionsAvailable(bool available)
+{
+    if (available == m_versionsAvailable)
+        return;
+
+    m_versionsAvailable = available;
+    if (!available)
+        forgetVersions();
+
+    emit versionsAvailableChanged();
+}
+
+void Session::setVersionsBusy(bool busy)
+{
+    if (busy == m_versionsBusy)
+        return;
+
+    m_versionsBusy = busy;
+    emit versionsBusyChanged();
 }
 
 // A sync carries what is owed with it, so one that was waiting answers for a
@@ -551,8 +592,14 @@ void Session::logout()
     // The folders are that note folder's, and there is no longer one.
     m_cache.clearFolders();
     emit foldersChanged();
-    // The same goes for the trash: it was a listing of that server's, and a
-    // restore still travelling is one nobody asked for any more.
+    // The same goes for the trash and for the history of a note: they were
+    // that server's record, and a request still travelling is one nobody
+    // asked for any more.
+    setVersionsAvailable(false);
+    setVersionsBusy(false);
+    m_versionsWanted = 0;
+    m_versionsAsked = 0;
+    forgetVersions();
     setTrashAvailable(false);
     setTrashBusy(false);
     m_restoring = TrashedNote();
@@ -1184,6 +1231,78 @@ void Session::setNoteTags(int noteId, const QStringList &paths)
     m_cache.setOwedTags(note.id, wanted);
     emit tagsChanged();
     pushOwedTags();
+}
+
+// The history of a note is read when its page is opened and held no longer:
+// it is the server's record of the note, and one read an hour ago would
+// offer to put back a version that has since been pruned.
+void Session::loadVersions(int noteId)
+{
+    if (!m_versionsAvailable || noteId <= 0)
+        return;
+
+    // What was held is let go of here, so the page shows nothing of the note
+    // before it while the answer travels.
+    forgetVersions();
+    m_versionsWanted = noteId;
+    sendVersionRequest();
+}
+
+// One history is read at a time, a page opened while an answer is still
+// travelling being served once that answer has been let go of.
+void Session::sendVersionRequest()
+{
+    if (m_versionsBusy || m_versionsWanted <= 0)
+        return;
+
+    m_versionsAsked = m_versionsWanted;
+    setVersionsBusy(true);
+    m_qown.fetchVersions(m_versionsAsked);
+}
+
+QVariantList Session::noteVersions() const
+{
+    QVariantList rows;
+    for (int i = 0; i < m_versions.size(); ++i)
+        rows.append(versionRow(m_versions.at(i)));
+
+    return rows;
+}
+
+// An answer about a note the user has left behind is dropped: the page that
+// asked is gone, and the one now open is about another note, which is asked
+// about in its place rather than left with an empty list.
+void Session::onVersionsReady(qint64 noteId, const QVector<NoteVersion> &versions)
+{
+    setVersionsBusy(false);
+    if (noteId != m_versionsWanted) {
+        sendVersionRequest();
+        return;
+    }
+
+    m_versions = versions;
+    m_versionsNote = noteId;
+    emit versionsChanged();
+}
+
+// Said rather than swallowed, as the trash's troubles are: the user asked
+// the server for this and is waiting on the answer.
+void Session::onVersionsFailed(const QString &error)
+{
+    setVersionsBusy(false);
+    emit notice(error);
+    if (m_versionsAsked != m_versionsWanted)
+        sendVersionRequest();
+}
+
+void Session::forgetVersions()
+{
+    if (m_versions.isEmpty() && m_versionsNote == 0)
+        return;
+
+    m_versions.clear();
+    m_versionsNote = 0;
+    emit versionsChanged();
 }
 
 // A folder is asked about wherever the app is, tags or no tags: the tree is

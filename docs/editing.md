@@ -118,6 +118,16 @@ A note the server marks read-only says so and cannot be edited. An empty note sa
 
 A tick is a change like any other and goes to the server straight away. If the server will not take it - a locked file is the usual reason - you are told why, and the tick waits on the phone until the next refresh can send it; see [Sync, files and permissions](files).
 
+## Previous versions
+
+Where the server keeps a history of the notes - the QOwnNotes app with Nextcloud's own Versions app under it - the note's pulley menu carries **Previous versions**. It lists the earlier versions Nextcloud is holding of that note, newest first, each named by how long ago the server took it with the date under it and the opening of what it said. The note as it stands now is not among them: it is the note you just came from.
+
+Tapping one opens it as a note rather than as a list of changes - the Markdown drawn the way the note page draws it, so you read the note as it stood then. Its tasks are not tappable and its links are offered rather than followed, as a link anywhere else is.
+
+**Restore this version** writes that text back over the note. It is an ordinary edit: it goes to the server like anything else written here, the name, the category and the star are left as they are, and the text it replaced becomes a version of its own, so nothing is lost by putting an old one back.
+
+The list is read from the server each time the page opens, and the pulley's **Refresh** asks again. Nothing of it is kept on the phone, so a history cannot be read with no server in reach.
+
 ## Categories and favourites
 
 **Category** opens a picker holding the folders of the note folder, drawn as the tree they are, with room to type a new one. A note created from inside a category starts in that category.

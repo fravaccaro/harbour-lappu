@@ -450,6 +450,52 @@
         <source>A change to this note has not reached the server yet.</source>
         <translation>Una modifica a questa nota non è ancora arrivata al server.</translation>
     </message>
+    <message>
+        <source>Previous versions</source>
+        <translation>Versioni precedenti</translation>
+    </message>
+</context>
+<context>
+    <name>NoteVersionPage</name>
+    <message>
+        <source>Restoring</source>
+        <translation>Ripristino</translation>
+    </message>
+    <message>
+        <source>Restore this version</source>
+        <translation>Ripristina questa versione</translation>
+    </message>
+    <message>
+        <source>Earlier version</source>
+        <translation>Versione precedente</translation>
+    </message>
+    <message>
+        <source>As it read then</source>
+        <translation>Com&apos;era allora</translation>
+    </message>
+</context>
+<context>
+    <name>NoteVersionsPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation>Aggiorna</translation>
+    </message>
+    <message>
+        <source>Previous versions</source>
+        <translation>Versioni precedenti</translation>
+    </message>
+    <message>
+        <source>Previous versions of this note saved on Nextcloud. Your current version isn&apos;t listed here.</source>
+        <translation>Versioni precedenti di questa nota salvate su Nextcloud. La versione attuale non è inclusa in questo elenco.</translation>
+    </message>
+    <message>
+        <source>No previous versions</source>
+        <translation>Nessuna versione precedente</translation>
+    </message>
+    <message>
+        <source>A version is kept each time the note is changed on the server.</source>
+        <translation>Una versione viene conservata ogni volta che la nota cambia sul server.</translation>
+    </message>
 </context>
 <context>
     <name>NotesApi</name>
@@ -840,6 +886,18 @@
         <source>The server would not open its trash.</source>
         <translation>Il server non ha aperto il suo cestino.</translation>
     </message>
+    <message>
+        <source>The server keeps no previous versions of the notes.</source>
+        <translation>Il server non conserva versioni precedenti delle note.</translation>
+    </message>
+    <message>
+        <source>The server no longer has that note.</source>
+        <translation>Il server non ha più quella nota.</translation>
+    </message>
+    <message>
+        <source>The server would not say what the note said before.</source>
+        <translation>Il server non ha voluto dire cosa diceva la nota prima.</translation>
+    </message>
 </context>
 <context>
     <name>Session</name>
@@ -1018,8 +1076,8 @@
         <translation>Nuova etichetta</translation>
     </message>
     <message>
-        <source>Work/Projects</source>
-        <translation>Lavoro/Progetti</translation>
+        <source>work, urgent, ideas...</source>
+        <translation>lavoro, urgente, idee...</translation>
     </message>
 </context>
 <context>

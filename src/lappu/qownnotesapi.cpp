@@ -63,8 +63,10 @@ ServerApps appsOf(const QJsonObject &app)
     apps.apiBase = apiBaseOf(app);
     apps.tags = tagsAvailableIn(app);
     // The trash is Nextcloud's own Deleted files app, which the user may not
-    // have: without it the note folder has no trash to look in.
+    // have: without it the note folder has no trash to look in. The history
+    // of a note is its Versions app in the same way.
     apps.trash = app.value(QStringLiteral("trash_app")).toBool();
+    apps.versions = app.value(QStringLiteral("versions_app")).toBool();
     return apps;
 }
 
@@ -165,6 +167,38 @@ QVector<TrashedNote> trashedNotesOf(const QJsonArray &entries)
     return notes;
 }
 
+// The versions of a note as this app keeps them, in the order the server
+// sent them, newest first. A version the server kept nothing of is dropped:
+// there would be nothing to read and nothing to put back.
+QVector<NoteVersion> versionsOf(const QJsonArray &entries)
+{
+    QVector<NoteVersion> versions;
+    for (int i = 0; i < entries.size(); ++i) {
+        const QJsonObject entry = entries.at(i).toObject();
+        NoteVersion version;
+        version.timestamp = entry.value(QStringLiteral("timestamp")).toVariant().toLongLong();
+        version.text = entry.value(QStringLiteral("data")).toString();
+        if (version.timestamp > 0)
+            versions.append(version);
+    }
+
+    return versions;
+}
+
+// What a status other than success means for the history of a note. The app
+// answers 503 where the Versions app is off, which is a server that keeps no
+// history rather than one that went wrong.
+QString versionStatusError(int status)
+{
+    if (status == 503)
+        return QObject::tr("The server keeps no previous versions of the notes.");
+
+    if (status == 404)
+        return QObject::tr("The server no longer has that note.");
+
+    return QObject::tr("The server would not say what the note said before.");
+}
+
 // What a status other than success means for the trash. The app answers 503
 // where the Deleted files app is off, which is a server that has no trash
 // rather than one that went wrong.
@@ -195,11 +229,14 @@ QownNotesApi::QownNotesApi(QObject *parent)
     , m_tagNote(0)
     , m_trashRequest(NoTrashRequest)
     , m_folderRequest(false)
+    , m_versionRequest(false)
+    , m_versionNote(0)
 {
     m_http.setUserAgent(QStringLiteral("Lappu"));
     m_tagHttp.setUserAgent(QStringLiteral("Lappu"));
     m_trashHttp.setUserAgent(QStringLiteral("Lappu"));
     m_folderHttp.setUserAgent(QStringLiteral("Lappu"));
+    m_versionHttp.setUserAgent(QStringLiteral("Lappu"));
     connect(&m_http, &HttpClient::finished, this, &QownNotesApi::onFinished);
     connect(&m_http, &HttpClient::failed, this, &QownNotesApi::onFailed);
     connect(&m_tagHttp, &HttpClient::finished, this, &QownNotesApi::onTagsFinished);
@@ -208,6 +245,8 @@ QownNotesApi::QownNotesApi(QObject *parent)
     connect(&m_trashHttp, &HttpClient::failed, this, &QownNotesApi::onTrashFailed);
     connect(&m_folderHttp, &HttpClient::finished, this, &QownNotesApi::onFoldersFinished);
     connect(&m_folderHttp, &HttpClient::failed, this, &QownNotesApi::onFoldersFailed);
+    connect(&m_versionHttp, &HttpClient::finished, this, &QownNotesApi::onVersionsFinished);
+    connect(&m_versionHttp, &HttpClient::failed, this, &QownNotesApi::onVersionsFailed);
 }
 
 QString QownNotesApi::defaultApiBase()
@@ -226,6 +265,7 @@ void QownNotesApi::setCredentials(const QString &user, const QString &password)
     m_tagHttp.setBasicAuth(user, password);
     m_trashHttp.setBasicAuth(user, password);
     m_folderHttp.setBasicAuth(user, password);
+    m_versionHttp.setBasicAuth(user, password);
 }
 
 void QownNotesApi::setIgnoreSslErrors(bool ignore)
@@ -234,6 +274,7 @@ void QownNotesApi::setIgnoreSslErrors(bool ignore)
     m_tagHttp.setIgnoreSslErrors(ignore);
     m_trashHttp.setIgnoreSslErrors(ignore);
     m_folderHttp.setIgnoreSslErrors(ignore);
+    m_versionHttp.setIgnoreSslErrors(ignore);
 }
 
 void QownNotesApi::probe()
@@ -257,7 +298,7 @@ void QownNotesApi::probe()
 }
 
 // The base goes with the probe: an account signed out of is a server nothing
-// more is asked of, tags, trash and folders included.
+// more is asked of: tags, trash, folders and the history of a note alike.
 void QownNotesApi::forget()
 {
     m_probing = false;
@@ -266,6 +307,8 @@ void QownNotesApi::forget()
     m_tagNote = 0;
     m_trashRequest = NoTrashRequest;
     m_folderRequest = false;
+    m_versionRequest = false;
+    m_versionNote = 0;
 }
 
 // A server that answers anything else has not said the app is there, and
@@ -539,4 +582,52 @@ void QownNotesApi::onFoldersFinished(int status, const QByteArray &body)
 void QownNotesApi::onFoldersFailed(const QString &)
 {
     m_folderRequest = false;
+}
+
+// One request answers for the whole history: every version carries the note
+// as it read then, so reading one of them asks the server nothing more.
+void QownNotesApi::fetchVersions(qint64 noteId)
+{
+    if (m_apiBase.isEmpty() || m_versionRequest || noteId <= 0)
+        return;
+
+    m_versionRequest = true;
+    m_versionNote = noteId;
+    HttpClient::Headers headers;
+    headers.append(qMakePair(QByteArray("Accept"), QByteArray("application/json")));
+    m_versionHttp.send("GET", QUrl(m_server + m_apiBase
+                                   + QStringLiteral("note/%1/versions")
+                                   .arg(QString::number(noteId))),
+                       QByteArray(), headers);
+}
+
+void QownNotesApi::onVersionsFinished(int status, const QByteArray &body)
+{
+    const qint64 asked = m_versionNote;
+    m_versionRequest = false;
+    m_versionNote = 0;
+    if (status < 200 || status >= 300) {
+        reportVersionStatus(status);
+        return;
+    }
+
+    const QJsonObject answer = QJsonDocument::fromJson(body).object();
+    emit versionsReady(asked, versionsOf(answer.value(QStringLiteral("versions")).toArray()));
+}
+
+void QownNotesApi::onVersionsFailed(const QString &error)
+{
+    m_versionRequest = false;
+    m_versionNote = 0;
+    emit versionsFailed(error);
+}
+
+void QownNotesApi::reportVersionStatus(int status)
+{
+    if (status == 401) {
+        emit unauthorized(NotesApi::passwordRefusedError());
+        return;
+    }
+
+    emit versionsFailed(versionStatusError(status));
 }

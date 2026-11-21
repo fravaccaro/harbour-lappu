@@ -62,6 +62,11 @@ public:
     // invisible there.
     void fetchSubfolders();
 
+    // The versions Nextcloud is keeping of one note, newest first and the
+    // current text left out. Each carries the whole note as it read then,
+    // so one request answers for the history and for reading any of it.
+    void fetchVersions(qint64 noteId);
+
 signals:
     // What the server carries. Every answer but the one that names the app,
     // an unreachable server included, is reported as carrying nothing: a
@@ -93,6 +98,10 @@ signals:
     // read again with the next pull, and the notes sync says whatever is to
     // be said about the server.
     void foldersReady(const QStringList &paths);
+    // The history of one note. The id travels with it, an answer about a
+    // note the user has since left being one nothing should be drawn from.
+    void versionsReady(qint64 noteId, const QVector<NoteVersion> &versions);
+    void versionsFailed(const QString &error);
 
 private:
     // What the tag client last asked for, so its answer is read as the thing
@@ -134,15 +143,19 @@ private:
     void reportTrashStatus(int status);
     void onFoldersFinished(int status, const QByteArray &body);
     void onFoldersFailed(const QString &error);
+    void onVersionsFinished(int status, const QByteArray &body);
+    void onVersionsFailed(const QString &error);
+    void reportVersionStatus(int status);
 
     HttpClient m_http;
     // The tags travel on a client of their own, so a probe and a tag request
-    // cannot be taken for one another's answer. The trash and the folders
-    // have one each for the same reason: a read of one is sent while a read
-    // of another may still be travelling.
+    // cannot be taken for one another's answer. The trash, the folders and
+    // the versions have one each for the same reason: a read of one is sent
+    // while a read of another may still be travelling.
     HttpClient m_tagHttp;
     HttpClient m_trashHttp;
     HttpClient m_folderHttp;
+    HttpClient m_versionHttp;
     QString m_server;
     // Where the app said it serves its APIs, and so where the tags are asked
     // for. Empty until a probe answers for the app, and again once it is
@@ -158,6 +171,10 @@ private:
     // Whether a folder read is on its way. One is asked for at a time, and
     // there is only the one kind of folder request to tell apart.
     bool m_folderRequest;
+    bool m_versionRequest;
+    // The note whose history is being read, so the answer says which note it
+    // is about rather than the page having to assume.
+    qint64 m_versionNote;
 };
 
 #endif

@@ -16,17 +16,19 @@ nav_order: 1
 | `src/lappu/loginflow.*` | Nextcloud login flow v2: ask for a login page, then poll until the server hands over an app password or twenty minutes pass |
 | `src/lappu/httpclient.*` | `QNetworkAccessManager` wrapper: basic auth, custom methods, TLS preference |
 | `src/lappu/notesapi.*` | Nextcloud Notes API v1 client, under the path the server serves that API at |
-| `src/lappu/qownnotesapi.*` | QOwnNotes client: the request that says what the server carries, the folders of the note folder, its tags and its trash |
+| `src/lappu/qownnotesapi.*` | QOwnNotes client: the request that says what the server carries, the folders of the note folder, its tags, its trash and the previous versions of a note |
 | `src/lappu/notescache.*` | SQLite copy of the notes, of the tags and of the folder paths, in `notes.sqlite` |
 | `src/lappu/notesmodel.*` | Holds the notes of the last pull, and hands them to QML as plain rows through `notes()` |
 | `src/lappu/session.*` | QML-facing controller: login, sync, save, favourite, delete |
 | `src/lappu/url.*` | Server URL normalisation |
 | `src/lappu/sharedtext.*` | The note body a share makes, out of plain text or a link |
-| `src/lappu/types.h` | Plain data structs (`LocalNote`, `NoteTag`, `TagLink`, `ServerApps`, `TrashedNote`) |
+| `src/lappu/types.h` | Plain data structs (`LocalNote`, `NoteTag`, `TagLink`, `ServerApps`, `TrashedNote`, `NoteVersion`) |
 | `qml/pages/*` | Silica UI |
 | `qml/pages/ConflictPage.qml` | The two versions of a note that changed on both sides, and the three answers to it |
 | `qml/pages/ViewsPage.qml` | The views the notes are narrowed by: all, favourites and uncategorized, the way into the trash, the categories as the folder tree they are, and under them the tags of the note folder with how many notes carry each |
 | `qml/pages/TrashPage.qml` | The notes the server is holding in its trash, and the way to put one back |
+| `qml/pages/NoteVersionsPage.qml` | The earlier versions the server is keeping of one note |
+| `qml/pages/NoteVersionPage.qml` | One of those versions, drawn as the note read then, and the way to put it back |
 | `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category, tag and cover state |
 | `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, the subset of HTML a Silica `Label` draws, and how a slashed path is read, named, nested and sorted |
 | `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar and one stop of it, the nudge that tells a flickable it scrolls, the edit history, the note body, a Markdown table, a code block, one side of a conflict, the receiver for what other apps share, the tag chips and the field that frames them, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
@@ -122,7 +124,7 @@ Neither waiter sets `m_busy`, which is why a probe cannot leave the app looking 
 
 `forget()` disowns a probe rather than stopping it - nothing in the app aborts a reply but the watchdog - so a request it let go of is still travelling when the next sign-in starts one of its own. `takeReply()` counts the requests that have not been answered and takes only the last of them, or the old server's answer would decide where the new server's notes are asked for. It is the same rule `m_inFlight` keeps for a write: an answer is taken against what was sent, not against whatever is current when it lands.
 
-The probe hands all of that over as one `ServerApps`: whether the app is there, the base it serves its APIs under, and whether the tags and the trash can be used. The folders need no flag of their own - a server carrying the app has them to list. One struct rather than three arguments is what keeps a capability added later from touching the signal, `onProbed()` and every connection in between. The rest of the app - the versions, under the same `api_base` - is not used yet. Those are requests of their own rather than a path, and `QownNotesApi` is where they will go, beside the tags and the trash.
+The probe hands all of that over as one `ServerApps`: whether the app is there, the base it serves its APIs under, and whether the tags, the trash and the versions can be used. The folders need no flag of their own - a server carrying the app has them to list. One struct rather than several arguments is what keeps a capability added later from touching the signal, `onProbed()` and every connection in between.
 
 ## Tags
 
@@ -165,6 +167,18 @@ A deleted note is named by **where it was and when it went**, the pair, since a 
 `TrashPage` is a plain list of `Lappu.trashedNotes()`, taken again on `trashChanged()`. A row does not open the note - there is nothing to open it into until it is a note of the folder again - so tapping one opens its menu, where **Restore** is. The Trash entry itself is a `FilterItem` with `countVisible` false, since the trash is only read once it is opened and a count would have to be a guess.
 
 On the QML side `NotesStore` holds `noteTags`, the map the filter reads, and a `tags` model of `{path, count}` rows, both taken from the session by `ingestTags()` on `tagsChanged()`. `filterKind` gains `"tag"` beside `"category"`, with `filterTag` holding the path, and `setFilter()` clears whichever of the two the chosen view does not use. The tags are listed in the footer of `ViewsPage` rather than on a page of their own: both are ways of narrowing the notes, and a tag is chosen exactly as a category is. The chips are three components ported from Askare - `TagChip`, `TagChips` and `TagEditor`, framed by `IconField` - which know nothing of notes: they take paths and hand them back. A per-note read goes to `Lappu.tagsOfNote()` rather than through the store's map, which is there so that filtering a long list does not cost a query per note.
+
+## Previous versions
+
+A version is Nextcloud's own: the Versions app keeps one of every file it holds, so the QOwnNotes app only has to hand them over. `qownnotes.versions_app` says whether both are there, and `Lappu.versionsAvailable` is the only thing the pulley item and its two pages are drawn behind. One request answers for the whole history - `GET note/{id}/versions` returns every version **with its text**, so reading one asks the server nothing more - on a fifth `HttpClient`, for the reason the tags and the trash have one each.
+
+Two of the three fields the server sends are left alone. `humanReadableTimestamp` is worded in the server's locale, where `NotesStore.relativeTime()` is already translated into the phone's, and `diffHtml` marks its changes with `<del>` and `<ins>`, which are outside the subset of rich text a Silica `Label` draws - and a diff is not what was asked for here anyway: a version is shown as the note read then. So `versionsOf()` keeps the `timestamp` and the `data`, and drops an entry with no usable time, which is half of what names a version.
+
+`versionsReady()` carries the note id, so an answer about a note the user has already left is dropped rather than drawn over another note's history. A failure is **always** said through `notice()`, as the trash's failures are: the user opened the page and is waiting on it. `503` is the one worth naming - it is how the app answers where the Versions app is off, which is a server that keeps no history rather than one that went wrong.
+
+`Session` holds the list in memory alone, as it holds the trash and the conflicts: it is the server's record of the note, and one read an hour ago would offer to put back a version Nextcloud has pruned since. `loadVersions()` runs when the page opens and on its **Refresh**, clearing what it held first so the page shows nothing of the note before it, and `versionsBusy` is the page's own indicator and leaves `m_busy` to the notes.
+
+There is **no restore endpoint**, and none is wanted. `NoteVersionPage` puts a version back by handing its text to `NotesStore.saveNote()` with the note's own title, category and star, so it is an ordinary edit: it goes through the one writer, is sent and conflicts like any other, and the text it replaced becomes a version of its own. Nothing but the writer renames a note, so an old version's text never brings an old name with it. The page is drawn with `ConflictVersion`, the component the two sides of a conflict already use, and comes back to the note itself rather than to the list, found by the `notePage` object name as a share finds the editor.
 
 ## The title is the note's name
 

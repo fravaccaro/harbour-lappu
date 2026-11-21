@@ -97,6 +97,8 @@ DISTFILES += \
     qml/pages/NoteEditPage.qml \
     qml/pages/NotePage.qml \
     qml/pages/NotesPage.qml \
+    qml/pages/NoteVersionPage.qml \
+    qml/pages/NoteVersionsPage.qml \
     qml/pages/SettingsPage.qml \
     qml/pages/StartPage.qml \
     qml/pages/TranslationsPage.qml \

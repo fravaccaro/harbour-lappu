@@ -32,11 +32,15 @@ struct ServerApps
     // Whether Nextcloud's Deleted files app is on for this user, which is
     // what gives the note folder a trash to look in.
     bool trash;
+    // Whether Nextcloud's Versions app is on for this user, without which a
+    // note has no history to read.
+    bool versions;
 
     ServerApps()
         : present(false)
         , tags(false)
         , trash(false)
+        , versions(false)
     {
     }
 };
@@ -69,6 +73,22 @@ struct TrashedNote
 
     TrashedNote()
         : deleted(0)
+    {
+    }
+};
+
+// One previous version of a note: when the server took it, and the whole
+// note as it read then. The server's own wording of the time and its diff
+// are not kept - the time is said in the phone's language, and a version is
+// shown as a note rather than as a change.
+struct NoteVersion
+{
+    // Seconds since the epoch, as the server reports the version.
+    qint64 timestamp;
+    QString text;
+
+    NoteVersion()
+        : timestamp(0)
     {
     }
 };

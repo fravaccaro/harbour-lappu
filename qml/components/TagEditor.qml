@@ -136,7 +136,7 @@ Column {
         width: parent.width
         textLeftMargin: chipsField.contentLeft
         label: qsTr("New tag")
-        placeholderText: qsTr("Work/Projects")
+        placeholderText: qsTr("work, urgent, ideas...")
         inputMethodHints: Qt.ImhNoAutoUppercase
         // A tap on a chip pulls focus off the field, and clearing it would
         // take the keyboard down in the middle of naming a tag.

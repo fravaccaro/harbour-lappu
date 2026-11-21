@@ -450,6 +450,52 @@
         <source>A change to this note has not reached the server yet.</source>
         <translation>A change to this note has not reached the server yet.</translation>
     </message>
+    <message>
+        <source>Previous versions</source>
+        <translation>Previous versions</translation>
+    </message>
+</context>
+<context>
+    <name>NoteVersionPage</name>
+    <message>
+        <source>Restoring</source>
+        <translation>Restoring</translation>
+    </message>
+    <message>
+        <source>Restore this version</source>
+        <translation>Restore this version</translation>
+    </message>
+    <message>
+        <source>Earlier version</source>
+        <translation>Earlier version</translation>
+    </message>
+    <message>
+        <source>As it read then</source>
+        <translation>As it read then</translation>
+    </message>
+</context>
+<context>
+    <name>NoteVersionsPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation>Refresh</translation>
+    </message>
+    <message>
+        <source>Previous versions</source>
+        <translation>Previous versions</translation>
+    </message>
+    <message>
+        <source>Previous versions of this note saved on Nextcloud. Your current version isn't listed here.</source>
+        <translation>Previous versions of this note saved on Nextcloud. Your current version isn't listed here.</translation>
+    </message>
+    <message>
+        <source>No previous versions</source>
+        <translation>No previous versions</translation>
+    </message>
+    <message>
+        <source>A version is kept each time the note is changed on the server.</source>
+        <translation>A version is kept each time the note is changed on the server.</translation>
+    </message>
 </context>
 <context>
     <name>NotesApi</name>
@@ -838,6 +884,18 @@
         <source>The server would not open its trash.</source>
         <translation>The server would not open its trash.</translation>
     </message>
+    <message>
+        <source>The server keeps no previous versions of the notes.</source>
+        <translation>The server keeps no previous versions of the notes.</translation>
+    </message>
+    <message>
+        <source>The server no longer has that note.</source>
+        <translation>The server no longer has that note.</translation>
+    </message>
+    <message>
+        <source>The server would not say what the note said before.</source>
+        <translation>The server would not say what the note said before.</translation>
+    </message>
 </context>
 <context>
     <name>Session</name>
@@ -1016,8 +1074,8 @@
         <translation>New tag</translation>
     </message>
     <message>
-        <source>Work/Projects</source>
-        <translation>Work/Projects</translation>
+        <source>work, urgent, ideas...</source>
+        <translation>work, urgent, ideas...</translation>
     </message>
 </context>
 <context>

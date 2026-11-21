@@ -27,6 +27,8 @@ A server with that app is also asked for its **folders**. The Notes app knows a 
 
 The same answer says whether the server keeps a **trash** for the notes, which takes Nextcloud's Deleted files app as well as the QOwnNotes one. Where it does, the deleted notes can be listed and put back from the views page; where it does not, nothing of the sort is shown or asked for. Nothing is deleted on the server any differently for it: the trash is Nextcloud's, and a note Lappu deletes goes into it like a file deleted anywhere else.
 
+It says too whether the server keeps a **history** of the notes, which needs Nextcloud's own Versions app under the QOwnNotes one. Where it does, a note's pulley menu offers [its previous versions](editing#previous-versions); where it does not, nothing of the sort is shown or asked for. The history is the server's own, kept by Nextcloud for every file it holds, so Lappu neither makes versions nor prunes them - putting an old one back is simply an edit.
+
 The same answer says whether the server has **tags**. They are kept in a database of the note folder rather than in the notes, so they travel on their own: a refresh reads them after the notes, and a tag set here is sent to that database and not written into the note's file. A tag that could not be sent waits on the phone like any other change. Where the server has no tags, Lappu neither shows them nor asks for them.
 
 ## What a refresh does

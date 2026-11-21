@@ -449,6 +449,52 @@
         <source>A change to this note has not reached the server yet.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Previous versions</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NoteVersionPage</name>
+    <message>
+        <source>Restoring</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Restore this version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Earlier version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>As it read then</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>NoteVersionsPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Previous versions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Previous versions of this note saved on Nextcloud. Your current version isn't listed here.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No previous versions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A version is kept each time the note is changed on the server.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>NotesApi</name>
@@ -830,6 +876,18 @@
         <source>The server would not open its trash.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>The server keeps no previous versions of the notes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The server no longer has that note.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The server would not say what the note said before.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Session</name>
@@ -1007,7 +1065,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Work/Projects</source>
+        <source>work, urgent, ideas...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

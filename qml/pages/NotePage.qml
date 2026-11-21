@@ -64,6 +64,9 @@ Page {
         });
     }
 
+    // Named so a page pushed above it can come back to the note rather than
+    // to whatever it was opened from, as the editor is named.
+    objectName: "notePage"
     allowedOrientations: Orientation.All
     Component.onCompleted: page.load()
     onStatusChanged: {
@@ -99,6 +102,16 @@ Page {
             MenuItem {
                 text: app.notes.pinnedNoteId === page.noteId ? qsTr("Unpin from cover") : qsTr("Pin to cover")
                 onClicked: app.togglePin(page.noteId)
+            }
+
+            // A note the server has never seen has no history to read, and a
+            // server keeping none is not asked for one.
+            MenuItem {
+                visible: Lappu.versionsAvailable && page.noteId > 0
+                text: qsTr("Previous versions")
+                onClicked: pageStack.push(Qt.resolvedUrl("NoteVersionsPage.qml"), {
+                    "noteId": page.noteId
+                })
             }
 
             MenuItem {
