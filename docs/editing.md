@@ -120,9 +120,9 @@ A tick is a change like any other and goes to the server straight away. If the s
 
 ## Categories and favourites
 
-**Category** opens a picker holding the categories the notes already use, with room to type a new one. A note created from inside a category starts in that category.
+**Category** opens a picker holding the folders of the note folder, drawn as the tree they are, with room to type a new one. A note created from inside a category starts in that category.
 
-Nextcloud writes a nested category with slashes in it, and Lappu shows it the same way with the separator spelled out.
+A category is a folder, so a nested one is written with slashes - `Work/Meetings` - and typing a name that has never been used puts the note in a folder of that name. In the picker a nested folder is listed under the one it lies in and named by its own last part; on a server with the QOwnNotes app, folders holding no note yet are offered there too. The whole path is what the picker's field holds and what the note itself is labelled with.
 
 **Tags** stand below the category on a server that carries them - see [Notes and views](notes) for what makes a server one. The tags the note already has are drawn as chips, each with a cross that takes it off; the tags the note folder holds and this note does not carry are offered as outlined chips below them, and a tap adds one. **New tag** makes a tag the folder has never had: type its name, or a name with slashes in it to nest it under another, as `Work/Projects` does.
 

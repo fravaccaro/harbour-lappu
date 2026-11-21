@@ -13,6 +13,9 @@ QtObject {
     // in the rows, which hold one value per field.
     property var noteTags: ({
     })
+    // The folders the server listed, as paths. Empty wherever the server
+    // cannot be asked, which leaves the categories to the notes alone.
+    property var serverFolders: []
     // The session keeps the order, so it is still there after a restart.
     property string sortMode: Lappu.sortMode
     property bool busy: false
@@ -46,6 +49,12 @@ QtObject {
 
     function categoryLabel(category) {
         return Format.categoryLabel(category);
+    }
+
+    // A folder is named by its own last step where the tree above it is
+    // drawn, and by its whole path where it stands alone, as in a title.
+    function leafLabel(category) {
+        return Format.leafName(category);
     }
 
     function tagLabel(path) {
@@ -252,11 +261,27 @@ QtObject {
         return -1;
     }
 
+    // Every folder there is to show: the ones the notes name, the ones those
+    // lie under, and the ones the server listed - which is where a folder
+    // holding no note comes from, nothing here being able to name one.
     function namedCategories(map) {
+        var seen = {
+        };
+        for (var key in map) addPath(seen, key)
+        for (var i = 0; i < serverFolders.length; ++i) addPath(seen, serverFolders[i])
         var names = [];
-        for (var key in map) names.push(key)
-        names.sort();
+        for (var path in seen) names.push(path)
+        names.sort(Format.comparePaths);
         return names;
+    }
+
+    function addPath(seen, path) {
+        if (path === "")
+            return ;
+
+        var above = Format.ancestorsOf(path);
+        for (var i = 0; i < above.length; ++i) seen[above[i]] = true
+        seen[path] = true;
     }
 
     function rebuildCategories() {
@@ -265,7 +290,8 @@ QtObject {
         categories.clear();
         for (var i = 0; i < names.length; ++i) categories.append({
             "name": names[i],
-            "count": map[names[i]]
+            "count": map[names[i]] || 0,
+            "depth": Format.depthOf(names[i])
         })
     }
 
@@ -416,6 +442,14 @@ QtObject {
         noteTags = Lappu.noteTags();
         rebuildTags();
         reloadVisible();
+    }
+
+    // The folders arrive apart from the notes as well, and say only which
+    // ones there are: the notes on show and the counts beside each folder
+    // are worked out here either way.
+    function ingestFolders() {
+        serverFolders = Lappu.folders();
+        rebuildCategories();
     }
 
     onSearchTextChanged: reloadVisible()

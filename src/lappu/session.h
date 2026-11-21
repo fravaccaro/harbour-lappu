@@ -157,6 +157,11 @@ public:
     // it, and pulls afterwards so the note itself comes home.
     Q_INVOKABLE void restoreNote(const QString &originalLocation, double deleted);
 
+    // Every folder below the note folder, as the server last listed it. The
+    // categories of the notes are drawn whatever this answers: it is what
+    // adds the folders holding no note, which nothing else can name.
+    Q_INVOKABLE QStringList folders() const;
+
 signals:
     void readyChanged();
     void configuredChanged();
@@ -189,6 +194,9 @@ signals:
     // The trash as the server last listed it has changed, by a read or by a
     // note leaving it.
     void trashChanged();
+    // The folders of the note folder have been read again, so the views take
+    // them again.
+    void foldersChanged();
     // Something the user is owed an explanation of, but that is not an error:
     // it goes its own way rather than through errorMessage, which would hold
     // a second identical notice back.
@@ -225,6 +233,11 @@ private:
     void settleOwedTags();
     void onNoteTagsStale(qint64 noteId);
     void onTagsFailed(const QString &error);
+    // Reads the folder tree, which only the QOwnNotes app can answer for. It
+    // follows a pull the way the tags do, and needs no second app: a server
+    // carrying the one has folders to list.
+    void refreshFolders();
+    void onFoldersReady(const QStringList &paths);
     void onTrashReady(const QVector<TrashedNote> &notes);
     void onTrashRestored(qint64 noteId);
     void onTrashFailed(const QString &error);

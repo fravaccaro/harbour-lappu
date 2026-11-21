@@ -83,6 +83,53 @@ function categoryLabel(category) {
     return pathLabel(category)
 }
 
+// The last step of a path, which is what a folder is called where the ones
+// above it are already drawn: a tree names every row by itself.
+function leafName(path) {
+    var parts = String(path).split("/")
+    return parts[parts.length - 1]
+}
+
+// How far under the note folder a path lies, counted so a row can be set in
+// from the margin by it. The top level is zero.
+function depthOf(path) {
+    return String(path).split("/").length - 1
+}
+
+// Every folder a path lies under, from the top down. A note in Work/Projects
+// says Work exists as surely as it says Projects does, so the folders above
+// one are named whether or not anything else mentioned them.
+function ancestorsOf(path) {
+    var parts = String(path).split("/")
+    var out = []
+    for (var i = 1; i < parts.length; ++i)
+        out.push(parts.slice(0, i).join("/"))
+    return out
+}
+
+// Paths in the order a tree is read in, a parent before what is under it.
+// Compared step by step rather than whole, or a name carrying a character
+// below the separator - Work-notes against Work/Notes - would come between
+// a folder and its own children.
+function comparePaths(a, b) {
+    var left = String(a).split("/")
+    var right = String(b).split("/")
+    for (var i = 0; i < left.length && i < right.length; ++i) {
+        var step = compareNames(left[i], right[i])
+        if (step !== 0)
+            return step
+    }
+    return left.length - right.length
+}
+
+function compareNames(a, b) {
+    var left = a.toLowerCase()
+    var right = b.toLowerCase()
+    if (left === right)
+        return 0
+    return left < right ? -1 : 1
+}
+
 // A name typed into a tag field as the server would hold it: the spelling
 // out is undone, a step that says nothing is dropped, and a trailing slash
 // names no tag of its own.

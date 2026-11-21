@@ -110,44 +110,16 @@ Page {
 
         }
 
-        delegate: ListItem {
-            id: item
-
-            readonly property bool selected: app.notes.filterKind === "category" && app.notes.filterCategory === name
-
-            contentHeight: Theme.itemSizeSmall
-            onClicked: page.selectCategory(name)
-
-            Label {
-                truncationMode: TruncationMode.Fade
-                color: item.selected || item.highlighted ? Theme.highlightColor : Theme.primaryColor
-                text: app.notes.categoryLabel(name)
-
-                anchors {
-                    left: parent.left
-                    leftMargin: Theme.horizontalPageMargin
-                    right: countLabel.left
-                    rightMargin: Theme.paddingMedium
-                    verticalCenter: parent.verticalCenter
-                }
-
-            }
-
-            Label {
-                id: countLabel
-
-                color: Theme.secondaryColor
-                font.pixelSize: Theme.fontSizeSmall
-                text: count
-
-                anchors {
-                    right: parent.right
-                    rightMargin: Theme.horizontalPageMargin
-                    verticalCenter: parent.verticalCenter
-                }
-
-            }
-
+        // The folders stand as a tree, each named by its own last step and
+        // set in under the one it lies in, so a nested folder is read as the
+        // place it is rather than as a path.
+        delegate: FilterItem {
+            width: listView.width
+            name: app.notes.leafLabel(model.name)
+            count: model.count
+            depth: model.depth
+            selected: app.notes.filterKind === "category" && app.notes.filterCategory === model.name
+            onClicked: page.selectCategory(model.name)
         }
 
         // The tags of the note folder stand under the categories rather than

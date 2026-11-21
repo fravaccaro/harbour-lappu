@@ -78,6 +78,13 @@ public:
     // Lets go of every tag the device holds, for an account being left.
     void clearTags();
 
+    // The folders below the note folder as the server last listed them, the
+    // empty ones included. They are kept rather than worked out from the
+    // notes, which is the one thing that cannot name a folder holding none.
+    void applyFolders(const QStringList &paths);
+    QStringList folders() const;
+    void clearFolders();
+
 private:
     bool migrate();
     bool createTagTables();

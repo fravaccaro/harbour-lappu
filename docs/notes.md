@@ -24,9 +24,13 @@ Swipe left from the notes for **Views**, the ways the notes are narrowed down. F
 * **All** - every note
 * **Favorites** - the notes marked with a star
 * **Uncategorized** - the notes that belong to no category
-* One entry per category the notes actually use, with the number of notes in it
+* One entry per category, with the number of notes in it
 
-Each entry carries its own count. The categories are read from the notes rather than kept separately, so a category exists for as long as a note names it and disappears when the last note leaves it. A category whose name has slashes in it - Nextcloud writes nested categories that way - is shown with the separator spelled out.
+A category is a folder of the note folder on the server, and the categories are drawn as the tree they are: a folder inside another is listed under it, set in from the edge and named by its own last part rather than by its whole path. A folder you have notes in puts the folders above it on the list too, even where those hold no note themselves.
+
+Each entry carries its own count, counted on the phone. Choosing a folder shows the notes that are **directly in it**; the notes of the folders under it have their own entries.
+
+Which folders there are is read from the notes, so one exists for as long as a note names it. On a server with the **QOwnNotes** app installed, the folders are asked for as well, and then a folder holding no note at all is a view like any other - the place to put the next note, rather than something you have to type the name of.
 
 Choosing a view takes you back to the notes with the title at the top changed to match. Creating a note from inside a category gives the new note that category to start with. Tags make a fifth kind of view on a server that has them, and are listed under the categories on the same page.
 

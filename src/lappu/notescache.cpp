@@ -74,6 +74,14 @@ QStringList tagTableSql()
     return statements;
 }
 
+// The folders below the note folder are the server's as well, and are
+// replaced whole by every read. Only the path is kept: a folder is counted
+// by the notes this device holds, and one holding none is a count of zero.
+QString folderTableSql()
+{
+    return QStringLiteral("CREATE TABLE IF NOT EXISTS folders (path TEXT PRIMARY KEY)");
+}
+
 // A tag path cannot hold a newline, the server naming a tag on one line, so
 // the paths owed on a note are kept as the lines of one field.
 QString joinPaths(const QStringList &paths)
@@ -131,6 +139,9 @@ bool NotesCache::migrate()
         return false;
 
     if (!createTagTables())
+        return false;
+
+    if (!query.exec(folderTableSql()))
         return false;
 
     // A table left by a build from before the queue has no room for it. The
@@ -439,6 +450,49 @@ QVector<NoteTag> NotesCache::tags() const
     }
 
     return tags;
+}
+
+// The listing the server last gave, in its place: a folder it no longer has
+// is one no view should offer.
+void NotesCache::applyFolders(const QStringList &paths)
+{
+    if (!isOpen())
+        return;
+
+    m_db.transaction();
+    QSqlQuery query(m_db);
+    query.exec(QStringLiteral("DELETE FROM folders"));
+    query.prepare(QStringLiteral("INSERT OR REPLACE INTO folders (path) VALUES (?)"));
+    for (int i = 0; i < paths.size(); ++i) {
+        query.addBindValue(paths.at(i));
+        query.exec();
+    }
+    m_db.commit();
+}
+
+QStringList NotesCache::folders() const
+{
+    QStringList paths;
+    if (!isOpen())
+        return paths;
+
+    QSqlQuery query(m_db);
+    if (!query.exec(QStringLiteral("SELECT path FROM folders")))
+        return paths;
+
+    while (query.next())
+        paths.append(query.value(0).toString());
+
+    return paths;
+}
+
+void NotesCache::clearFolders()
+{
+    if (!isOpen())
+        return;
+
+    QSqlQuery query(m_db);
+    query.exec(QStringLiteral("DELETE FROM folders"));
 }
 
 QString NotesCache::tagEtag() const

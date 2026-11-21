@@ -87,6 +87,23 @@ void collectTags(const QJsonArray &nodes, const QString &parentPath, QVector<Not
     }
 }
 
+// The folder tree flattened onto one path per folder, in the order the
+// server listed it, a parent standing before the folders under it. The root
+// node names the note folder itself, which is no category, so only what is
+// under it is taken.
+void collectFolders(const QJsonArray &nodes, QStringList *paths)
+{
+    for (int i = 0; i < nodes.size(); ++i) {
+        const QJsonObject node = nodes.at(i).toObject();
+        const QString path = node.value(QStringLiteral("path")).toString();
+        if (path.isEmpty())
+            continue;
+
+        paths->append(path);
+        collectFolders(node.value(QStringLiteral("children")).toArray(), paths);
+    }
+}
+
 // A link the server could not place on a note of its own names a file this
 // device knows nothing about, and a stale one belongs to a note that is gone:
 // neither says anything about the notes here.
@@ -177,16 +194,20 @@ QownNotesApi::QownNotesApi(QObject *parent)
     , m_tagRequest(NoTagRequest)
     , m_tagNote(0)
     , m_trashRequest(NoTrashRequest)
+    , m_folderRequest(false)
 {
     m_http.setUserAgent(QStringLiteral("Lappu"));
     m_tagHttp.setUserAgent(QStringLiteral("Lappu"));
     m_trashHttp.setUserAgent(QStringLiteral("Lappu"));
+    m_folderHttp.setUserAgent(QStringLiteral("Lappu"));
     connect(&m_http, &HttpClient::finished, this, &QownNotesApi::onFinished);
     connect(&m_http, &HttpClient::failed, this, &QownNotesApi::onFailed);
     connect(&m_tagHttp, &HttpClient::finished, this, &QownNotesApi::onTagsFinished);
     connect(&m_tagHttp, &HttpClient::failed, this, &QownNotesApi::onTagsFailed);
     connect(&m_trashHttp, &HttpClient::finished, this, &QownNotesApi::onTrashFinished);
     connect(&m_trashHttp, &HttpClient::failed, this, &QownNotesApi::onTrashFailed);
+    connect(&m_folderHttp, &HttpClient::finished, this, &QownNotesApi::onFoldersFinished);
+    connect(&m_folderHttp, &HttpClient::failed, this, &QownNotesApi::onFoldersFailed);
 }
 
 QString QownNotesApi::defaultApiBase()
@@ -204,6 +225,7 @@ void QownNotesApi::setCredentials(const QString &user, const QString &password)
     m_http.setBasicAuth(user, password);
     m_tagHttp.setBasicAuth(user, password);
     m_trashHttp.setBasicAuth(user, password);
+    m_folderHttp.setBasicAuth(user, password);
 }
 
 void QownNotesApi::setIgnoreSslErrors(bool ignore)
@@ -211,6 +233,7 @@ void QownNotesApi::setIgnoreSslErrors(bool ignore)
     m_http.setIgnoreSslErrors(ignore);
     m_tagHttp.setIgnoreSslErrors(ignore);
     m_trashHttp.setIgnoreSslErrors(ignore);
+    m_folderHttp.setIgnoreSslErrors(ignore);
 }
 
 void QownNotesApi::probe()
@@ -234,7 +257,7 @@ void QownNotesApi::probe()
 }
 
 // The base goes with the probe: an account signed out of is a server nothing
-// more is asked of, tags and trash included.
+// more is asked of, tags, trash and folders included.
 void QownNotesApi::forget()
 {
     m_probing = false;
@@ -242,6 +265,7 @@ void QownNotesApi::forget()
     m_tagRequest = NoTagRequest;
     m_tagNote = 0;
     m_trashRequest = NoTrashRequest;
+    m_folderRequest = false;
 }
 
 // A server that answers anything else has not said the app is there, and
@@ -478,4 +502,41 @@ void QownNotesApi::reportTrashStatus(int status)
     }
 
     emit trashFailed(trashStatusError(status));
+}
+
+void QownNotesApi::fetchSubfolders()
+{
+    if (m_apiBase.isEmpty() || m_folderRequest)
+        return;
+
+    m_folderRequest = true;
+    HttpClient::Headers headers;
+    headers.append(qMakePair(QByteArray("Accept"), QByteArray("application/json")));
+    m_folderHttp.send("GET", QUrl(m_server + m_apiBase + QStringLiteral("subfolders")),
+                      QByteArray(), headers);
+}
+
+// A folder read is answered for only where it worked. Nothing the user asked
+// for waits on it - the categories of the notes are drawn either way - so a
+// server that would not list its folders is left to the notes sync to report.
+void QownNotesApi::onFoldersFinished(int status, const QByteArray &body)
+{
+    m_folderRequest = false;
+    if (status == 401) {
+        emit unauthorized(NotesApi::passwordRefusedError());
+        return;
+    }
+
+    if (status < 200 || status >= 300)
+        return;
+
+    QStringList paths;
+    collectFolders(QJsonDocument::fromJson(body).object()
+                   .value(QStringLiteral("children")).toArray(), &paths);
+    emit foldersReady(paths);
+}
+
+void QownNotesApi::onFoldersFailed(const QString &)
+{
+    m_folderRequest = false;
 }

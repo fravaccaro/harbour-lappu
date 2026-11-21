@@ -16,8 +16,8 @@ nav_order: 1
 | `src/lappu/loginflow.*` | Nextcloud login flow v2: ask for a login page, then poll until the server hands over an app password or twenty minutes pass |
 | `src/lappu/httpclient.*` | `QNetworkAccessManager` wrapper: basic auth, custom methods, TLS preference |
 | `src/lappu/notesapi.*` | Nextcloud Notes API v1 client, under the path the server serves that API at |
-| `src/lappu/qownnotesapi.*` | QOwnNotes client: the request that says what the server carries, the tags of the note folder and its trash |
-| `src/lappu/notescache.*` | SQLite copy of the notes and of the tags, in `notes.sqlite` |
+| `src/lappu/qownnotesapi.*` | QOwnNotes client: the request that says what the server carries, the folders of the note folder, its tags and its trash |
+| `src/lappu/notescache.*` | SQLite copy of the notes, of the tags and of the folder paths, in `notes.sqlite` |
 | `src/lappu/notesmodel.*` | Holds the notes of the last pull, and hands them to QML as plain rows through `notes()` |
 | `src/lappu/session.*` | QML-facing controller: login, sync, save, favourite, delete |
 | `src/lappu/url.*` | Server URL normalisation |
@@ -25,10 +25,10 @@ nav_order: 1
 | `src/lappu/types.h` | Plain data structs (`LocalNote`, `NoteTag`, `TagLink`, `ServerApps`, `TrashedNote`) |
 | `qml/pages/*` | Silica UI |
 | `qml/pages/ConflictPage.qml` | The two versions of a note that changed on both sides, and the three answers to it |
-| `qml/pages/ViewsPage.qml` | The views the notes are narrowed by: all, favourites and uncategorized, the way into the trash, the categories, and under them the tags of the note folder with how many notes carry each |
+| `qml/pages/ViewsPage.qml` | The views the notes are narrowed by: all, favourites and uncategorized, the way into the trash, the categories as the folder tree they are, and under them the tags of the note folder with how many notes carry each |
 | `qml/pages/TrashPage.qml` | The notes the server is holding in its trash, and the way to put one back |
 | `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category, tag and cover state |
-| `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, the subset of HTML a Silica `Label` draws, and how a slashed path is read |
+| `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, the subset of HTML a Silica `Label` draws, and how a slashed path is read, named, nested and sorted |
 | `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar and one stop of it, the nudge that tells a flickable it scrolls, the edit history, the note body, a Markdown table, a code block, one side of a conflict, the receiver for what other apps share, the tag chips and the field that frames them, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
 | `qml/cover/*` | The cover page and its glyph |
 | `qml/icons/*` | The icons the theme does not carry |
@@ -122,7 +122,7 @@ Neither waiter sets `m_busy`, which is why a probe cannot leave the app looking 
 
 `forget()` disowns a probe rather than stopping it - nothing in the app aborts a reply but the watchdog - so a request it let go of is still travelling when the next sign-in starts one of its own. `takeReply()` counts the requests that have not been answered and takes only the last of them, or the old server's answer would decide where the new server's notes are asked for. It is the same rule `m_inFlight` keeps for a write: an answer is taken against what was sent, not against whatever is current when it lands.
 
-The probe hands all of that over as one `ServerApps`: whether the app is there, the base it serves its APIs under, and whether the tags and the trash can be used. One struct rather than three arguments is what keeps a capability added later from touching the signal, `onProbed()` and every connection in between. The rest of the app - the versions, under the same `api_base` - is not used yet. Those are requests of their own rather than a path, and `QownNotesApi` is where they will go, beside the tags and the trash.
+The probe hands all of that over as one `ServerApps`: whether the app is there, the base it serves its APIs under, and whether the tags and the trash can be used. The folders need no flag of their own - a server carrying the app has them to list. One struct rather than three arguments is what keeps a capability added later from touching the signal, `onProbed()` and every connection in between. The rest of the app - the versions, under the same `api_base` - is not used yet. Those are requests of their own rather than a path, and `QownNotesApi` is where they will go, beside the tags and the trash.
 
 ## Tags
 
@@ -141,6 +141,18 @@ Tags are not in `LocalNote` and not in `sameNote()`, so a tag change never marks
 A write is answered three ways. `noteTagsSet()` reads the tags again rather than guessing: a path the server had never heard of has just become a tag with an id, and the links are the server's to say. What was owed is **not** let go of there but in `settleOwedTags()`, once the links that confirm it have arrived - it already says exactly what the server has been told, and clearing it first would put the note's old tags back for the length of a request, so a tag just added would be seen to vanish and return. The row is kept where the user tagged the note again while the answer travelled, since the links know nothing of that change and `pushOwedTags()` sends it next. `noteTagsStale()` is the `412` of a database that moved under the change; what is owed stays owed, the tags are read again, and the change goes out against the version that arrives - once, after which it waits for the next sync rather than chasing a file that is moving faster than the app can answer. Anything else reaches `tagsFailed()`, which is said through `notice()` only where a write was in flight: a read that went wrong is the notes sync's business to report.
 
 `logout()` drops the tables with the flag, a tag belonging to the note folder of the account being left.
+
+## Subfolders
+
+A note's category *is* its subfolder path, and the Notes API can only name a folder that has a note in it. `GET subfolders` is the one request that can name an empty one, so it is asked for behind `Lappu.qownNotes` alone - subfolders are read from the files of the note folder, needing neither `notes.sqlite` nor a second Nextcloud app, which is what sets them apart from the tags and the trash.
+
+The answer is the root node of a tree; `collectFolders()` flattens its `children` depth-first onto one path per folder and drops the root, which names the note folder itself and is no category. **Only the path is taken.** The node also carries `noteCount` and `noteCountRecursive`, but the counts stay local, worked out from `allNotes` as they always were: two sources for one number would disagree the moment a note is moved with no server in reach, and a folder with no note is simply a count of zero. The request guards itself with `m_folderRequest` and travels on a fourth `HttpClient`, so a folder read and a tag read cannot be taken for one another's answer.
+
+A read that fails says nothing at all - there is no `foldersFailed()`. Nothing the user asked for waits on it, the categories of the notes being drawn either way, and the notes sync reports the server's own troubles. `401` is the one exception, since being sent back to sign in needs a reason.
+
+`NotesCache` keeps the paths in a `folders` table, replaced whole by each read and dropped by `logout()`. They are kept rather than held in memory the way the trash is: an empty folder is a view the user chose, and it should still be there after a restart with no server in reach. `Session::refreshFolders()` runs from `onProbed()` and `onNotesReady()`, beside `refreshTags()`, and `onFoldersReady()` writes them and says `foldersChanged()`.
+
+On the QML side `NotesStore.serverFolders` holds the paths, taken by `ingestFolders()`. `namedCategories()` is now the union of three things: the categories the notes name, the **ancestors** of those - `Work/Projects` means `Work` exists on disk too - and the server's folders. Ancestors are filled in whether or not the app is there, since an indented child with no parent above it reads as a mistake. The rows gain `depth`, and `NoteFormat.comparePaths()` sorts them step by step rather than as whole strings, or `Work-notes` would come between `Work` and `Work/Projects`, the hyphen sorting below the separator. `FilterItem` takes the `depth` as an indent and is now what `ViewsPage` draws its categories with - the page had grown a hand-written copy of that row - and `CategoryPickerPage` draws the same tree. The filter itself is untouched: `filterCategory` is the whole path and is matched exactly, so a folder shows the notes directly in it.
 
 ## The trash
 

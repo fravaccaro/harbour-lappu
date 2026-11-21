@@ -56,8 +56,9 @@ Dialog {
 
                 FilterItem {
                     width: column.width
-                    name: app.notes.categoryLabel(model.name)
+                    name: app.notes.leafLabel(model.name)
                     count: model.count
+                    depth: model.depth
                     selected: page.category === model.name
                     onClicked: page.choose(model.name)
                 }

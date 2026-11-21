@@ -57,6 +57,11 @@ public:
     // lists it. Its tag links come back with it.
     void restoreTrashed(const QString &originalLocation, qint64 deleted);
 
+    // The folders below the note folder, which only this app can name: the
+    // Notes API knows a folder by the notes in it, so one holding none is
+    // invisible there.
+    void fetchSubfolders();
+
 signals:
     // What the server carries. Every answer but the one that names the app,
     // an unreachable server included, is reported as carrying nothing: a
@@ -83,6 +88,11 @@ signals:
     // under none, where it was restored somewhere that is no note at all.
     void trashRestored(qint64 noteId);
     void trashFailed(const QString &error);
+    // Every folder below the note folder, as the path a note's category is
+    // written with. A read that goes wrong is not reported: the folders are
+    // read again with the next pull, and the notes sync says whatever is to
+    // be said about the server.
+    void foldersReady(const QStringList &paths);
 
 private:
     // What the tag client last asked for, so its answer is read as the thing
@@ -122,13 +132,17 @@ private:
     void onTrashFinished(int status, const QByteArray &body);
     void onTrashFailed(const QString &error);
     void reportTrashStatus(int status);
+    void onFoldersFinished(int status, const QByteArray &body);
+    void onFoldersFailed(const QString &error);
 
     HttpClient m_http;
     // The tags travel on a client of their own, so a probe and a tag request
-    // cannot be taken for one another's answer. The trash has one for the
-    // same reason: the user may open it while the tags are being read.
+    // cannot be taken for one another's answer. The trash and the folders
+    // have one each for the same reason: a read of one is sent while a read
+    // of another may still be travelling.
     HttpClient m_tagHttp;
     HttpClient m_trashHttp;
+    HttpClient m_folderHttp;
     QString m_server;
     // Where the app said it serves its APIs, and so where the tags are asked
     // for. Empty until a probe answers for the app, and again once it is
@@ -141,6 +155,9 @@ private:
     // The note whose tags are being written, or 0 while nothing is.
     qint64 m_tagNote;
     TrashRequest m_trashRequest;
+    // Whether a folder read is on its way. One is asked for at a time, and
+    // there is only the one kind of folder request to tell apart.
+    bool m_folderRequest;
 };
 
 #endif

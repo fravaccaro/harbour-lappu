@@ -212,6 +212,7 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(&m_qown, &QownNotesApi::trashReady, this, &Session::onTrashReady);
     connect(&m_qown, &QownNotesApi::trashRestored, this, &Session::onTrashRestored);
     connect(&m_qown, &QownNotesApi::trashFailed, this, &Session::onTrashFailed);
+    connect(&m_qown, &QownNotesApi::foldersReady, this, &Session::onFoldersReady);
     connect(m_notes, &NotesModel::changed, this, &Session::notesChanged);
     connect(m_config, &Config::readyChanged, this, &Session::readyChanged);
     connect(m_config, &Config::configuredChanged, this, &Session::onConfiguredChanged);
@@ -401,6 +402,7 @@ void Session::onProbed(const ServerApps &apps)
     m_probeAnswered = true;
     flushProbeWaiters();
     refreshTags();
+    refreshFolders();
 }
 
 void Session::setTagsAvailable(bool available)
@@ -546,6 +548,9 @@ void Session::logout()
     m_tagRetried = false;
     m_tagSettled = 0;
     emit tagsChanged();
+    // The folders are that note folder's, and there is no longer one.
+    m_cache.clearFolders();
+    emit foldersChanged();
     // The same goes for the trash: it was a listing of that server's, and a
     // restore still travelling is one nobody asked for any more.
     setTrashAvailable(false);
@@ -691,8 +696,10 @@ void Session::onNotesReady(const QVector<LocalNote> &notes)
 
     flushOwed();
     // The tags live beside the notes rather than in them, so a pull of the
-    // notes is not one of the tags. They follow it on a client of their own.
+    // notes is not one of the tags. They follow it on a client of their own,
+    // as the folders do: a pull names no folder that holds no note.
     refreshTags();
+    refreshFolders();
 }
 
 void Session::onCreated(qint64 localId, const LocalNote &note)
@@ -1177,6 +1184,29 @@ void Session::setNoteTags(int noteId, const QStringList &paths)
     m_cache.setOwedTags(note.id, wanted);
     emit tagsChanged();
     pushOwedTags();
+}
+
+// A folder is asked about wherever the app is, tags or no tags: the tree is
+// read from the files of the note folder rather than from its database. The
+// request guards itself against a second one, so there is nothing to keep
+// here about what is in flight.
+void Session::refreshFolders()
+{
+    if (!m_qownNotes)
+        return;
+
+    m_qown.fetchSubfolders();
+}
+
+void Session::onFoldersReady(const QStringList &paths)
+{
+    m_cache.applyFolders(paths);
+    emit foldersChanged();
+}
+
+QStringList Session::folders() const
+{
+    return m_cache.folders();
 }
 
 // The trash is read when it is opened rather than kept with the notes: it is

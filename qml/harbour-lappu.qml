@@ -188,10 +188,11 @@ ApplicationWindow {
 
         // The session fills its model before the window loads, so the notes
         // from the last pull are already there to take, and so are the tags
-        // the last read of them left on the device.
+        // and the folders the last read of them left on the device.
         Component.onCompleted: {
             ingest(Notes.notes());
             ingestTags();
+            ingestFolders();
         }
     }
 
@@ -248,6 +249,7 @@ ApplicationWindow {
         }
         onNotesChanged: app.notes.ingest(Notes.notes())
         onTagsChanged: app.notes.ingestTags()
+        onFoldersChanged: app.notes.ingestFolders()
         onBusyChanged: app.notes.busy = Lappu.busy
         onErrorMessageChanged: app.showToast(Lappu.errorMessage)
         onNotice: app.showToast(text)
