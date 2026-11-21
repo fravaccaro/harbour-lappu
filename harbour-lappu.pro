@@ -100,6 +100,7 @@ DISTFILES += \
     qml/pages/SettingsPage.qml \
     qml/pages/StartPage.qml \
     qml/pages/TranslationsPage.qml \
+    qml/pages/TrashPage.qml \
     qml/pages/ViewsPage.qml \
     qml/pages/WebLoginPage.qml \
     translations/harbour-lappu.ts

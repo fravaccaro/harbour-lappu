@@ -18,6 +18,29 @@ struct NoteTag
     }
 };
 
+// What the server carries, as its capabilities answered for it. The whole of
+// the answer travels together because every part of it is settled by the one
+// request, and a feature nothing has confirmed is left out of the way: an
+// unreachable server is a server carrying none of this.
+struct ServerApps
+{
+    bool present;
+    // Where the app serves its APIs. Empty unless the app is there.
+    QString apiBase;
+    // Whether the tags of the note folder can be read at all.
+    bool tags;
+    // Whether Nextcloud's Deleted files app is on for this user, which is
+    // what gives the note folder a trash to look in.
+    bool trash;
+
+    ServerApps()
+        : present(false)
+        , tags(false)
+        , trash(false)
+    {
+    }
+};
+
 // One note carrying one tag. A link the server could not place on a note of
 // its own is left out, there being no note here for it to belong to.
 struct TagLink
@@ -28,6 +51,24 @@ struct TagLink
     TagLink()
         : tagId(0)
         , noteId(0)
+    {
+    }
+};
+
+// One note the server is holding in its trash. It is named by where it was
+// and when it went, which is the pair a restore is asked for by: a deleted
+// note has no id of its own until it is a note again.
+struct TrashedNote
+{
+    QString title;
+    QString fileName;
+    QString subFolderPath;
+    QString originalLocation;
+    // Seconds since the epoch, as the server reports the deletion.
+    qint64 deleted;
+
+    TrashedNote()
+        : deleted(0)
     {
     }
 };

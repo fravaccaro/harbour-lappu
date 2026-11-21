@@ -4,6 +4,8 @@
 
     The row carries no model knowledge: the caller supplies the name, the
     count and whether the view is the selected one, and reacts to \c clicked.
+    A view whose size is not known until it is opened sets \c countVisible
+    false and shows its name alone.
 
     \qml
     FilterItem {
@@ -22,6 +24,7 @@ ListItem {
 
     property string name
     property int count: 0
+    property bool countVisible: true
     property bool selected: false
 
     contentHeight: Theme.itemSizeSmall
@@ -46,7 +49,9 @@ ListItem {
 
         color: Theme.secondaryColor
         font.pixelSize: Theme.fontSizeSmall
-        text: root.count
+        // Emptied rather than hidden, so a row that counts nothing gives the
+        // whole width to its name instead of keeping the space.
+        text: root.countVisible ? root.count : ""
 
         anchors {
             right: parent.right

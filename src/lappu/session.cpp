@@ -142,6 +142,18 @@ QVariantMap tagRow(const QString &path, int count)
     return map;
 }
 
+// A deleted note as the pages read it. Where it was is carried as well as
+// shown: it is half of what a restore names the note by.
+QVariantMap trashedRow(const TrashedNote &note)
+{
+    QVariantMap map;
+    map.insert(QStringLiteral("title"), note.title);
+    map.insert(QStringLiteral("originalLocation"), note.originalLocation);
+    map.insert(QStringLiteral("subFolderPath"), note.subFolderPath);
+    map.insert(QStringLiteral("deleted"), note.deleted);
+    return map;
+}
+
 QVariantMap lockedRow(const LocalNote &note, int status)
 {
     QVariantMap map;
@@ -171,6 +183,8 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     , m_tagNoteInFlight(0)
     , m_tagRetried(false)
     , m_tagSettled(0)
+    , m_trashAvailable(false)
+    , m_trashBusy(false)
     , m_probeAnswered(false)
     , m_syncWhenProbed(false)
     , m_owedWhileProbing(false)
@@ -195,6 +209,9 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(&m_qown, &QownNotesApi::noteTagsSet, this, &Session::onNoteTagsSet);
     connect(&m_qown, &QownNotesApi::noteTagsStale, this, &Session::onNoteTagsStale);
     connect(&m_qown, &QownNotesApi::tagsFailed, this, &Session::onTagsFailed);
+    connect(&m_qown, &QownNotesApi::trashReady, this, &Session::onTrashReady);
+    connect(&m_qown, &QownNotesApi::trashRestored, this, &Session::onTrashRestored);
+    connect(&m_qown, &QownNotesApi::trashFailed, this, &Session::onTrashFailed);
     connect(m_notes, &NotesModel::changed, this, &Session::notesChanged);
     connect(m_config, &Config::readyChanged, this, &Session::readyChanged);
     connect(m_config, &Config::configuredChanged, this, &Session::onConfiguredChanged);
@@ -375,11 +392,12 @@ void Session::probeServer()
 // A server carrying the QOwnNotes app serves the same Notes API under the
 // path it publishes, so the notes go there and nothing else about them
 // changes. Without the app they go to the Notes app's own path.
-void Session::onProbed(bool present, const QString &apiBase, bool tagsAvailable)
+void Session::onProbed(const ServerApps &apps)
 {
-    setQownNotes(present);
-    setTagsAvailable(present && tagsAvailable);
-    m_api.setNotesRoot(present ? apiBase : QString());
+    setQownNotes(apps.present);
+    setTagsAvailable(apps.present && apps.tags);
+    setTrashAvailable(apps.present && apps.trash);
+    m_api.setNotesRoot(apps.present ? apps.apiBase : QString());
     m_probeAnswered = true;
     flushProbeWaiters();
     refreshTags();
@@ -393,6 +411,31 @@ void Session::setTagsAvailable(bool available)
     m_tagsAvailable = available;
     emit tagsAvailableChanged();
     emit tagsChanged();
+}
+
+// A server with no trash has no listing either, so the one last read goes
+// with the flag rather than outliving the server it came from.
+void Session::setTrashAvailable(bool available)
+{
+    if (available == m_trashAvailable)
+        return;
+
+    m_trashAvailable = available;
+    if (!available && !m_trash.isEmpty()) {
+        m_trash.clear();
+        emit trashChanged();
+    }
+
+    emit trashAvailableChanged();
+}
+
+void Session::setTrashBusy(bool busy)
+{
+    if (busy == m_trashBusy)
+        return;
+
+    m_trashBusy = busy;
+    emit trashBusyChanged();
 }
 
 // A sync carries what is owed with it, so one that was waiting answers for a
@@ -503,6 +546,11 @@ void Session::logout()
     m_tagRetried = false;
     m_tagSettled = 0;
     emit tagsChanged();
+    // The same goes for the trash: it was a listing of that server's, and a
+    // restore still travelling is one nobody asked for any more.
+    setTrashAvailable(false);
+    setTrashBusy(false);
+    m_restoring = TrashedNote();
     m_api.setNotesRoot(QString());
     m_probeAnswered = false;
     m_syncWhenProbed = false;
@@ -1129,6 +1177,89 @@ void Session::setNoteTags(int noteId, const QStringList &paths)
     m_cache.setOwedTags(note.id, wanted);
     emit tagsChanged();
     pushOwedTags();
+}
+
+// The trash is read when it is opened rather than kept with the notes: it is
+// a listing of the server's, and one read an hour ago would offer to put
+// back a note somebody has emptied since.
+void Session::loadTrash()
+{
+    if (!m_trashAvailable || m_trashBusy)
+        return;
+
+    setTrashBusy(true);
+    m_qown.fetchTrash();
+}
+
+QVariantList Session::trashedNotes() const
+{
+    QVariantList rows;
+    for (int i = 0; i < m_trash.size(); ++i)
+        rows.append(trashedRow(m_trash.at(i)));
+
+    return rows;
+}
+
+// Where the note was and when it was deleted are what the server names a
+// deleted file by, the two of them together: a file deleted twice is in the
+// trash twice, under the same original place.
+void Session::restoreNote(const QString &originalLocation, double deleted)
+{
+    if (!m_trashAvailable || m_trashBusy || originalLocation.isEmpty())
+        return;
+
+    m_restoring.originalLocation = originalLocation;
+    m_restoring.deleted = static_cast<qint64>(deleted);
+    setTrashBusy(true);
+    m_qown.restoreTrashed(m_restoring.originalLocation, m_restoring.deleted);
+}
+
+void Session::onTrashReady(const QVector<TrashedNote> &notes)
+{
+    m_trash = notes;
+    setTrashBusy(false);
+    emit trashChanged();
+}
+
+// The note is the folder's again, so it is pulled like any other: the server
+// names it, and the list here is only told that its row has gone.
+void Session::onTrashRestored(qint64)
+{
+    setTrashBusy(false);
+    dropRestored();
+    emit notice(tr("The note was put back."));
+    if (m_busy)
+        m_pullAfter = true;
+    else
+        fetchNotes();
+}
+
+void Session::dropRestored()
+{
+    if (m_restoring.originalLocation.isEmpty())
+        return;
+
+    for (int i = 0; i < m_trash.size(); ++i) {
+        if (m_trash.at(i).originalLocation != m_restoring.originalLocation
+                || m_trash.at(i).deleted != m_restoring.deleted) {
+            continue;
+        }
+
+        m_trash.remove(i);
+        break;
+    }
+
+    m_restoring = TrashedNote();
+    emit trashChanged();
+}
+
+// Unlike a read of the notes, the trash is always opened by the user asking
+// for it, so whatever went wrong with it is worth saying.
+void Session::onTrashFailed(const QString &error)
+{
+    m_restoring = TrashedNote();
+    setTrashBusy(false);
+    emit notice(error);
 }
 
 // Only a note the server knows can be put back the way the server holds it,

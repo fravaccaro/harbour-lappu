@@ -820,6 +820,26 @@
         <source>The server would not change the tags.</source>
         <translation>Il server non ha accettato la modifica delle etichette.</translation>
     </message>
+    <message>
+        <source>The server keeps no trash for the notes.</source>
+        <translation>Il server non tiene un cestino per le note.</translation>
+    </message>
+    <message>
+        <source>The note folder is read-only, so nothing can be put back into it.</source>
+        <translation>La cartella delle note è di sola lettura, quindi non ci si può rimettere nulla.</translation>
+    </message>
+    <message>
+        <source>The server no longer has that deleted note.</source>
+        <translation>Il server non ha più quella nota eliminata.</translation>
+    </message>
+    <message>
+        <source>The server is taking too many restores. Try again shortly.</source>
+        <translation>Il server sta ricevendo troppi ripristini. Riprova tra poco.</translation>
+    </message>
+    <message>
+        <source>The server would not open its trash.</source>
+        <translation>Il server non ha aperto il suo cestino.</translation>
+    </message>
 </context>
 <context>
     <name>Session</name>
@@ -838,6 +858,10 @@
     <message>
         <source>The tags of the note folder are read-only on the server.</source>
         <translation>Le etichette della cartella delle note sono di sola lettura sul server.</translation>
+    </message>
+    <message>
+        <source>The note was put back.</source>
+        <translation>La nota è stata ripristinata.</translation>
     </message>
 </context>
 <context>
@@ -1010,6 +1034,41 @@
     </message>
 </context>
 <context>
+    <name>TrashPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation>Aggiorna</translation>
+    </message>
+    <message>
+        <source>Trash</source>
+        <translation>Cestino</translation>
+    </message>
+    <message>
+        <source>These notes were deleted and are being kept by Nextcloud. Putting one back returns it to the folder it was deleted from, with its tags.</source>
+        <translation>Queste note sono state eliminate e Nextcloud le sta conservando. Ripristinandone una, torna nella cartella da cui è stata eliminata, con le sue etichette.</translation>
+    </message>
+    <message>
+        <source>Deleted %1</source>
+        <translation>Eliminata %1</translation>
+    </message>
+    <message>
+        <source>In %1</source>
+        <translation>In %1</translation>
+    </message>
+    <message>
+        <source>Restore</source>
+        <translation>Ripristina</translation>
+    </message>
+    <message>
+        <source>The trash is empty</source>
+        <translation>Il cestino è vuoto</translation>
+    </message>
+    <message>
+        <source>A note deleted from the folder is kept here until Nextcloud lets go of it.</source>
+        <translation>Una nota eliminata dalla cartella resta qui finché Nextcloud non la lascia andare.</translation>
+    </message>
+</context>
+<context>
     <name>ViewsPage</name>
     <message>
         <source>About</source>
@@ -1046,6 +1105,10 @@
     <message>
         <source>Views</source>
         <translation>Viste</translation>
+    </message>
+    <message>
+        <source>Trash</source>
+        <translation>Cestino</translation>
     </message>
 </context>
 <context>

@@ -54,6 +54,20 @@ bool tagsAvailableIn(const QJsonObject &app)
             .value(QStringLiteral("available")).toBool();
 }
 
+// What the app said of itself, which is the whole of what is known about the
+// server until something is asked of it.
+ServerApps appsOf(const QJsonObject &app)
+{
+    ServerApps apps;
+    apps.present = true;
+    apps.apiBase = apiBaseOf(app);
+    apps.tags = tagsAvailableIn(app);
+    // The trash is Nextcloud's own Deleted files app, which the user may not
+    // have: without it the note folder has no trash to look in.
+    apps.trash = app.value(QStringLiteral("trash_app")).toBool();
+    return apps;
+}
+
 // The tag tree flattened onto one path per tag, the names of the branch
 // joined the way a nested category is written. The order the server sorted
 // the tree in is kept, a parent standing before the tags under it.
@@ -93,11 +107,6 @@ QVector<TagLink> linksOf(const QJsonArray &entries)
     return links;
 }
 
-QString tagEtagOf(const QByteArray &body)
-{
-    return QJsonDocument::fromJson(body).object().value(QStringLiteral("etag")).toString();
-}
-
 // What a status other than success means for the tags. The app answers 503
 // where it cannot use the database at all, which is the ordinary way a server
 // says it carries no tags, and 403 where the file is only to be read.
@@ -119,6 +128,46 @@ QString tagStatusError(int status)
     return QObject::tr("The server would not change the tags.");
 }
 
+QVector<TrashedNote> trashedNotesOf(const QJsonArray &entries)
+{
+    QVector<TrashedNote> notes;
+    for (int i = 0; i < entries.size(); ++i) {
+        const QJsonObject entry = entries.at(i).toObject();
+        TrashedNote note;
+        note.title = entry.value(QStringLiteral("title")).toString();
+        note.fileName = entry.value(QStringLiteral("fileName")).toString();
+        note.subFolderPath = entry.value(QStringLiteral("subFolderPath")).toString();
+        note.originalLocation = entry.value(QStringLiteral("originalLocation")).toString();
+        note.deleted = entry.value(QStringLiteral("deleted")).toVariant().toLongLong();
+        // Where it was is how it is put back, so one that says nothing of
+        // that is one nothing could be done with.
+        if (!note.originalLocation.isEmpty())
+            notes.append(note);
+    }
+
+    return notes;
+}
+
+// What a status other than success means for the trash. The app answers 503
+// where the Deleted files app is off, which is a server that has no trash
+// rather than one that went wrong.
+QString trashStatusError(int status)
+{
+    if (status == 503)
+        return QObject::tr("The server keeps no trash for the notes.");
+
+    if (status == 403)
+        return QObject::tr("The note folder is read-only, so nothing can be put back into it.");
+
+    if (status == 404)
+        return QObject::tr("The server no longer has that deleted note.");
+
+    if (status == 429)
+        return QObject::tr("The server is taking too many restores. Try again shortly.");
+
+    return QObject::tr("The server would not open its trash.");
+}
+
 }
 
 QownNotesApi::QownNotesApi(QObject *parent)
@@ -127,13 +176,17 @@ QownNotesApi::QownNotesApi(QObject *parent)
     , m_outstanding(0)
     , m_tagRequest(NoTagRequest)
     , m_tagNote(0)
+    , m_trashRequest(NoTrashRequest)
 {
     m_http.setUserAgent(QStringLiteral("Lappu"));
     m_tagHttp.setUserAgent(QStringLiteral("Lappu"));
+    m_trashHttp.setUserAgent(QStringLiteral("Lappu"));
     connect(&m_http, &HttpClient::finished, this, &QownNotesApi::onFinished);
     connect(&m_http, &HttpClient::failed, this, &QownNotesApi::onFailed);
     connect(&m_tagHttp, &HttpClient::finished, this, &QownNotesApi::onTagsFinished);
     connect(&m_tagHttp, &HttpClient::failed, this, &QownNotesApi::onTagsFailed);
+    connect(&m_trashHttp, &HttpClient::finished, this, &QownNotesApi::onTrashFinished);
+    connect(&m_trashHttp, &HttpClient::failed, this, &QownNotesApi::onTrashFailed);
 }
 
 QString QownNotesApi::defaultApiBase()
@@ -150,12 +203,14 @@ void QownNotesApi::setCredentials(const QString &user, const QString &password)
 {
     m_http.setBasicAuth(user, password);
     m_tagHttp.setBasicAuth(user, password);
+    m_trashHttp.setBasicAuth(user, password);
 }
 
 void QownNotesApi::setIgnoreSslErrors(bool ignore)
 {
     m_http.setIgnoreSslErrors(ignore);
     m_tagHttp.setIgnoreSslErrors(ignore);
+    m_trashHttp.setIgnoreSslErrors(ignore);
 }
 
 void QownNotesApi::probe()
@@ -179,13 +234,14 @@ void QownNotesApi::probe()
 }
 
 // The base goes with the probe: an account signed out of is a server nothing
-// more is asked of, tags included.
+// more is asked of, tags and trash included.
 void QownNotesApi::forget()
 {
     m_probing = false;
     m_apiBase.clear();
     m_tagRequest = NoTagRequest;
     m_tagNote = 0;
+    m_trashRequest = NoTrashRequest;
 }
 
 // A server that answers anything else has not said the app is there, and
@@ -215,7 +271,7 @@ void QownNotesApi::onFinished(int status, const QByteArray &body)
         return;
     }
 
-    report(true, apiBaseOf(app.toObject()), tagsAvailableIn(app.toObject()));
+    report(appsOf(app.toObject()));
 }
 
 void QownNotesApi::onFailed(const QString &)
@@ -232,16 +288,18 @@ bool QownNotesApi::takeReply()
     return m_probing && m_outstanding == 0;
 }
 
+// A server carrying nothing, which is what every answer but the one naming
+// the app comes to.
 void QownNotesApi::reportAbsent()
 {
-    report(false, QString(), false);
+    report(ServerApps());
 }
 
-void QownNotesApi::report(bool present, const QString &apiBase, bool tagsAvailable)
+void QownNotesApi::report(const ServerApps &apps)
 {
     m_probing = false;
-    m_apiBase = apiBase;
-    emit probed(present, apiBase, tagsAvailable);
+    m_apiBase = apps.apiBase;
+    emit probed(apps);
 }
 
 void QownNotesApi::fetchTags()
@@ -345,4 +403,79 @@ void QownNotesApi::reportTagStatus(int status)
     }
 
     emit tagsFailed(tagStatusError(status));
+}
+
+// The text of a deleted note is not read: nothing here shows it, and asking
+// for it would have the server open every file in the trash.
+void QownNotesApi::fetchTrash()
+{
+    sendTrashRequest(TrashList, "GET", QStringLiteral("trash?content=0"));
+}
+
+void QownNotesApi::restoreTrashed(const QString &originalLocation, qint64 deleted)
+{
+    QJsonObject body;
+    body.insert(QStringLiteral("originalLocation"), originalLocation);
+    body.insert(QStringLiteral("deleted"), QJsonValue(static_cast<double>(deleted)));
+    sendTrashRequest(TrashRestore, "POST", QStringLiteral("trash/restore"),
+                     QJsonDocument(body).toJson(QJsonDocument::Compact));
+}
+
+// A restore says so to the tags as well: a note that went to the trash left
+// its tag links behind as stale ones, and the header is what has the server
+// make them its own again rather than returning the note bare.
+void QownNotesApi::sendTrashRequest(TrashRequest request, const QByteArray &method,
+                                    const QString &path, const QByteArray &body)
+{
+    if (m_apiBase.isEmpty())
+        return;
+
+    m_trashRequest = request;
+    HttpClient::Headers headers;
+    headers.append(qMakePair(QByteArray("Accept"), QByteArray("application/json")));
+    if (!body.isEmpty())
+        headers.append(qMakePair(QByteArray("Content-Type"), QByteArray("application/json")));
+
+    if (request == TrashRestore)
+        headers.append(qMakePair(QByteArray("X-QOwnNotes-Relink-Tags"), QByteArray("1")));
+
+    m_trashHttp.send(method, QUrl(m_server + m_apiBase + path), body, headers);
+}
+
+void QownNotesApi::onTrashFinished(int status, const QByteArray &body)
+{
+    const TrashRequest asked = m_trashRequest;
+    m_trashRequest = NoTrashRequest;
+    if (status < 200 || status >= 300) {
+        reportTrashStatus(status);
+        return;
+    }
+
+    const QJsonObject answer = QJsonDocument::fromJson(body).object();
+    if (asked == TrashList) {
+        emit trashReady(trashedNotesOf(answer.value(QStringLiteral("notes")).toArray()));
+        return;
+    }
+
+    // A note restored where it is no note of the folder - an ignored place,
+    // or one the server would not list - comes back without an id. It is
+    // still out of the trash, which is what was asked for.
+    if (asked == TrashRestore)
+        emit trashRestored(answer.value(QStringLiteral("id")).toVariant().toLongLong());
+}
+
+void QownNotesApi::onTrashFailed(const QString &error)
+{
+    m_trashRequest = NoTrashRequest;
+    emit trashFailed(error);
+}
+
+void QownNotesApi::reportTrashStatus(int status)
+{
+    if (status == 401) {
+        emit unauthorized(NotesApi::passwordRefusedError());
+        return;
+    }
+
+    emit trashFailed(trashStatusError(status));
 }

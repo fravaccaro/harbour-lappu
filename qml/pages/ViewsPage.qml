@@ -92,6 +92,17 @@ Page {
                 onClicked: page.selectUncategorized()
             }
 
+            // The trash is a place of the server's rather than a view of the
+            // notes here, so it opens a page instead of narrowing the list,
+            // and says nothing of its size until it has been read.
+            FilterItem {
+                width: parent.width
+                name: qsTr("Trash")
+                countVisible: false
+                visible: Lappu.trashAvailable
+                onClicked: pageStack.push(Qt.resolvedUrl("TrashPage.qml"))
+            }
+
             SectionHeader {
                 visible: listView.count > 0
                 text: qsTr("Categories")

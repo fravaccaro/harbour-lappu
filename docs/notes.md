@@ -30,6 +30,8 @@ Each entry carries its own count. The categories are read from the notes rather 
 
 Choosing a view takes you back to the notes with the title at the top changed to match. Creating a note from inside a category gives the new note that category to start with. Tags make a fifth kind of view on a server that has them, and are listed under the categories on the same page.
 
+**Trash** appears under Uncategorized on a server that keeps one, and is a place rather than a view: it opens a page of its own instead of narrowing the notes. See [The trash](#the-trash) below.
+
 ## Tags
 
 A note belongs to one category but can carry any number of tags. Tags are a feature of the **QOwnNotes** app for Nextcloud rather than of the Notes app, so everything about them is there only on a server that carries that app and can read the tag database of the note folder. Everywhere else Lappu says nothing about tags at all.
@@ -37,6 +39,14 @@ A note belongs to one category but can carry any number of tags. Tags are a feat
 They are listed on the same page, under the categories, one entry per tag with the number of notes carrying it. Choosing one takes you back to the notes showing only those, with the title at the top changed to match, exactly as a category does.
 
 The tags are the note folder's own, the same ones QOwnNotes shows on the desktop and on Android, so a tag made in any of them is a tag here. A tag nested under another is written with slashes - `Work/Projects` - and is shown with the separator spelled out.
+
+## The trash
+
+A deleted note is not always gone: where Nextcloud keeps deleted files, the notes among them can be looked at from **Trash** on the views page. Like tags, this needs the **QOwnNotes** app, and it needs the **Deleted files** app on top of it; where either is missing there is no Trash entry at all.
+
+The page lists the deleted notes with the date each went, and the folder it was deleted from where that was not the note folder itself. It is read when you open it and nothing of it is kept on the phone, so **Refresh** in the pulley menu is how you see what somebody has deleted or emptied since.
+
+A deleted note cannot be opened - there is nothing to open it into until it is a note again - so tapping a row opens its menu. **Restore** puts it back where it was deleted from, with the tags it carried, and the notes are refreshed so that it comes home to the list. Emptying the trash is Nextcloud's own business and is not done from here.
 
 ## Searching
 

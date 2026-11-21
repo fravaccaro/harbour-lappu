@@ -184,7 +184,7 @@ Dialog {
                     // A category is a folder on the server, which is what the
                     // theme's own folder icon says without a word.
                     Icon {
-                        source: "image://theme/icon-m-folder"
+                        source: "image://theme/icon-m-file-folder"
 
                         anchors {
                             left: parent.left

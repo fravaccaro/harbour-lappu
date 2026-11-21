@@ -50,6 +50,13 @@ class Session : public QObject
     // takes both the app and a server able to open the database it keeps them
     // in. Everything about tags is drawn and asked for behind this alone.
     Q_PROPERTY(bool tagsAvailable READ tagsAvailable NOTIFY tagsAvailableChanged)
+    // Whether the notes deleted from the folder can be looked at on this
+    // server, which takes the QOwnNotes app and Nextcloud's own Deleted
+    // files app. The way into the trash is drawn behind this alone.
+    Q_PROPERTY(bool trashAvailable READ trashAvailable NOTIFY trashAvailableChanged)
+    // Whether the trash is being read or written to. It is the trash page's
+    // own indicator and is kept apart from busy, which the notes own.
+    Q_PROPERTY(bool trashBusy READ trashBusy NOTIFY trashBusyChanged)
 
 public:
     explicit Session(Config *config, NotesModel *notes, QObject *parent = nullptr);
@@ -83,6 +90,8 @@ public:
     int lockedCount() const { return m_locked.size(); }
     bool qownNotes() const { return m_qownNotes; }
     bool tagsAvailable() const { return m_tagsAvailable; }
+    bool trashAvailable() const { return m_trashAvailable; }
+    bool trashBusy() const { return m_trashBusy; }
 
     Q_INVOKABLE void startLogin(const QString &serverUrl);
     Q_INVOKABLE void cancelLogin();
@@ -139,6 +148,15 @@ public:
     // server in reach keeps its tags and sends them later.
     Q_INVOKABLE void setNoteTags(int noteId, const QStringList &paths);
 
+    // The notes the server is holding in its trash. They are read when they
+    // are asked for rather than with the notes: the trash is the server's
+    // own listing, and nothing here is kept on the device.
+    Q_INVOKABLE void loadTrash();
+    Q_INVOKABLE QVariantList trashedNotes() const;
+    // Puts one back where it was deleted from, named the way the trash lists
+    // it, and pulls afterwards so the note itself comes home.
+    Q_INVOKABLE void restoreNote(const QString &originalLocation, double deleted);
+
 signals:
     void readyChanged();
     void configuredChanged();
@@ -166,6 +184,11 @@ signals:
     // The tags, the links between them and the notes, or what is owed on one
     // of them have moved, so the pages take them again.
     void tagsChanged();
+    void trashAvailableChanged();
+    void trashBusyChanged();
+    // The trash as the server last listed it has changed, by a read or by a
+    // note leaving it.
+    void trashChanged();
     // Something the user is owed an explanation of, but that is not an error:
     // it goes its own way rather than through errorMessage, which would hold
     // a second identical notice back.
@@ -181,10 +204,12 @@ private:
     void probeServer();
     // Takes the probe's answer: the flag the pages read, the path the notes
     // go to, and whatever was waiting on it.
-    void onProbed(bool present, const QString &apiBase, bool tagsAvailable);
+    void onProbed(const ServerApps &apps);
     void flushProbeWaiters();
     void setQownNotes(bool present);
     void setTagsAvailable(bool available);
+    void setTrashAvailable(bool available);
+    void setTrashBusy(bool busy);
     // Reads the tag tree and the links between tags and notes, in that order:
     // a link names a tag by id, so the tree has to be there to read it by.
     // Nothing is asked where the server carries no tags, and a read goes out
@@ -200,6 +225,12 @@ private:
     void settleOwedTags();
     void onNoteTagsStale(qint64 noteId);
     void onTagsFailed(const QString &error);
+    void onTrashReady(const QVector<TrashedNote> &notes);
+    void onTrashRestored(qint64 noteId);
+    void onTrashFailed(const QString &error);
+    // Forgets the note that has just left the trash, so the list is right
+    // before the server has been asked about it again.
+    void dropRestored();
     void applySyncTimer();
     void syncIfStartupWanted();
     void reloadModels();
@@ -315,6 +346,16 @@ private:
     // had before, for as long as the read takes, so a tag just added would
     // be seen to vanish and come back.
     qint64 m_tagSettled;
+    // Whether the server keeps a trash for the note folder.
+    bool m_trashAvailable;
+    // The trash as the server last listed it. Held in memory alone, as the
+    // conflicts are: it is a listing of the server's rather than anything of
+    // this device's, and a page that is not open has no use for it.
+    QVector<TrashedNote> m_trash;
+    bool m_trashBusy;
+    // The note being put back, so the row can be taken out of the list the
+    // moment the server says it is a note again.
+    TrashedNote m_restoring;
     // Whether the tags have already been read again for a change the server
     // said was built on an older version of them. One such retry is enough:
     // a second refusal is the database moving faster than the app can answer.

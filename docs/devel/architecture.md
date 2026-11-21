@@ -16,16 +16,17 @@ nav_order: 1
 | `src/lappu/loginflow.*` | Nextcloud login flow v2: ask for a login page, then poll until the server hands over an app password or twenty minutes pass |
 | `src/lappu/httpclient.*` | `QNetworkAccessManager` wrapper: basic auth, custom methods, TLS preference |
 | `src/lappu/notesapi.*` | Nextcloud Notes API v1 client, under the path the server serves that API at |
-| `src/lappu/qownnotesapi.*` | QOwnNotes client: the request that says whether the server carries the app, and the tags of the note folder |
+| `src/lappu/qownnotesapi.*` | QOwnNotes client: the request that says what the server carries, the tags of the note folder and its trash |
 | `src/lappu/notescache.*` | SQLite copy of the notes and of the tags, in `notes.sqlite` |
 | `src/lappu/notesmodel.*` | Holds the notes of the last pull, and hands them to QML as plain rows through `notes()` |
 | `src/lappu/session.*` | QML-facing controller: login, sync, save, favourite, delete |
 | `src/lappu/url.*` | Server URL normalisation |
 | `src/lappu/sharedtext.*` | The note body a share makes, out of plain text or a link |
-| `src/lappu/types.h` | Plain data structs (`LocalNote`, `NoteTag`, `TagLink`) |
+| `src/lappu/types.h` | Plain data structs (`LocalNote`, `NoteTag`, `TagLink`, `ServerApps`, `TrashedNote`) |
 | `qml/pages/*` | Silica UI |
 | `qml/pages/ConflictPage.qml` | The two versions of a note that changed on both sides, and the three answers to it |
-| `qml/pages/ViewsPage.qml` | The views the notes are narrowed by: all, favourites and uncategorized, the categories, and under them the tags of the note folder with how many notes carry each |
+| `qml/pages/ViewsPage.qml` | The views the notes are narrowed by: all, favourites and uncategorized, the way into the trash, the categories, and under them the tags of the note folder with how many notes carry each |
+| `qml/pages/TrashPage.qml` | The notes the server is holding in its trash, and the way to put one back |
 | `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category, tag and cover state |
 | `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, the subset of HTML a Silica `Label` draws, and how a slashed path is read |
 | `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar and one stop of it, the nudge that tells a flickable it scrolls, the edit history, the note body, a Markdown table, a code block, one side of a conflict, the receiver for what other apps share, the tag chips and the field that frames them, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
@@ -121,7 +122,7 @@ Neither waiter sets `m_busy`, which is why a probe cannot leave the app looking 
 
 `forget()` disowns a probe rather than stopping it - nothing in the app aborts a reply but the watchdog - so a request it let go of is still travelling when the next sign-in starts one of its own. `takeReply()` counts the requests that have not been answered and takes only the last of them, or the old server's answer would decide where the new server's notes are asked for. It is the same rule `m_inFlight` keeps for a write: an answer is taken against what was sent, not against whatever is current when it lands.
 
-The rest of the app - versions and trash, under the same `api_base` - is not used yet. Those are requests of their own rather than a path, and `QownNotesApi` is where they will go, beside the tags.
+The probe hands all of that over as one `ServerApps`: whether the app is there, the base it serves its APIs under, and whether the tags and the trash can be used. One struct rather than three arguments is what keeps a capability added later from touching the signal, `onProbed()` and every connection in between. The rest of the app - the versions, under the same `api_base` - is not used yet. Those are requests of their own rather than a path, and `QownNotesApi` is where they will go, beside the tags and the trash.
 
 ## Tags
 
@@ -140,6 +141,16 @@ Tags are not in `LocalNote` and not in `sameNote()`, so a tag change never marks
 A write is answered three ways. `noteTagsSet()` reads the tags again rather than guessing: a path the server had never heard of has just become a tag with an id, and the links are the server's to say. What was owed is **not** let go of there but in `settleOwedTags()`, once the links that confirm it have arrived - it already says exactly what the server has been told, and clearing it first would put the note's old tags back for the length of a request, so a tag just added would be seen to vanish and return. The row is kept where the user tagged the note again while the answer travelled, since the links know nothing of that change and `pushOwedTags()` sends it next. `noteTagsStale()` is the `412` of a database that moved under the change; what is owed stays owed, the tags are read again, and the change goes out against the version that arrives - once, after which it waits for the next sync rather than chasing a file that is moving faster than the app can answer. Anything else reaches `tagsFailed()`, which is said through `notice()` only where a write was in flight: a read that went wrong is the notes sync's business to report.
 
 `logout()` drops the tables with the flag, a tag belonging to the note folder of the account being left.
+
+## The trash
+
+The trash is the QOwnNotes app's too, and needs Nextcloud's own Deleted files app under it: the capability `qownnotes.trash_app` says whether both are there, and `Lappu.trashAvailable` is the only thing the Trash entry and its page are drawn behind. Two requests are used - `GET trash` for the listing and `POST trash/restore` to put one back - on a third `HttpClient`, for the reason the tags have one of their own: the user may open the trash while the tags are being read, and neither answer may be taken for the other's.
+
+A deleted note is named by **where it was and when it went**, the pair, since a file deleted twice is in the trash twice under the same original place. `TrashedNote` carries that pair with the title and the folder, and nothing else: `GET trash?content=0` is asked with the text left out, because no screen here shows it and asking for it would have the server open every file in the trash. An entry naming no original location is dropped by `trashedNotesOf()` - it is one nothing could be done with. The restore sends `X-QOwnNotes-Relink-Tags: 1`, so a note comes back carrying the tags it went in with rather than bare; the `id` it answers with may be null, which means the note was restored somewhere the folder does not list, and is still a note out of the trash.
+
+`Session` holds the listing in memory alone, as it holds the conflicts: it is a listing of the server's rather than anything of this device's, and one read an hour ago would offer to put back a note somebody has emptied since. So `loadTrash()` is called by the page opening and by its **Refresh**, `trashBusy` is the page's own indicator and leaves `m_busy` to the notes, and `setTrashAvailable(false)` - on a server without a trash and on `logout()` - drops the listing with the flag. A restore takes the row out of the list itself through `dropRestored()` and then pulls, or sets `m_pullAfter` where a run is in flight, so the note comes home through the ordinary sync rather than being invented here. Unlike a read of the notes, anything that goes wrong with the trash is always said: the user asked for it, so a `503` from a server whose Deleted files app is off is an answer rather than noise.
+
+`TrashPage` is a plain list of `Lappu.trashedNotes()`, taken again on `trashChanged()`. A row does not open the note - there is nothing to open it into until it is a note of the folder again - so tapping one opens its menu, where **Restore** is. The Trash entry itself is a `FilterItem` with `countVisible` false, since the trash is only read once it is opened and a count would have to be a guess.
 
 On the QML side `NotesStore` holds `noteTags`, the map the filter reads, and a `tags` model of `{path, count}` rows, both taken from the session by `ingestTags()` on `tagsChanged()`. `filterKind` gains `"tag"` beside `"category"`, with `filterTag` holding the path, and `setFilter()` clears whichever of the two the chosen view does not use. The tags are listed in the footer of `ViewsPage` rather than on a page of their own: both are ways of narrowing the notes, and a tag is chosen exactly as a category is. The chips are three components ported from Askare - `TagChip`, `TagChips` and `TagEditor`, framed by `IconField` - which know nothing of notes: they take paths and hand them back. A per-note read goes to `Lappu.tagsOfNote()` rather than through the store's map, which is there so that filtering a long list does not cost a query per note.
 

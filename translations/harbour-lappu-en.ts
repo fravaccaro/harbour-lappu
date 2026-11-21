@@ -818,6 +818,26 @@
         <source>The server would not change the tags.</source>
         <translation>The server would not change the tags.</translation>
     </message>
+    <message>
+        <source>The server keeps no trash for the notes.</source>
+        <translation>The server keeps no trash for the notes.</translation>
+    </message>
+    <message>
+        <source>The note folder is read-only, so nothing can be put back into it.</source>
+        <translation>The note folder is read-only, so nothing can be put back into it.</translation>
+    </message>
+    <message>
+        <source>The server no longer has that deleted note.</source>
+        <translation>The server no longer has that deleted note.</translation>
+    </message>
+    <message>
+        <source>The server is taking too many restores. Try again shortly.</source>
+        <translation>The server is taking too many restores. Try again shortly.</translation>
+    </message>
+    <message>
+        <source>The server would not open its trash.</source>
+        <translation>The server would not open its trash.</translation>
+    </message>
 </context>
 <context>
     <name>Session</name>
@@ -836,6 +856,10 @@
     <message>
         <source>The tags of the note folder are read-only on the server.</source>
         <translation>The tags of the note folder are read-only on the server.</translation>
+    </message>
+    <message>
+        <source>The note was put back.</source>
+        <translation>The note was put back.</translation>
     </message>
 </context>
 <context>
@@ -1008,6 +1032,41 @@
     </message>
 </context>
 <context>
+    <name>TrashPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation>Refresh</translation>
+    </message>
+    <message>
+        <source>Trash</source>
+        <translation>Trash</translation>
+    </message>
+    <message>
+        <source>These notes were deleted and are being kept by Nextcloud. Putting one back returns it to the folder it was deleted from, with its tags.</source>
+        <translation>These notes were deleted and are being kept by Nextcloud. Putting one back returns it to the folder it was deleted from, with its tags.</translation>
+    </message>
+    <message>
+        <source>Deleted %1</source>
+        <translation>Deleted %1</translation>
+    </message>
+    <message>
+        <source>In %1</source>
+        <translation>In %1</translation>
+    </message>
+    <message>
+        <source>Restore</source>
+        <translation>Restore</translation>
+    </message>
+    <message>
+        <source>The trash is empty</source>
+        <translation>The trash is empty</translation>
+    </message>
+    <message>
+        <source>A note deleted from the folder is kept here until Nextcloud lets go of it.</source>
+        <translation>A note deleted from the folder is kept here until Nextcloud lets go of it.</translation>
+    </message>
+</context>
+<context>
     <name>ViewsPage</name>
     <message>
         <source>About</source>
@@ -1044,6 +1103,10 @@
     <message>
         <source>Views</source>
         <translation>Views</translation>
+    </message>
+    <message>
+        <source>Trash</source>
+        <translation>Trash</translation>
     </message>
 </context>
 <context>
