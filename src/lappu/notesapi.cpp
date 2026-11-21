@@ -8,14 +8,17 @@
 
 namespace {
 
-QString notesPath()
+// A root is appended to, so it is kept with a slash at either end whatever
+// shape it arrived in.
+QString rootWithSlashes(const QString &root)
 {
-    return QStringLiteral("/index.php/apps/notes/api/v1/notes");
-}
+    QString path = root;
+    if (!path.startsWith(QLatin1Char('/')))
+        path.prepend(QLatin1Char('/'));
+    if (!path.endsWith(QLatin1Char('/')))
+        path.append(QLatin1Char('/'));
 
-QString notePath(qint64 id)
-{
-    return notesPath() + QLatin1Char('/') + QString::number(id);
+    return path;
 }
 
 LocalNote noteFrom(const QJsonObject &object)
@@ -110,6 +113,7 @@ bool writeSucceeded(int status)
 
 NotesApi::NotesApi(QObject *parent)
     : QObject(parent)
+    , m_notesRoot(notesAppRoot())
     , m_operation(Idle)
     , m_pendingId(0)
 {
@@ -125,6 +129,11 @@ QString NotesApi::passwordRefusedError()
     return QObject::tr("The server refused the password. Sign in again.");
 }
 
+QString NotesApi::notesAppRoot()
+{
+    return QStringLiteral("/index.php/apps/notes/api/v1/");
+}
+
 void NotesApi::setServer(const QString &serverUrl)
 {
     m_server = Url::normalizeServer(serverUrl);
@@ -138,6 +147,21 @@ void NotesApi::setCredentials(const QString &user, const QString &password)
 void NotesApi::setIgnoreSslErrors(bool ignore)
 {
     m_http.setIgnoreSslErrors(ignore);
+}
+
+void NotesApi::setNotesRoot(const QString &root)
+{
+    m_notesRoot = root.isEmpty() ? notesAppRoot() : rootWithSlashes(root);
+}
+
+QString NotesApi::notesPath() const
+{
+    return m_notesRoot + QStringLiteral("notes");
+}
+
+QString NotesApi::notePath(qint64 id) const
+{
+    return notesPath() + QLatin1Char('/') + QString::number(id);
 }
 
 void NotesApi::send(const QByteArray &method, const QString &path, const QByteArray &body,

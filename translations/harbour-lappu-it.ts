@@ -73,10 +73,6 @@
         <source>Uncategorized</source>
         <translation>Senza categoria</translation>
     </message>
-    <message>
-        <source>No categories</source>
-        <translation>Nessuna categoria</translation>
-    </message>
 </context>
 <context>
     <name>CategoryPickerPage</name>
@@ -543,14 +539,6 @@
 </context>
 <context>
     <name>NotesPullDownMenu</name>
-    <message>
-        <source>About</source>
-        <translation>Informazioni</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation>Impostazioni</translation>
-    </message>
     <message>
         <source>Refresh</source>
         <translation>Ricarica</translation>

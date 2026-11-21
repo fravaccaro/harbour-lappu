@@ -15,7 +15,7 @@ nav_order: 1
 | `src/lappu/secretsstore.*` | The app password in a device-lock collection of Sailfish Secrets |
 | `src/lappu/loginflow.*` | Nextcloud login flow v2: ask for a login page, then poll until the server hands over an app password or twenty minutes pass |
 | `src/lappu/httpclient.*` | `QNetworkAccessManager` wrapper: basic auth, custom methods, TLS preference |
-| `src/lappu/notesapi.*` | Nextcloud Notes API v1 client under `/index.php/apps/notes/api/v1/notes` |
+| `src/lappu/notesapi.*` | Nextcloud Notes API v1 client, under the path the server serves that API at |
 | `src/lappu/qownnotesapi.*` | QOwnNotes client: for now the one request that says whether the server carries the app |
 | `src/lappu/notescache.*` | SQLite copy of the notes, in `notes.sqlite` |
 | `src/lappu/notesmodel.*` | Holds the notes of the last pull, and hands them to QML as plain rows through `notes()` |
@@ -109,7 +109,17 @@ Every other answer leaves the flag false - no such key, a status that is not `20
 
 The probe leaves `m_busy` alone, so a capabilities request that stalls cannot leave `sync()` returning at its own guard. It goes out from `applyCredentials()`, which is where the server, the user and the app password are all known, and `probe()` ignores a call made while one is already on its way - signing in applies the credentials twice in a row. The answer is kept in memory alone and never written to `settings.conf`: it is a fact about this server rather than a setting of the user's, so it is asked again on the next launch. `logout()` puts it back to false and calls `forget()` first, since a probe still travelling would otherwise answer about the account just left.
 
-The notes themselves keep going to `/index.php/apps/notes/api/v1/`. The app serves a notes API of its own under the `api_base` it publishes, and pointing `NotesApi` at it is separate work: a server that carries the QOwnNotes app but not the Notes app will set this flag and still fail to sync.
+## Where the notes are asked for
+
+The answer also says **where the notes themselves live**. The QOwnNotes app serves the same Notes API v1 under the path it publishes as `api_base`, normally `/index.php/apps/qownnotes/api/v1/`, so `onProbed()` hands that path to `NotesApi::setNotesRoot()` and everything about the sync carries on unchanged: the same verbs, the same JSON, the same `If-Match` and the same `412`. Without the app the root is the Notes app's own, `/index.php/apps/notes/api/v1/`, which is what `setNotesRoot()` falls back to when it is given nothing. A capability that names no usable path - one that is not a plain absolute path, or that carries `..` or a host of its own - is still a server carrying the app, so `apiBaseOf()` answers with the documented path rather than taking the app for missing.
+
+Because the root is the probe's to say, **nothing is sent until the probe answers**. `sync()` and `pushDirty()` write down what was wanted in `m_syncWhenProbed` and `m_owedWhileProbing` and return, and `flushProbeWaiters()` runs it once `onProbed()` has set the root. A sync carries what is owed with it, so one that was waiting answers for a push that was waiting too. The wait is bounded by the same watchdog every other request has: a capabilities request that stops moving is cut off after thirty seconds and reported as the app being absent, which leaves the Notes app path and lets the sync go.
+
+Neither waiter sets `m_busy`, which is why a probe cannot leave the app looking busy for good. `logout()` clears them both along with the root, since a sync held back on behalf of an account that has been signed out of is one that must not go out afterwards.
+
+`forget()` disowns a probe rather than stopping it - nothing in the app aborts a reply but the watchdog - so a request it let go of is still travelling when the next sign-in starts one of its own. `takeReply()` counts the requests that have not been answered and takes only the last of them, or the old server's answer would decide where the new server's notes are asked for. It is the same rule `m_inFlight` keeps for a write: an answer is taken against what was sent, not against whatever is current when it lands.
+
+The other half of the app - versions, trash and tags, under the same `api_base` - is not used yet. Those are requests of their own rather than a path, and `QownNotesApi` is where they will go.
 
 ## The title is the note's name
 

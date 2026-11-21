@@ -73,10 +73,6 @@
         <source>Uncategorized</source>
         <translation>Uncategorized</translation>
     </message>
-    <message>
-        <source>No categories</source>
-        <translation>No categories</translation>
-    </message>
 </context>
 <context>
     <name>CategoryPickerPage</name>
@@ -543,14 +539,6 @@
 </context>
 <context>
     <name>NotesPullDownMenu</name>
-    <message>
-        <source>About</source>
-        <translation>About</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation>Settings</translation>
-    </message>
     <message>
         <source>Refresh</source>
         <translation>Refresh</translation>

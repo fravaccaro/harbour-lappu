@@ -138,6 +138,9 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     , m_pushed(0)
     , m_syncedOnStart(false)
     , m_qownNotes(false)
+    , m_probeAnswered(false)
+    , m_syncWhenProbed(false)
+    , m_owedWhileProbing(false)
 {
     m_syncTimer.setSingleShot(false);
     connect(&m_syncTimer, &QTimer::timeout, this, &Session::sync);
@@ -152,7 +155,7 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(&m_api, &NotesApi::unauthorized, this, &Session::onUnauthorized);
     connect(&m_api, &NotesApi::conflicted, this, &Session::onConflict);
     connect(&m_api, &NotesApi::refused, this, &Session::onRefused);
-    connect(&m_qown, &QownNotesApi::probed, this, &Session::setQownNotes);
+    connect(&m_qown, &QownNotesApi::probed, this, &Session::onProbed);
     connect(&m_qown, &QownNotesApi::unauthorized, this, &Session::onUnauthorized);
     connect(m_notes, &NotesModel::changed, this, &Session::notesChanged);
     connect(m_config, &Config::readyChanged, this, &Session::readyChanged);
@@ -322,14 +325,46 @@ void Session::setQownNotes(bool present)
     emit qownNotesChanged();
 }
 
-// The probe goes out as soon as the account is known, and is asked nothing of
-// beyond its answer: it leaves m_busy alone, so a server that never answers
-// it cannot hold back a sync, and says nothing of itself when the app is
-// simply not there, which is the ordinary case.
+// The probe leaves m_busy alone, so a server that never answers it cannot
+// leave every later sync() returning at that guard; what waits on it waits on
+// m_probeAnswered instead.
+void Session::probeServer()
+{
+    m_probeAnswered = false;
+    m_qown.probe();
+}
+
+// A server carrying the QOwnNotes app serves the same Notes API under the
+// path it publishes, so the notes go there and nothing else about them
+// changes. Without the app they go to the Notes app's own path.
+void Session::onProbed(bool present, const QString &apiBase)
+{
+    setQownNotes(present);
+    m_api.setNotesRoot(present ? apiBase : QString());
+    m_probeAnswered = true;
+    flushProbeWaiters();
+}
+
+// A sync carries what is owed with it, so one that was waiting answers for a
+// push that was waiting too.
+void Session::flushProbeWaiters()
+{
+    const bool wanted = m_syncWhenProbed;
+    const bool owed = m_owedWhileProbing;
+    m_syncWhenProbed = false;
+    m_owedWhileProbing = false;
+    if (wanted)
+        sync();
+    else if (owed)
+        pushDirty();
+}
+
+// The probe goes out as soon as the account is known, since its answer is
+// what says where the notes themselves are to be asked for.
 void Session::applyCredentials()
 {
     applyApiSettings();
-    m_qown.probe();
+    probeServer();
     reloadModels();
     applySyncTimer();
     pushDirty();
@@ -405,9 +440,14 @@ void Session::logout()
     m_locked.clear();
     emit lockedChanged();
     // What the server carries is the server's, and there is no longer one. A
-    // probe still travelling would answer about the account just left.
+    // probe still travelling would answer about the account just left, and
+    // anything waiting on it would be sent on behalf of that account.
     m_qown.forget();
     setQownNotes(false);
+    m_api.setNotesRoot(QString());
+    m_probeAnswered = false;
+    m_syncWhenProbed = false;
+    m_owedWhileProbing = false;
 }
 
 void Session::reloadSecrets()
@@ -421,6 +461,14 @@ void Session::sync()
 {
     if (!m_config->isConfigured() || m_busy)
         return;
+
+    // Which app the notes are served by is not settled yet, and a request
+    // sent to the wrong one would fail over something the server is about to
+    // say. The run waits for the answer rather than being dropped.
+    if (!m_probeAnswered) {
+        m_syncWhenProbed = true;
+        return;
+    }
 
     setError(QString());
     m_pullAfter = true;
@@ -438,6 +486,11 @@ void Session::pushDirty()
 {
     if (!m_config->isConfigured())
         return;
+
+    if (!m_probeAnswered) {
+        m_owedWhileProbing = true;
+        return;
+    }
 
     // The run going out took its queue when it started, so this note is not
     // in it. It is written down instead and sent once that run ends.

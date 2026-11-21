@@ -2,6 +2,7 @@
 
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
 
 #include "notesapi.h"
 #include "url.h"
@@ -15,15 +16,32 @@ QString capabilitiesPath()
     return QStringLiteral("/ocs/v1.php/cloud/capabilities?format=json");
 }
 
-// The key is the current app's own. The older qownnotesapi app publishes no
-// capability at all, which is what leaves it out of this.
-bool namesTheApp(const QByteArray &body)
+QJsonObject capabilitiesOf(const QByteArray &body)
 {
     const QJsonObject ocs = QJsonDocument::fromJson(body).object()
             .value(QStringLiteral("ocs")).toObject();
-    const QJsonObject capabilities = ocs.value(QStringLiteral("data")).toObject()
+    return ocs.value(QStringLiteral("data")).toObject()
             .value(QStringLiteral("capabilities")).toObject();
-    return capabilities.value(QStringLiteral("qownnotes")).isObject();
+}
+
+// The published path is appended to the server's own URL, so one that is not
+// a plain absolute path is no use here: an address of its own would send the
+// notes to another host, and a step upwards would leave the app's own API.
+bool usableBase(const QString &base)
+{
+    if (!base.startsWith(QLatin1Char('/')))
+        return false;
+
+    return !base.contains(QStringLiteral("//")) && !base.contains(QStringLiteral(".."));
+}
+
+// Where the app says it serves its APIs. A server that names nothing usable
+// is still a server carrying the app, so the documented path answers for it
+// rather than the app being taken for missing.
+QString apiBaseOf(const QJsonObject &app)
+{
+    const QString base = app.value(QStringLiteral("api_base")).toString().trimmed();
+    return usableBase(base) ? base : QownNotesApi::defaultApiBase();
 }
 
 }
@@ -31,10 +49,16 @@ bool namesTheApp(const QByteArray &body)
 QownNotesApi::QownNotesApi(QObject *parent)
     : QObject(parent)
     , m_probing(false)
+    , m_outstanding(0)
 {
     m_http.setUserAgent(QStringLiteral("Lappu"));
     connect(&m_http, &HttpClient::finished, this, &QownNotesApi::onFinished);
     connect(&m_http, &HttpClient::failed, this, &QownNotesApi::onFailed);
+}
+
+QString QownNotesApi::defaultApiBase()
+{
+    return QStringLiteral("/index.php/apps/qownnotes/api/v1/");
 }
 
 void QownNotesApi::setServer(const QString &serverUrl)
@@ -58,11 +82,12 @@ void QownNotesApi::probe()
         return;
 
     if (m_server.isEmpty()) {
-        report(false);
+        reportAbsent();
         return;
     }
 
     m_probing = true;
+    ++m_outstanding;
     HttpClient::Headers headers;
     headers.append(qMakePair(QByteArray("Accept"), QByteArray("application/json")));
     // Nextcloud answers an OCS endpoint only where the request owns up to
@@ -81,26 +106,52 @@ void QownNotesApi::forget()
 // of the notes themselves says whatever is to be said about the server.
 void QownNotesApi::onFinished(int status, const QByteArray &body)
 {
-    if (!m_probing)
+    if (!takeReply())
         return;
 
     if (status == 401) {
         emit unauthorized(NotesApi::passwordRefusedError());
-        report(false);
+        reportAbsent();
         return;
     }
 
-    report(status == 200 && namesTheApp(body));
+    if (status != 200) {
+        reportAbsent();
+        return;
+    }
+
+    // The key is the current app's own. The older qownnotesapi app publishes
+    // no capability at all, which is what leaves it out of this.
+    const QJsonValue app = capabilitiesOf(body).value(QStringLiteral("qownnotes"));
+    if (!app.isObject()) {
+        reportAbsent();
+        return;
+    }
+
+    report(true, apiBaseOf(app.toObject()));
 }
 
 void QownNotesApi::onFailed(const QString &)
 {
-    if (m_probing)
-        report(false);
+    if (takeReply())
+        reportAbsent();
 }
 
-void QownNotesApi::report(bool present)
+bool QownNotesApi::takeReply()
+{
+    if (m_outstanding > 0)
+        --m_outstanding;
+
+    return m_probing && m_outstanding == 0;
+}
+
+void QownNotesApi::reportAbsent()
+{
+    report(false, QString());
+}
+
+void QownNotesApi::report(bool present, const QString &apiBase)
 {
     m_probing = false;
-    emit probed(present);
+    emit probed(present, apiBase);
 }

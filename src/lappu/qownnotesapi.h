@@ -17,6 +17,11 @@ class QownNotesApi : public QObject
 public:
     explicit QownNotesApi(QObject *parent = nullptr);
 
+    // Where the app serves both of its APIs when it publishes no usable path
+    // of its own. It is the app's documented base, and the fallback rather
+    // than the first choice: the server is the one that says where it is.
+    static QString defaultApiBase();
+
     void setServer(const QString &serverUrl);
     void setCredentials(const QString &user, const QString &password);
     void setIgnoreSslErrors(bool ignore);
@@ -30,10 +35,11 @@ public:
     void forget();
 
 signals:
-    // Whether the app is there. Every answer but the one that names it, an
-    // unreachable server included, is reported as absent: a feature nothing
-    // has confirmed is one worth leaving out of the way.
-    void probed(bool present);
+    // Whether the app is there, and the path it serves its APIs under. Every
+    // answer but the one that names it, an unreachable server included, is
+    // reported as absent: a feature nothing has confirmed is one worth
+    // leaving out of the way. The base is empty unless the app is there.
+    void probed(bool present, const QString &apiBase);
     // A password the server will not take. It travels apart from probed()
     // because it is about the account rather than the app, and sends the user
     // back to signing in; the app is reported absent alongside it.
@@ -42,11 +48,18 @@ signals:
 private:
     void onFinished(int status, const QByteArray &body);
     void onFailed(const QString &error);
-    void report(bool present);
+    // Whether the answer now arriving is the one this probe is waiting for.
+    // A request disowned by forget() goes on travelling, so a reply is only
+    // taken when nothing newer is still on its way.
+    bool takeReply();
+    void reportAbsent();
+    void report(bool present, const QString &apiBase);
 
     HttpClient m_http;
     QString m_server;
     bool m_probing;
+    // Requests sent and not yet answered.
+    int m_outstanding;
 };
 
 #endif

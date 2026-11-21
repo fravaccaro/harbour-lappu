@@ -152,6 +152,13 @@ private:
     void setError(const QString &error);
     void applyCredentials();
     void applyApiSettings();
+    // Asks the server what it carries and holds back anything the notes are
+    // owed until it answers, the answer being what says where to send them.
+    void probeServer();
+    // Takes the probe's answer: the flag the pages read, the path the notes
+    // go to, and whatever was waiting on it.
+    void onProbed(bool present, const QString &apiBase);
+    void flushProbeWaiters();
     void setQownNotes(bool present);
     void applySyncTimer();
     void syncIfStartupWanted();
@@ -245,6 +252,15 @@ private:
     // Whether the QOwnNotes app answered for itself on this server, which is
     // false until a probe says otherwise.
     bool m_qownNotes;
+    // Whether the probe for these credentials has answered. Until it has,
+    // nothing is sent: the answer says which path the notes are served under,
+    // and a request made before it would ask the wrong app.
+    bool m_probeAnswered;
+    // A sync and an owed edit that arrived while the probe was out. They are
+    // run once it answers rather than dropped, since what was waiting on it
+    // was only the path, not the server.
+    bool m_syncWhenProbed;
+    bool m_owedWhileProbing;
 };
 
 #endif
