@@ -10,7 +10,7 @@ Page {
     allowedOrientations: Orientation.All
     onStatusChanged: {
         if (status === PageStatus.Active && pageStack.nextPage() === null)
-            pageStack.pushAttached(Qt.resolvedUrl("CategoriesPage.qml"));
+            pageStack.pushAttached(Qt.resolvedUrl("ViewsPage.qml"));
 
     }
 

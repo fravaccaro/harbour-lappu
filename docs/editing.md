@@ -9,9 +9,9 @@ nav_order: 3
 
 **New note** in the pulley menu of the notes list opens an empty note; **Edit**, in the menu of a note or on the note itself, opens one that already exists. Either way the page is a dialog: the change is kept when you accept it with **Add** or **Save**, and dropped when you navigate back.
 
-Above the text sit the star of the note, beside its title, and the category below, so neither needs a second visit.
+Above the text sit the star of the note, beside its title, the category below it, and the tags below that where the server carries them, so none of them needs a second visit.
 
-While the keyboard is open the page gives the writing what room it can: the name of the page, the star and the category fold away as the keyboard rises, and come back when it is closed. **Add** or **Save** stays where it is throughout.
+While the keyboard is open the page gives the writing what room it can: the name of the page, the star, the category and the tags fold away as the keyboard rises, and come back when it is closed. **Add** or **Save** stays where it is throughout.
 
 ## A note from another app
 
@@ -94,7 +94,7 @@ Typing is gathered into steps rather than recorded letter by letter, so one undo
 
 ## Reading a note
 
-The name of the note stands at the top of the page, with a star after it when the note is a favourite, as in the list.
+The name of the note stands at the top of the page, with a star after it when the note is a favourite, as in the list. The tags the note carries are drawn as chips under it, on a server that has them.
 
 The note page draws the Markdown rather than showing the markers: emphasis and strikethrough as written, bullets as bullets, and a link as a link.
 
@@ -123,6 +123,10 @@ A tick is a change like any other and goes to the server straight away. If the s
 **Category** opens a picker holding the categories the notes already use, with room to type a new one. A note created from inside a category starts in that category.
 
 Nextcloud writes a nested category with slashes in it, and Lappu shows it the same way with the separator spelled out.
+
+**Tags** stand below the category on a server that carries them - see [Notes and views](notes) for what makes a server one. The tags the note already has are drawn as chips, each with a cross that takes it off; the tags the note folder holds and this note does not carry are offered as outlined chips below them, and a tap adds one. **New tag** makes a tag the folder has never had: type its name, or a name with slashes in it to nest it under another, as `Work/Projects` does.
+
+Tags are not part of the note, so they are not written to the note's file: they go to the tag database the QOwnNotes apps share, and only when you accept the dialog. A tag set with no server in reach waits on the phone like any other change and is sent by the next refresh.
 
 The **star** at the end of the Title field marks the note a favourite, the same star the notes list draws beside the name. It folds away with the keyboard, and the title takes the room it stood in. Tapping it fills it in or empties it, and like everything else on the page it is only written when you accept the dialog; the menu of a note offers the same thing without opening the editor.
 

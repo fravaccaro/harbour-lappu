@@ -3,6 +3,35 @@
 
 #include <QString>
 
+// One tag of the QOwnNotes tag tree, flattened onto its path: the names from
+// the top level joined with slashes, which is both how a tag is shown and how
+// it is named back to the server. The tree is not kept as a tree because
+// nothing here nests one: a tag is a filter, and a path tells two apart.
+struct NoteTag
+{
+    qint64 id;
+    QString path;
+
+    NoteTag()
+        : id(0)
+    {
+    }
+};
+
+// One note carrying one tag. A link the server could not place on a note of
+// its own is left out, there being no note here for it to belong to.
+struct TagLink
+{
+    qint64 tagId;
+    qint64 noteId;
+
+    TagLink()
+        : tagId(0)
+        , noteId(0)
+    {
+    }
+};
+
 // One note as the device keeps it.
 struct LocalNote
 {

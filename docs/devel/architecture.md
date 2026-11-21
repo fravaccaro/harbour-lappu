@@ -16,19 +16,21 @@ nav_order: 1
 | `src/lappu/loginflow.*` | Nextcloud login flow v2: ask for a login page, then poll until the server hands over an app password or twenty minutes pass |
 | `src/lappu/httpclient.*` | `QNetworkAccessManager` wrapper: basic auth, custom methods, TLS preference |
 | `src/lappu/notesapi.*` | Nextcloud Notes API v1 client, under the path the server serves that API at |
-| `src/lappu/qownnotesapi.*` | QOwnNotes client: for now the one request that says whether the server carries the app |
-| `src/lappu/notescache.*` | SQLite copy of the notes, in `notes.sqlite` |
+| `src/lappu/qownnotesapi.*` | QOwnNotes client: the request that says whether the server carries the app, and the tags of the note folder |
+| `src/lappu/notescache.*` | SQLite copy of the notes and of the tags, in `notes.sqlite` |
 | `src/lappu/notesmodel.*` | Holds the notes of the last pull, and hands them to QML as plain rows through `notes()` |
 | `src/lappu/session.*` | QML-facing controller: login, sync, save, favourite, delete |
 | `src/lappu/url.*` | Server URL normalisation |
 | `src/lappu/sharedtext.*` | The note body a share makes, out of plain text or a link |
-| `src/lappu/types.h` | Plain data structs (`LocalNote`) |
+| `src/lappu/types.h` | Plain data structs (`LocalNote`, `NoteTag`, `TagLink`) |
 | `qml/pages/*` | Silica UI |
 | `qml/pages/ConflictPage.qml` | The two versions of a note that changed on both sides, and the three answers to it |
-| `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category and cover state |
-| `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, and the subset of HTML a Silica `Label` draws |
-| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar and one stop of it, the nudge that tells a flickable it scrolls, the edit history, the note body, a Markdown table, a code block, one side of a conflict, the receiver for what other apps share, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
+| `qml/pages/ViewsPage.qml` | The views the notes are narrowed by: all, favourites and uncategorized, the categories, and under them the tags of the note folder with how many notes carry each |
+| `qml/notes/NotesStore.qml` | The QML-side view of the synced notes: filtering, search, sort, category, tag and cover state |
+| `qml/notes/NoteFormat.js` | Markdown helpers: excerpt, plain text, the subset of HTML a Silica `Label` draws, and how a slashed path is read |
+| `qml/components/*` | Shared QML: the notification wrapper, the support dialog, the Markdown bar and one stop of it, the nudge that tells a flickable it scrolls, the edit history, the note body, a Markdown table, a code block, one side of a conflict, the receiver for what other apps share, the tag chips and the field that frames them, and the three pieces both notes layouts share — the pulley menu, the header and a note's own menu |
 | `qml/cover/*` | The cover page and its glyph |
+| `qml/icons/*` | The icons the theme does not carry |
 | `qml/modules/Opal/*` | Bundled Opal About, SupportMe and LinkHandler modules |
 
 `src/main.cpp` publishes two context properties - `Lappu` (the session) and `Notes` - and the pages bind to those. It also adds `qml/modules` to the QML import path so the bundled Opal modules resolve at runtime. Networking stays in C++; QML holds no request and parses no server response.
@@ -119,7 +121,27 @@ Neither waiter sets `m_busy`, which is why a probe cannot leave the app looking 
 
 `forget()` disowns a probe rather than stopping it - nothing in the app aborts a reply but the watchdog - so a request it let go of is still travelling when the next sign-in starts one of its own. `takeReply()` counts the requests that have not been answered and takes only the last of them, or the old server's answer would decide where the new server's notes are asked for. It is the same rule `m_inFlight` keeps for a write: an answer is taken against what was sent, not against whatever is current when it lands.
 
-The other half of the app - versions, trash and tags, under the same `api_base` - is not used yet. Those are requests of their own rather than a path, and `QownNotesApi` is where they will go.
+The rest of the app - versions and trash, under the same `api_base` - is not used yet. Those are requests of their own rather than a path, and `QownNotesApi` is where they will go, beside the tags.
+
+## Tags
+
+Tags are the QOwnNotes app's, not the Notes API's: the app keeps them in `notes.sqlite`, the note folder database its desktop and Android clients share, and serves them as QOwnNotes API 1.1 under the same `api_base`. They are therefore a **second sync surface** rather than a field of a note, and everything about them is drawn and asked for behind `Lappu.tagsAvailable` alone - the capability `qownnotes.tags.available`, which is false wherever the app is missing or the server cannot open that database. A server without them is a server Lappu says nothing about tags on: no pulley item, no chips, no request.
+
+`QownNotesApi` sends them on an `HttpClient` of its own, so a tag request and the capabilities probe cannot be taken for one another's answer, and a tag read that stalls is cut off by the same watchdog without touching `m_busy`. Three requests are used: `GET tags` for the tree, `GET tag-links` for what carries what, and `PUT note/{id}/tags` with `{"tagPaths": [...]}` to set the tags of one note. The paths are what travels, never ids, because `PUT` creates a path the server has never seen - so a tag is made by naming it. `POST`, `PATCH` and `DELETE tags` are not used: there is no screen here for renaming, moving, recolouring or deleting a tag, and `tags/batch` belongs to a multi-select this app does not have.
+
+The tree arrives nested and is flattened onto one path per tag by `collectTags()`, since nothing here nests one: a tag is a filter, and a path tells two apart. `linksOf()` drops a link the server could not place on a note and a `stale` one, both of which name a file this device knows nothing about.
+
+`NotesCache` keeps them in the same database as the notes, in four tables: `tags` and `note_tags`, which are the server's and are **replaced whole** by each read, `tag_state`, which holds the `notes.sqlite` ETag and whether that file may be written, and `owed_tags`, which is the device's own - the tags the user set on one note, as a line per path, kept until the server takes them. `noteTags()` lays the links out by note and lets an owed row override them, so a tag just typed names a view of the notes before any request has gone out. The ETag goes back out as `If-Match`, bare: these endpoints hand it out bare and compare it as given, unlike the Notes app, which compares one wrapped in the quotes of an HTTP tag.
+
+Tags are not in `LocalNote` and not in `sameNote()`, so a tag change never marks a note `dirty` and never rides the note queue. `Session` runs them as a short chain of its own: `refreshTags()` reads the tree, `onTagsReady()` keeps it and asks for the links - a link names its tag by the id the tree gave it - and `onTagLinksReady()` keeps those, says `tagsChanged()` and calls `pushOwedTags()`. One tag request is in flight at a time, guarded by `m_tagRequest`; the chain is started by `onProbed()` and by `onNotesReady()`, so the tags follow every pull.
+
+`setNoteTags()` writes what the user chose to `owed_tags` and offers it after, so a note tagged with no server in reach keeps its tags and sends them later. It sends nothing where nothing changed - an editor saved without the tags being touched hands back what it was given, and the tag endpoints are among the few the server rate-limits - and turns a change away with a notice where `GET tags` said the database may only be read. A note the server has never seen is passed over by `pushOwedTags()`: its tags are owed under the temporary id, and `markClean()` carries them onto the id the server chose through `moveOwedTags()`, which is also why `remove()` forgets the tags of a note that is gone.
+
+A write is answered three ways. `noteTagsSet()` reads the tags again rather than guessing: a path the server had never heard of has just become a tag with an id, and the links are the server's to say. What was owed is **not** let go of there but in `settleOwedTags()`, once the links that confirm it have arrived - it already says exactly what the server has been told, and clearing it first would put the note's old tags back for the length of a request, so a tag just added would be seen to vanish and return. The row is kept where the user tagged the note again while the answer travelled, since the links know nothing of that change and `pushOwedTags()` sends it next. `noteTagsStale()` is the `412` of a database that moved under the change; what is owed stays owed, the tags are read again, and the change goes out against the version that arrives - once, after which it waits for the next sync rather than chasing a file that is moving faster than the app can answer. Anything else reaches `tagsFailed()`, which is said through `notice()` only where a write was in flight: a read that went wrong is the notes sync's business to report.
+
+`logout()` drops the tables with the flag, a tag belonging to the note folder of the account being left.
+
+On the QML side `NotesStore` holds `noteTags`, the map the filter reads, and a `tags` model of `{path, count}` rows, both taken from the session by `ingestTags()` on `tagsChanged()`. `filterKind` gains `"tag"` beside `"category"`, with `filterTag` holding the path, and `setFilter()` clears whichever of the two the chosen view does not use. The tags are listed in the footer of `ViewsPage` rather than on a page of their own: both are ways of narrowing the notes, and a tag is chosen exactly as a category is. The chips are three components ported from Askare - `TagChip`, `TagChips` and `TagEditor`, framed by `IconField` - which know nothing of notes: they take paths and hand them back. A per-note read goes to `Lappu.tagsOfNote()` rather than through the store's map, which is there so that filtering a long list does not cost a query per note.
 
 ## The title is the note's name
 

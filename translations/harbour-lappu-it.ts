@@ -44,37 +44,6 @@
     </message>
 </context>
 <context>
-    <name>CategoriesPage</name>
-    <message>
-        <source>About</source>
-        <translation>Informazioni</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation>Impostazioni</translation>
-    </message>
-    <message>
-        <source>Refresh</source>
-        <translation>Ricarica</translation>
-    </message>
-    <message>
-        <source>Categories</source>
-        <translation>Categorie</translation>
-    </message>
-    <message>
-        <source>All</source>
-        <translation>Tutte</translation>
-    </message>
-    <message>
-        <source>Favorites</source>
-        <translation>Preferiti</translation>
-    </message>
-    <message>
-        <source>Uncategorized</source>
-        <translation>Senza categoria</translation>
-    </message>
-</context>
-<context>
     <name>CategoryPickerPage</name>
     <message>
         <source>Set</source>
@@ -831,6 +800,26 @@
         <source>%1 is read-only on the server. The change is waiting.</source>
         <translation>%1 è di sola lettura sul server. La modifica è in attesa.</translation>
     </message>
+    <message>
+        <source>The server cannot read the tags of the note folder.</source>
+        <translation>Il server non riesce a leggere le etichette della cartella delle note.</translation>
+    </message>
+    <message>
+        <source>The tags of the note folder are read-only.</source>
+        <translation>Le etichette della cartella delle note sono di sola lettura.</translation>
+    </message>
+    <message>
+        <source>The tags of the note folder are locked on the server. The change is waiting.</source>
+        <translation>Le etichette della cartella delle note sono bloccate sul server. La modifica è in attesa.</translation>
+    </message>
+    <message>
+        <source>The server is taking too many tag changes. Try again shortly.</source>
+        <translation>Il server sta ricevendo troppe modifiche alle etichette. Riprova tra poco.</translation>
+    </message>
+    <message>
+        <source>The server would not change the tags.</source>
+        <translation>Il server non ha accettato la modifica delle etichette.</translation>
+    </message>
 </context>
 <context>
     <name>Session</name>
@@ -841,6 +830,14 @@
     <message>
         <source>%1 was deleted on the server. The change made here is kept as a new note.</source>
         <translation>%1 è stata eliminata sul server. La modifica fatta qui è conservata come nuova nota.</translation>
+    </message>
+    <message>
+        <source>The tags changed on the server. The tags of %1 are waiting.</source>
+        <translation>Le etichette sono cambiate sul server. Le etichette di %1 sono in attesa.</translation>
+    </message>
+    <message>
+        <source>The tags of the note folder are read-only on the server.</source>
+        <translation>Le etichette della cartella delle note sono di sola lettura sul server.</translation>
     </message>
 </context>
 <context>
@@ -976,6 +973,32 @@
     </message>
 </context>
 <context>
+    <name>TagChips</name>
+    <message>
+        <source>None</source>
+        <translation>Nessuna</translation>
+    </message>
+</context>
+<context>
+    <name>TagEditor</name>
+    <message>
+        <source>Tags</source>
+        <translation>Etichette</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Nessuna</translation>
+    </message>
+    <message>
+        <source>New tag</source>
+        <translation>Nuova etichetta</translation>
+    </message>
+    <message>
+        <source>Work/Projects</source>
+        <translation>Lavoro/Progetti</translation>
+    </message>
+</context>
+<context>
     <name>TranslationsPage</name>
     <message>
         <source>Translations</source>
@@ -984,6 +1007,45 @@
     <message>
         <source>Request a new language or contribute to existing languages on the Transifex project page.</source>
         <translation>Richiedi una nuova lingua o contribuisci a quelle esistenti sulla pagina del progetto di Transifex.</translation>
+    </message>
+</context>
+<context>
+    <name>ViewsPage</name>
+    <message>
+        <source>About</source>
+        <translation>Informazioni</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation>Impostazioni</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Ricarica</translation>
+    </message>
+    <message>
+        <source>Categories</source>
+        <translation>Categorie</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Tutte</translation>
+    </message>
+    <message>
+        <source>Favorites</source>
+        <translation>Preferiti</translation>
+    </message>
+    <message>
+        <source>Uncategorized</source>
+        <translation>Senza categoria</translation>
+    </message>
+    <message>
+        <source>Tags</source>
+        <translation>Etichette</translation>
+    </message>
+    <message>
+        <source>Views</source>
+        <translation>Viste</translation>
     </message>
 </context>
 <context>

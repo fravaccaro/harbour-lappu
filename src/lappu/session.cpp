@@ -1,6 +1,7 @@
 #include "session.h"
 
 #include <QDateTime>
+#include <QMap>
 #include <QRegularExpression>
 #include <QStringList>
 #include <QVariantMap>
@@ -114,6 +115,33 @@ QString refusalNotice(int status, const QString &title, const QString &error)
     return error;
 }
 
+// What the user meant by the tags they set: a name with nothing in it is no
+// tag, and the same tag twice is one tag, whichever way either was spelled.
+// The paths are compared rather than the names, so Work/Ideas and Home/Ideas
+// are two tags as the server holds them to be.
+QStringList cleanTagPaths(const QStringList &paths)
+{
+    QStringList clean;
+    for (int i = 0; i < paths.size(); ++i) {
+        const QString path = paths.at(i).trimmed();
+        if (path.isEmpty() || clean.contains(path, Qt::CaseInsensitive))
+            continue;
+
+        clean.append(path);
+    }
+
+    clean.sort(Qt::CaseInsensitive);
+    return clean;
+}
+
+QVariantMap tagRow(const QString &path, int count)
+{
+    QVariantMap map;
+    map.insert(QStringLiteral("path"), path);
+    map.insert(QStringLiteral("count"), count);
+    return map;
+}
+
 QVariantMap lockedRow(const LocalNote &note, int status)
 {
     QVariantMap map;
@@ -138,6 +166,11 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     , m_pushed(0)
     , m_syncedOnStart(false)
     , m_qownNotes(false)
+    , m_tagsAvailable(false)
+    , m_tagRequest(false)
+    , m_tagNoteInFlight(0)
+    , m_tagRetried(false)
+    , m_tagSettled(0)
     , m_probeAnswered(false)
     , m_syncWhenProbed(false)
     , m_owedWhileProbing(false)
@@ -157,6 +190,11 @@ Session::Session(Config *config, NotesModel *notes, QObject *parent)
     connect(&m_api, &NotesApi::refused, this, &Session::onRefused);
     connect(&m_qown, &QownNotesApi::probed, this, &Session::onProbed);
     connect(&m_qown, &QownNotesApi::unauthorized, this, &Session::onUnauthorized);
+    connect(&m_qown, &QownNotesApi::tagsReady, this, &Session::onTagsReady);
+    connect(&m_qown, &QownNotesApi::tagLinksReady, this, &Session::onTagLinksReady);
+    connect(&m_qown, &QownNotesApi::noteTagsSet, this, &Session::onNoteTagsSet);
+    connect(&m_qown, &QownNotesApi::noteTagsStale, this, &Session::onNoteTagsStale);
+    connect(&m_qown, &QownNotesApi::tagsFailed, this, &Session::onTagsFailed);
     connect(m_notes, &NotesModel::changed, this, &Session::notesChanged);
     connect(m_config, &Config::readyChanged, this, &Session::readyChanged);
     connect(m_config, &Config::configuredChanged, this, &Session::onConfiguredChanged);
@@ -337,12 +375,24 @@ void Session::probeServer()
 // A server carrying the QOwnNotes app serves the same Notes API under the
 // path it publishes, so the notes go there and nothing else about them
 // changes. Without the app they go to the Notes app's own path.
-void Session::onProbed(bool present, const QString &apiBase)
+void Session::onProbed(bool present, const QString &apiBase, bool tagsAvailable)
 {
     setQownNotes(present);
+    setTagsAvailable(present && tagsAvailable);
     m_api.setNotesRoot(present ? apiBase : QString());
     m_probeAnswered = true;
     flushProbeWaiters();
+    refreshTags();
+}
+
+void Session::setTagsAvailable(bool available)
+{
+    if (available == m_tagsAvailable)
+        return;
+
+    m_tagsAvailable = available;
+    emit tagsAvailableChanged();
+    emit tagsChanged();
 }
 
 // A sync carries what is owed with it, so one that was waiting answers for a
@@ -444,6 +494,15 @@ void Session::logout()
     // anything waiting on it would be sent on behalf of that account.
     m_qown.forget();
     setQownNotes(false);
+    // The tags belong to the note folder of the account being left, and what
+    // was owed on them is owed to nobody now.
+    setTagsAvailable(false);
+    m_cache.clearTags();
+    m_tagRequest = false;
+    m_tagNoteInFlight = 0;
+    m_tagRetried = false;
+    m_tagSettled = 0;
+    emit tagsChanged();
     m_api.setNotesRoot(QString());
     m_probeAnswered = false;
     m_syncWhenProbed = false;
@@ -583,6 +642,9 @@ void Session::onNotesReady(const QVector<LocalNote> &notes)
         m_syncTimer.start();
 
     flushOwed();
+    // The tags live beside the notes rather than in them, so a pull of the
+    // notes is not one of the tags. They follow it on a client of their own.
+    refreshTags();
 }
 
 void Session::onCreated(qint64 localId, const LocalNote &note)
@@ -595,6 +657,10 @@ void Session::onCreated(qint64 localId, const LocalNote &note)
         m_config->setCoverNoteId(note.id);
 
     reloadModels();
+    // Tags given to the note before the server had named it are owed on the
+    // id it has just been given, and can go out now that there is one.
+    m_cache.moveOwedTags(localId, note.id);
+    pushOwedTags();
     pushNext();
 }
 
@@ -646,8 +712,10 @@ void Session::settleWritten(const LocalNote &saved)
 void Session::keepOwedOver(const LocalNote &saved)
 {
     LocalNote owed = m_cache.note(m_inFlight.id);
-    if (owed.id != saved.id)
+    if (owed.id != saved.id) {
+        m_cache.moveOwedTags(owed.id, saved.id);
         m_cache.remove(owed.id);
+    }
 
     owed.id = saved.id;
     owed.etag = saved.etag;
@@ -888,6 +956,181 @@ QVariantList Session::lockedNotes() const
     return list;
 }
 
+void Session::refreshTags()
+{
+    if (!m_tagsAvailable || m_tagRequest)
+        return;
+
+    m_tagRequest = true;
+    m_tagNoteInFlight = 0;
+    m_qown.fetchTags();
+}
+
+// The tree is kept before the links are asked for, since a link names its tag
+// by the id the tree gave it.
+void Session::onTagsReady(const QString &etag, bool writable, const QVector<NoteTag> &tags)
+{
+    m_cache.applyTags(tags, etag, writable);
+    m_qown.fetchTagLinks();
+}
+
+void Session::onTagLinksReady(const QString &, const QVector<TagLink> &links)
+{
+    m_cache.applyTagLinks(links);
+    settleOwedTags();
+    m_tagRequest = false;
+    emit tagsChanged();
+    pushOwedTags();
+}
+
+// The links just read are the server's own account of the write before them,
+// so what was owed on that note is owed no longer - unless the note was
+// tagged again while they travelled, which is a change they know nothing of
+// and which goes out next.
+void Session::settleOwedTags()
+{
+    if (m_tagSettled == 0)
+        return;
+
+    if (m_cache.owedTags(m_tagSettled) == m_tagsSent)
+        m_cache.clearOwedTags(m_tagSettled);
+
+    m_tagSettled = 0;
+}
+
+// A note the server has never seen is left where it is: its tags are sent
+// once the note has been created and the id it was tagged under has been
+// carried over to the one the server chose.
+void Session::pushOwedTags()
+{
+    if (!m_tagsAvailable || m_tagRequest)
+        return;
+
+    const QVector<qint64> owing = m_cache.notesOwingTags();
+    for (int i = 0; i < owing.size(); ++i) {
+        if (owing.at(i) <= 0)
+            continue;
+
+        m_tagRequest = true;
+        m_tagNoteInFlight = owing.at(i);
+        m_tagsSent = m_cache.owedTags(owing.at(i));
+        m_qown.setNoteTags(owing.at(i), m_tagsSent, m_cache.tagEtag());
+        return;
+    }
+}
+
+// The tags are read again rather than guessed at: a path the server had never
+// heard of has just been made into a tag with an id of its own, and the links
+// of the note are the server's to say. What was owed stays where it is until
+// those links arrive - it says exactly what the server has just been told,
+// and letting go of it first would put the old tags back on the note for the
+// length of a request.
+void Session::onNoteTagsSet(qint64 noteId)
+{
+    m_tagSettled = noteId;
+    m_tagRequest = false;
+    m_tagNoteInFlight = 0;
+    m_tagRetried = false;
+    refreshTags();
+}
+
+// The database moved under the change, so what is owed stays owed and is
+// offered again against the version that arrives. A second refusal is left
+// for the next sync rather than answered with another read.
+void Session::onNoteTagsStale(qint64 noteId)
+{
+    m_tagRequest = false;
+    m_tagNoteInFlight = 0;
+    if (m_tagRetried) {
+        m_tagRetried = false;
+        emit notice(tr("The tags changed on the server. The tags of %1 are waiting.")
+                    .arg(m_cache.note(noteId).title));
+        return;
+    }
+
+    m_tagRetried = true;
+    refreshTags();
+}
+
+// A read that went wrong says nothing worth hearing: the notes sync reports
+// the server's own troubles, and the tags are read again with the next pull.
+// A change the user made is another matter, and keeps waiting.
+void Session::onTagsFailed(const QString &error)
+{
+    const qint64 wrote = m_tagNoteInFlight;
+    m_tagRequest = false;
+    m_tagNoteInFlight = 0;
+    if (wrote != 0)
+        emit notice(error);
+}
+
+// Both the tags the server knows and the ones a note is waiting to be given,
+// so a tag the user has just typed names a view of the notes at once.
+QVariantList Session::tags() const
+{
+    const QHash<qint64, QStringList> carried = m_cache.noteTags();
+    QMap<QString, int> counts;
+    const QVector<NoteTag> known = m_cache.tags();
+    for (int i = 0; i < known.size(); ++i)
+        counts.insert(known.at(i).path, 0);
+
+    QHash<qint64, QStringList>::const_iterator it = carried.constBegin();
+    for (; it != carried.constEnd(); ++it) {
+        const QStringList paths = it.value();
+        for (int i = 0; i < paths.size(); ++i)
+            counts.insert(paths.at(i), counts.value(paths.at(i)) + 1);
+    }
+
+    QVariantList rows;
+    QMap<QString, int>::const_iterator row = counts.constBegin();
+    for (; row != counts.constEnd(); ++row)
+        rows.append(tagRow(row.key(), row.value()));
+
+    return rows;
+}
+
+QVariantMap Session::noteTags() const
+{
+    const QHash<qint64, QStringList> carried = m_cache.noteTags();
+    QVariantMap map;
+    QHash<qint64, QStringList>::const_iterator it = carried.constBegin();
+    for (; it != carried.constEnd(); ++it)
+        map.insert(QString::number(it.key()), it.value());
+
+    return map;
+}
+
+QStringList Session::tagsOfNote(int noteId) const
+{
+    return m_cache.tagsOf(noteId);
+}
+
+// Nothing is sent where nothing changed: an editor saved without the tags
+// being touched hands back what it was given, and a write for that would
+// spend one of the few tag changes the server takes in an hour.
+void Session::setNoteTags(int noteId, const QStringList &paths)
+{
+    if (!m_tagsAvailable)
+        return;
+
+    const LocalNote note = m_cache.note(noteId);
+    if (note.id == 0 || note.readOnly)
+        return;
+
+    const QStringList wanted = cleanTagPaths(paths);
+    if (wanted == cleanTagPaths(m_cache.tagsOf(note.id)))
+        return;
+
+    if (!m_cache.tagsWritable()) {
+        emit notice(tr("The tags of the note folder are read-only on the server."));
+        return;
+    }
+
+    m_cache.setOwedTags(note.id, wanted);
+    emit tagsChanged();
+    pushOwedTags();
+}
+
 // Only a note the server knows can be put back the way the server holds it,
 // which is why a note it has never seen is turned away here as well as by
 // its caller.
@@ -959,15 +1202,15 @@ void Session::store(const LocalNote &note)
     pushDirty();
 }
 
-void Session::saveNote(int noteId, const QString &title, const QString &content,
-                       const QString &category, bool favorite)
+int Session::saveNote(int noteId, const QString &title, const QString &content,
+                      const QString &category, bool favorite)
 {
     // Only an id of 0 asks for a new note. A note still waiting to be sent
     // carries a negative id, and editing it has to find that row rather than
     // start another one, or every save would leave a copy behind.
     LocalNote note = noteId != 0 ? m_cache.note(noteId) : LocalNote();
     if (note.readOnly)
-        return;
+        return note.id;
 
     if (note.id == 0)
         note.id = m_cache.nextTempId();
@@ -978,6 +1221,7 @@ void Session::saveNote(int noteId, const QString &title, const QString &content,
     note.favorite = favorite;
     note.modified = QDateTime::currentDateTimeUtc().toTime_t();
     store(note);
+    return note.id;
 }
 
 QString Session::sharedBody(const QString &text) const

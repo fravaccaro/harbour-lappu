@@ -25,6 +25,11 @@ Page {
         pageStack.navigateBack();
     }
 
+    function selectTag(path) {
+        app.notes.setFilter("tag", path);
+        pageStack.navigateBack();
+    }
+
     allowedOrientations: Orientation.All
 
     SilicaListView {
@@ -60,7 +65,7 @@ Page {
             width: listView.width
 
             PageHeader {
-                title: qsTr("Categories")
+                title: qsTr("Views")
             }
 
             FilterItem {
@@ -128,6 +133,33 @@ Page {
                     right: parent.right
                     rightMargin: Theme.horizontalPageMargin
                     verticalCenter: parent.verticalCenter
+                }
+
+            }
+
+        }
+
+        // The tags of the note folder stand under the categories rather than
+        // on a page of their own: both are ways of narrowing the notes, and
+        // a tag is chosen the same way a category is. They are only here at
+        // all on a server that carries them.
+        footer: Column {
+            width: listView.width
+
+            SectionHeader {
+                visible: Lappu.tagsAvailable && app.notes.tags.count > 0
+                text: qsTr("Tags")
+            }
+
+            Repeater {
+                model: Lappu.tagsAvailable ? app.notes.tags : 0
+
+                FilterItem {
+                    width: listView.width
+                    name: app.notes.tagLabel(model.path)
+                    count: model.count
+                    selected: app.notes.filterKind === "tag" && app.notes.filterTag === model.path
+                    onClicked: page.selectTag(model.path)
                 }
 
             }

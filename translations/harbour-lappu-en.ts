@@ -44,37 +44,6 @@
     </message>
 </context>
 <context>
-    <name>CategoriesPage</name>
-    <message>
-        <source>About</source>
-        <translation>About</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation>Settings</translation>
-    </message>
-    <message>
-        <source>Refresh</source>
-        <translation>Refresh</translation>
-    </message>
-    <message>
-        <source>Categories</source>
-        <translation>Categories</translation>
-    </message>
-    <message>
-        <source>All</source>
-        <translation>All</translation>
-    </message>
-    <message>
-        <source>Favorites</source>
-        <translation>Favorites</translation>
-    </message>
-    <message>
-        <source>Uncategorized</source>
-        <translation>Uncategorized</translation>
-    </message>
-</context>
-<context>
     <name>CategoryPickerPage</name>
     <message>
         <source>Set</source>
@@ -829,6 +798,26 @@
         <source>%1 is read-only on the server. The change is waiting.</source>
         <translation>%1 is read-only on the server. The change is waiting.</translation>
     </message>
+    <message>
+        <source>The server cannot read the tags of the note folder.</source>
+        <translation>The server cannot read the tags of the note folder.</translation>
+    </message>
+    <message>
+        <source>The tags of the note folder are read-only.</source>
+        <translation>The tags of the note folder are read-only.</translation>
+    </message>
+    <message>
+        <source>The tags of the note folder are locked on the server. The change is waiting.</source>
+        <translation>The tags of the note folder are locked on the server. The change is waiting.</translation>
+    </message>
+    <message>
+        <source>The server is taking too many tag changes. Try again shortly.</source>
+        <translation>The server is taking too many tag changes. Try again shortly.</translation>
+    </message>
+    <message>
+        <source>The server would not change the tags.</source>
+        <translation>The server would not change the tags.</translation>
+    </message>
 </context>
 <context>
     <name>Session</name>
@@ -839,6 +828,14 @@
     <message>
         <source>%1 was deleted on the server. The change made here is kept as a new note.</source>
         <translation>%1 was deleted on the server. The change made here is kept as a new note.</translation>
+    </message>
+    <message>
+        <source>The tags changed on the server. The tags of %1 are waiting.</source>
+        <translation>The tags changed on the server. The tags of %1 are waiting.</translation>
+    </message>
+    <message>
+        <source>The tags of the note folder are read-only on the server.</source>
+        <translation>The tags of the note folder are read-only on the server.</translation>
     </message>
 </context>
 <context>
@@ -974,6 +971,32 @@
     </message>
 </context>
 <context>
+    <name>TagChips</name>
+    <message>
+        <source>None</source>
+        <translation>None</translation>
+    </message>
+</context>
+<context>
+    <name>TagEditor</name>
+    <message>
+        <source>Tags</source>
+        <translation>Tags</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>None</translation>
+    </message>
+    <message>
+        <source>New tag</source>
+        <translation>New tag</translation>
+    </message>
+    <message>
+        <source>Work/Projects</source>
+        <translation>Work/Projects</translation>
+    </message>
+</context>
+<context>
     <name>TranslationsPage</name>
     <message>
         <source>Translations</source>
@@ -982,6 +1005,45 @@
     <message>
         <source>Request a new language or contribute to existing languages on the Transifex project page.</source>
         <translation>Request a new language or contribute to existing languages on the Transifex project page.</translation>
+    </message>
+</context>
+<context>
+    <name>ViewsPage</name>
+    <message>
+        <source>About</source>
+        <translation>About</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation>Settings</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Refresh</translation>
+    </message>
+    <message>
+        <source>Categories</source>
+        <translation>Categories</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>All</translation>
+    </message>
+    <message>
+        <source>Favorites</source>
+        <translation>Favorites</translation>
+    </message>
+    <message>
+        <source>Uncategorized</source>
+        <translation>Uncategorized</translation>
+    </message>
+    <message>
+        <source>Tags</source>
+        <translation>Tags</translation>
+    </message>
+    <message>
+        <source>Views</source>
+        <translation>Views</translation>
     </message>
 </context>
 <context>

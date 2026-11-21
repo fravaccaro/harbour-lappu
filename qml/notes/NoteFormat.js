@@ -70,10 +70,31 @@ function plainText(text) {
     return out.join("\n")
 }
 
+// A nested name as it is read: Nextcloud writes a category with slashes in
+// it and the QOwnNotes tag tree names a tag the same way, so both are shown
+// with the separator spelled out.
+function pathLabel(path) {
+    return String(path).split("/").join(" / ")
+}
+
 function categoryLabel(category) {
     if (category === "")
         return ""
-    return String(category).split("/").join(" / ")
+    return pathLabel(category)
+}
+
+// A name typed into a tag field as the server would hold it: the spelling
+// out is undone, a step that says nothing is dropped, and a trailing slash
+// names no tag of its own.
+function tagPath(text) {
+    var parts = String(text).split("/")
+    var out = []
+    for (var i = 0; i < parts.length; ++i) {
+        var part = parts[i].trim()
+        if (part !== "")
+            out.push(part)
+    }
+    return out.join("/")
 }
 
 // The name of a note as it is shown above or beside it: a favourite carries

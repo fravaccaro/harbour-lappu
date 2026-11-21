@@ -173,7 +173,9 @@ ApplicationWindow {
             "title": note.title,
             "content": note.content,
             "category": note.category,
-            "favorite": note.favorite
+            "favorite": note.favorite,
+            // The tags are not part of the note, so they are read beside it.
+            "tags": Lappu.tagsOfNote(note.noteId)
         });
     }
 
@@ -185,8 +187,12 @@ ApplicationWindow {
         id: store
 
         // The session fills its model before the window loads, so the notes
-        // from the last pull are already there to take.
-        Component.onCompleted: ingest(Notes.notes())
+        // from the last pull are already there to take, and so are the tags
+        // the last read of them left on the device.
+        Component.onCompleted: {
+            ingest(Notes.notes());
+            ingestTags();
+        }
     }
 
     Timer {
@@ -241,6 +247,7 @@ ApplicationWindow {
                 app.showMain();
         }
         onNotesChanged: app.notes.ingest(Notes.notes())
+        onTagsChanged: app.notes.ingestTags()
         onBusyChanged: app.notes.busy = Lappu.busy
         onErrorMessageChanged: app.showToast(Lappu.errorMessage)
         onNotice: app.showToast(text)

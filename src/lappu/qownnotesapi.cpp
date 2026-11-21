@@ -1,5 +1,6 @@
 #include "qownnotesapi.h"
 
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -44,16 +45,95 @@ QString apiBaseOf(const QJsonObject &app)
     return usableBase(base) ? base : QownNotesApi::defaultApiBase();
 }
 
+// Whether the server can read the note folder database at all, which needs an
+// extension of PHP that not every installation carries. A server that cannot
+// read it has no tags to speak of, so nothing about them is asked or shown.
+bool tagsAvailableIn(const QJsonObject &app)
+{
+    return app.value(QStringLiteral("tags")).toObject()
+            .value(QStringLiteral("available")).toBool();
+}
+
+// The tag tree flattened onto one path per tag, the names of the branch
+// joined the way a nested category is written. The order the server sorted
+// the tree in is kept, a parent standing before the tags under it.
+void collectTags(const QJsonArray &nodes, const QString &parentPath, QVector<NoteTag> *tags)
+{
+    for (int i = 0; i < nodes.size(); ++i) {
+        const QJsonObject node = nodes.at(i).toObject();
+        const QString name = node.value(QStringLiteral("name")).toString().trimmed();
+        if (name.isEmpty())
+            continue;
+
+        NoteTag tag;
+        tag.id = node.value(QStringLiteral("id")).toVariant().toLongLong();
+        tag.path = parentPath.isEmpty() ? name : parentPath + QLatin1Char('/') + name;
+        tags->append(tag);
+        collectTags(node.value(QStringLiteral("children")).toArray(), tag.path, tags);
+    }
+}
+
+// A link the server could not place on a note of its own names a file this
+// device knows nothing about, and a stale one belongs to a note that is gone:
+// neither says anything about the notes here.
+QVector<TagLink> linksOf(const QJsonArray &entries)
+{
+    QVector<TagLink> links;
+    for (int i = 0; i < entries.size(); ++i) {
+        const QJsonObject entry = entries.at(i).toObject();
+        TagLink link;
+        link.tagId = entry.value(QStringLiteral("tagId")).toVariant().toLongLong();
+        link.noteId = entry.value(QStringLiteral("noteId")).toVariant().toLongLong();
+        if (link.noteId == 0 || entry.value(QStringLiteral("stale")).toBool())
+            continue;
+
+        links.append(link);
+    }
+
+    return links;
+}
+
+QString tagEtagOf(const QByteArray &body)
+{
+    return QJsonDocument::fromJson(body).object().value(QStringLiteral("etag")).toString();
+}
+
+// What a status other than success means for the tags. The app answers 503
+// where it cannot use the database at all, which is the ordinary way a server
+// says it carries no tags, and 403 where the file is only to be read.
+QString tagStatusError(int status)
+{
+    if (status == 503)
+        return QObject::tr("The server cannot read the tags of the note folder.");
+
+    if (status == 403)
+        return QObject::tr("The tags of the note folder are read-only.");
+
+    if (status == 423) {
+        return QObject::tr("The tags of the note folder are locked on the server. "
+                           "The change is waiting.");
+    }
+    if (status == 429)
+        return QObject::tr("The server is taking too many tag changes. Try again shortly.");
+
+    return QObject::tr("The server would not change the tags.");
+}
+
 }
 
 QownNotesApi::QownNotesApi(QObject *parent)
     : QObject(parent)
     , m_probing(false)
     , m_outstanding(0)
+    , m_tagRequest(NoTagRequest)
+    , m_tagNote(0)
 {
     m_http.setUserAgent(QStringLiteral("Lappu"));
+    m_tagHttp.setUserAgent(QStringLiteral("Lappu"));
     connect(&m_http, &HttpClient::finished, this, &QownNotesApi::onFinished);
     connect(&m_http, &HttpClient::failed, this, &QownNotesApi::onFailed);
+    connect(&m_tagHttp, &HttpClient::finished, this, &QownNotesApi::onTagsFinished);
+    connect(&m_tagHttp, &HttpClient::failed, this, &QownNotesApi::onTagsFailed);
 }
 
 QString QownNotesApi::defaultApiBase()
@@ -69,11 +149,13 @@ void QownNotesApi::setServer(const QString &serverUrl)
 void QownNotesApi::setCredentials(const QString &user, const QString &password)
 {
     m_http.setBasicAuth(user, password);
+    m_tagHttp.setBasicAuth(user, password);
 }
 
 void QownNotesApi::setIgnoreSslErrors(bool ignore)
 {
     m_http.setIgnoreSslErrors(ignore);
+    m_tagHttp.setIgnoreSslErrors(ignore);
 }
 
 void QownNotesApi::probe()
@@ -96,9 +178,14 @@ void QownNotesApi::probe()
     m_http.send("GET", QUrl(m_server + capabilitiesPath()), QByteArray(), headers);
 }
 
+// The base goes with the probe: an account signed out of is a server nothing
+// more is asked of, tags included.
 void QownNotesApi::forget()
 {
     m_probing = false;
+    m_apiBase.clear();
+    m_tagRequest = NoTagRequest;
+    m_tagNote = 0;
 }
 
 // A server that answers anything else has not said the app is there, and
@@ -128,7 +215,7 @@ void QownNotesApi::onFinished(int status, const QByteArray &body)
         return;
     }
 
-    report(true, apiBaseOf(app.toObject()));
+    report(true, apiBaseOf(app.toObject()), tagsAvailableIn(app.toObject()));
 }
 
 void QownNotesApi::onFailed(const QString &)
@@ -147,11 +234,115 @@ bool QownNotesApi::takeReply()
 
 void QownNotesApi::reportAbsent()
 {
-    report(false, QString());
+    report(false, QString(), false);
 }
 
-void QownNotesApi::report(bool present, const QString &apiBase)
+void QownNotesApi::report(bool present, const QString &apiBase, bool tagsAvailable)
 {
     m_probing = false;
-    emit probed(present, apiBase);
+    m_apiBase = apiBase;
+    emit probed(present, apiBase, tagsAvailable);
+}
+
+void QownNotesApi::fetchTags()
+{
+    sendTagRequest(TagTree, "GET", QStringLiteral("tags"));
+}
+
+void QownNotesApi::fetchTagLinks()
+{
+    sendTagRequest(TagLinks, "GET", QStringLiteral("tag-links"));
+}
+
+void QownNotesApi::setNoteTags(qint64 noteId, const QStringList &paths, const QString &etag)
+{
+    QJsonArray wanted;
+    for (int i = 0; i < paths.size(); ++i)
+        wanted.append(paths.at(i));
+
+    QJsonObject body;
+    body.insert(QStringLiteral("tagPaths"), wanted);
+    m_tagNote = noteId;
+    sendTagRequest(NoteTags, "PUT",
+                   QStringLiteral("note/%1/tags").arg(QString::number(noteId)),
+                   QJsonDocument(body).toJson(QJsonDocument::Compact), etag);
+}
+
+// The tag endpoints hand their version out bare and compare the header
+// against it as it was given, unlike the Notes app, which compares one
+// wrapped in the quotes of an HTTP tag. An empty version sends no header,
+// which the server takes as a change made to the file as it now stands.
+void QownNotesApi::sendTagRequest(TagRequest request, const QByteArray &method,
+                                  const QString &path, const QByteArray &body,
+                                  const QString &etag)
+{
+    if (m_apiBase.isEmpty())
+        return;
+
+    m_tagRequest = request;
+    HttpClient::Headers headers;
+    headers.append(qMakePair(QByteArray("Accept"), QByteArray("application/json")));
+    if (!body.isEmpty())
+        headers.append(qMakePair(QByteArray("Content-Type"), QByteArray("application/json")));
+
+    if (!etag.isEmpty())
+        headers.append(qMakePair(QByteArray("If-Match"), etag.toUtf8()));
+
+    m_tagHttp.send(method, QUrl(m_server + m_apiBase + path), body, headers);
+}
+
+void QownNotesApi::onTagsFinished(int status, const QByteArray &body)
+{
+    const TagRequest asked = m_tagRequest;
+    m_tagRequest = NoTagRequest;
+    if (status < 200 || status >= 300) {
+        reportTagStatus(status);
+        return;
+    }
+
+    if (asked == TagTree)
+        reportTagTree(body);
+    else if (asked == TagLinks)
+        reportTagLinks(body);
+    else if (asked == NoteTags)
+        emit noteTagsSet(m_tagNote);
+}
+
+void QownNotesApi::onTagsFailed(const QString &error)
+{
+    m_tagRequest = NoTagRequest;
+    emit tagsFailed(error);
+}
+
+void QownNotesApi::reportTagTree(const QByteArray &body)
+{
+    const QJsonObject answer = QJsonDocument::fromJson(body).object();
+    QVector<NoteTag> tags;
+    collectTags(answer.value(QStringLiteral("tags")).toArray(), QString(), &tags);
+    emit tagsReady(answer.value(QStringLiteral("etag")).toString(),
+                   answer.value(QStringLiteral("writable")).toBool(), tags);
+}
+
+void QownNotesApi::reportTagLinks(const QByteArray &body)
+{
+    const QJsonObject answer = QJsonDocument::fromJson(body).object();
+    emit tagLinksReady(answer.value(QStringLiteral("etag")).toString(),
+                       linksOf(answer.value(QStringLiteral("links")).toArray()));
+}
+
+// A refused password is the account's business rather than the tags', so it
+// goes where every other one does and the tags are left unspoken for.
+void QownNotesApi::reportTagStatus(int status)
+{
+    if (status == 401) {
+        emit unauthorized(NotesApi::passwordRefusedError());
+        return;
+    }
+
+    if (status == 412) {
+        emit noteTagsStale(m_tagNote);
+        return;
+    }
+
+    emit tagsFailed(tagStatusError(status));
 }

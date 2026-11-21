@@ -23,6 +23,8 @@ Signing in refreshes whatever the startup setting says, because a new account ha
 
 The notes are kept by one of two Nextcloud apps, and Lappu asks the server which it has rather than being told. A server with the **QOwnNotes** app installed has its notes read and written there; any other server uses the **Notes** app, which is the ordinary case. Nothing about refreshing, saving or sharing changes either way, and there is no setting for it: the first thing Lappu asks a server after signing in is what it carries, and the first refresh follows the answer.
 
+The same answer says whether the server has **tags**. They are kept in a database of the note folder rather than in the notes, so they travel on their own: a refresh reads them after the notes, and a tag set here is sent to that database and not written into the note's file. A tag that could not be sent waits on the phone like any other change. Where the server has no tags, Lappu neither shows them nor asks for them.
+
 ## What a refresh does
 
 A refresh **sends what is owed before it fetches anything**. Saving a note, favouriting it or deleting it writes the change to the copy on the phone straight away and marks that note as owed; the refresh offers the owed notes to the server first, then pulls the server's notes over the result.

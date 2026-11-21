@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Notes and categories
+title: Notes and views
 parent: Using Lappu
 nav_order: 2
 ---
 
-# Notes and categories
+# Notes and views
 
 The first page is the notes themselves. Each row carries the title of the note, how long ago it was last changed, and the opening of the body; a favourite is marked with a star, and in the **All** view a note that belongs to a category says which one. Tapping a row opens the note; tapping and holding it opens a menu to favourite it, pin it to the cover, edit it or delete it.
 
@@ -17,9 +17,9 @@ A row above the notes appears when a note changed on the phone and on the server
 
 Pull the list down for **About**, **Settings**, **Refresh**, **Search** and **New note**. New note sits at the handle, nearest the thumb.
 
-## Categories
+## Views
 
-Swipe left from the notes for the categories. Four kinds of view live there:
+Swipe left from the notes for **Views**, the ways the notes are narrowed down. Four kinds live there:
 
 * **All** - every note
 * **Favorites** - the notes marked with a star
@@ -28,7 +28,15 @@ Swipe left from the notes for the categories. Four kinds of view live there:
 
 Each entry carries its own count. The categories are read from the notes rather than kept separately, so a category exists for as long as a note names it and disappears when the last note leaves it. A category whose name has slashes in it - Nextcloud writes nested categories that way - is shown with the separator spelled out.
 
-Choosing a view takes you back to the notes with the title at the top changed to match. Creating a note from inside a category gives the new note that category to start with.
+Choosing a view takes you back to the notes with the title at the top changed to match. Creating a note from inside a category gives the new note that category to start with. Tags make a fifth kind of view on a server that has them, and are listed under the categories on the same page.
+
+## Tags
+
+A note belongs to one category but can carry any number of tags. Tags are a feature of the **QOwnNotes** app for Nextcloud rather than of the Notes app, so everything about them is there only on a server that carries that app and can read the tag database of the note folder. Everywhere else Lappu says nothing about tags at all.
+
+They are listed on the same page, under the categories, one entry per tag with the number of notes carrying it. Choosing one takes you back to the notes showing only those, with the title at the top changed to match, exactly as a category does.
+
+The tags are the note folder's own, the same ones QOwnNotes shows on the desktop and on Android, so a tag made in any of them is a tag here. A tag nested under another is written with slashes - `Work/Projects` - and is shown with the separator spelled out.
 
 ## Searching
 
