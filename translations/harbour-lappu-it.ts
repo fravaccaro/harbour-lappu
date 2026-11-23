@@ -44,41 +44,6 @@
     </message>
 </context>
 <context>
-    <name>CategoriesPage</name>
-    <message>
-        <source>About</source>
-        <translation>Informazioni</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation>Impostazioni</translation>
-    </message>
-    <message>
-        <source>Refresh</source>
-        <translation>Ricarica</translation>
-    </message>
-    <message>
-        <source>Categories</source>
-        <translation>Categorie</translation>
-    </message>
-    <message>
-        <source>All</source>
-        <translation>Tutte</translation>
-    </message>
-    <message>
-        <source>Favorites</source>
-        <translation>Preferiti</translation>
-    </message>
-    <message>
-        <source>Uncategorized</source>
-        <translation>Senza categoria</translation>
-    </message>
-    <message>
-        <source>No categories</source>
-        <translation>Nessuna categoria</translation>
-    </message>
-</context>
-<context>
     <name>CategoryPickerPage</name>
     <message>
         <source>Set</source>
@@ -485,6 +450,52 @@
         <source>A change to this note has not reached the server yet.</source>
         <translation>Una modifica a questa nota non è ancora arrivata al server.</translation>
     </message>
+    <message>
+        <source>Previous versions</source>
+        <translation>Versioni precedenti</translation>
+    </message>
+</context>
+<context>
+    <name>NoteVersionPage</name>
+    <message>
+        <source>Restoring</source>
+        <translation>Ripristino</translation>
+    </message>
+    <message>
+        <source>Restore this version</source>
+        <translation>Ripristina questa versione</translation>
+    </message>
+    <message>
+        <source>Earlier version</source>
+        <translation>Versione precedente</translation>
+    </message>
+    <message>
+        <source>As it read then</source>
+        <translation>Com&apos;era allora</translation>
+    </message>
+</context>
+<context>
+    <name>NoteVersionsPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation>Aggiorna</translation>
+    </message>
+    <message>
+        <source>Previous versions</source>
+        <translation>Versioni precedenti</translation>
+    </message>
+    <message>
+        <source>Previous versions of this note saved on Nextcloud. Your current version isn&apos;t listed here.</source>
+        <translation>Versioni precedenti di questa nota salvate su Nextcloud. La versione attuale non è inclusa in questo elenco.</translation>
+    </message>
+    <message>
+        <source>No previous versions</source>
+        <translation>Nessuna versione precedente</translation>
+    </message>
+    <message>
+        <source>A version is kept each time the note is changed on the server.</source>
+        <translation>Una versione viene conservata ogni volta che la nota cambia sul server.</translation>
+    </message>
 </context>
 <context>
     <name>NotesApi</name>
@@ -543,14 +554,6 @@
 </context>
 <context>
     <name>NotesPullDownMenu</name>
-    <message>
-        <source>About</source>
-        <translation>Informazioni</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation>Impostazioni</translation>
-    </message>
     <message>
         <source>Refresh</source>
         <translation>Ricarica</translation>
@@ -843,6 +846,58 @@
         <source>%1 is read-only on the server. The change is waiting.</source>
         <translation>%1 è di sola lettura sul server. La modifica è in attesa.</translation>
     </message>
+    <message>
+        <source>The server cannot read the tags of the note folder.</source>
+        <translation>Il server non riesce a leggere le etichette della cartella delle note.</translation>
+    </message>
+    <message>
+        <source>The tags of the note folder are read-only.</source>
+        <translation>Le etichette della cartella delle note sono di sola lettura.</translation>
+    </message>
+    <message>
+        <source>The tags of the note folder are locked on the server. The change is waiting.</source>
+        <translation>Le etichette della cartella delle note sono bloccate sul server. La modifica è in attesa.</translation>
+    </message>
+    <message>
+        <source>The server is taking too many tag changes. Try again shortly.</source>
+        <translation>Il server sta ricevendo troppe modifiche alle etichette. Riprova tra poco.</translation>
+    </message>
+    <message>
+        <source>The server would not change the tags.</source>
+        <translation>Il server non ha accettato la modifica delle etichette.</translation>
+    </message>
+    <message>
+        <source>The server keeps no trash for the notes.</source>
+        <translation>Il server non tiene un cestino per le note.</translation>
+    </message>
+    <message>
+        <source>The note folder is read-only, so nothing can be put back into it.</source>
+        <translation>La cartella delle note è di sola lettura, quindi non ci si può rimettere nulla.</translation>
+    </message>
+    <message>
+        <source>The server no longer has that deleted note.</source>
+        <translation>Il server non ha più quella nota eliminata.</translation>
+    </message>
+    <message>
+        <source>The server is taking too many restores. Try again shortly.</source>
+        <translation>Il server sta ricevendo troppi ripristini. Riprova tra poco.</translation>
+    </message>
+    <message>
+        <source>The server would not open its trash.</source>
+        <translation>Il server non ha aperto il suo cestino.</translation>
+    </message>
+    <message>
+        <source>The server keeps no previous versions of the notes.</source>
+        <translation>Il server non conserva versioni precedenti delle note.</translation>
+    </message>
+    <message>
+        <source>The server no longer has that note.</source>
+        <translation>Il server non ha più quella nota.</translation>
+    </message>
+    <message>
+        <source>The server would not say what the note said before.</source>
+        <translation>Il server non ha voluto dire cosa diceva la nota prima.</translation>
+    </message>
 </context>
 <context>
     <name>Session</name>
@@ -853,6 +908,18 @@
     <message>
         <source>%1 was deleted on the server. The change made here is kept as a new note.</source>
         <translation>%1 è stata eliminata sul server. La modifica fatta qui è conservata come nuova nota.</translation>
+    </message>
+    <message>
+        <source>The tags changed on the server. The tags of %1 are waiting.</source>
+        <translation>Le etichette sono cambiate sul server. Le etichette di %1 sono in attesa.</translation>
+    </message>
+    <message>
+        <source>The tags of the note folder are read-only on the server.</source>
+        <translation>Le etichette della cartella delle note sono di sola lettura sul server.</translation>
+    </message>
+    <message>
+        <source>The note was put back.</source>
+        <translation>La nota è stata ripristinata.</translation>
     </message>
 </context>
 <context>
@@ -988,6 +1055,32 @@
     </message>
 </context>
 <context>
+    <name>TagChips</name>
+    <message>
+        <source>None</source>
+        <translation>Nessuna</translation>
+    </message>
+</context>
+<context>
+    <name>TagEditor</name>
+    <message>
+        <source>Tags</source>
+        <translation>Etichette</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Nessuna</translation>
+    </message>
+    <message>
+        <source>New tag</source>
+        <translation>Nuova etichetta</translation>
+    </message>
+    <message>
+        <source>work, urgent, ideas...</source>
+        <translation>lavoro, urgente, idee...</translation>
+    </message>
+</context>
+<context>
     <name>TranslationsPage</name>
     <message>
         <source>Translations</source>
@@ -996,6 +1089,84 @@
     <message>
         <source>Request a new language or contribute to existing languages on the Transifex project page.</source>
         <translation>Richiedi una nuova lingua o contribuisci a quelle esistenti sulla pagina del progetto di Transifex.</translation>
+    </message>
+</context>
+<context>
+    <name>TrashPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation>Aggiorna</translation>
+    </message>
+    <message>
+        <source>Trash</source>
+        <translation>Cestino</translation>
+    </message>
+    <message>
+        <source>These notes were deleted and are being kept by Nextcloud. Putting one back returns it to the folder it was deleted from, with its tags.</source>
+        <translation>Queste note sono state eliminate e Nextcloud le sta conservando. Ripristinandone una, torna nella cartella da cui è stata eliminata, con le sue etichette.</translation>
+    </message>
+    <message>
+        <source>Deleted %1</source>
+        <translation>Eliminata %1</translation>
+    </message>
+    <message>
+        <source>In %1</source>
+        <translation>In %1</translation>
+    </message>
+    <message>
+        <source>Restore</source>
+        <translation>Ripristina</translation>
+    </message>
+    <message>
+        <source>The trash is empty</source>
+        <translation>Il cestino è vuoto</translation>
+    </message>
+    <message>
+        <source>A note deleted from the folder is kept here until Nextcloud lets go of it.</source>
+        <translation>Una nota eliminata dalla cartella resta qui finché Nextcloud non la lascia andare.</translation>
+    </message>
+</context>
+<context>
+    <name>ViewsPage</name>
+    <message>
+        <source>About</source>
+        <translation>Informazioni</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation>Impostazioni</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Ricarica</translation>
+    </message>
+    <message>
+        <source>Categories</source>
+        <translation>Categorie</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Tutte</translation>
+    </message>
+    <message>
+        <source>Favorites</source>
+        <translation>Preferiti</translation>
+    </message>
+    <message>
+        <source>Uncategorized</source>
+        <translation>Senza categoria</translation>
+    </message>
+    <message>
+        <source>Tags</source>
+        <translation>Etichette</translation>
+    </message>
+    <message>
+        <source>Views</source>
+        <translation>Viste</translation>
+    </message>
+    <message>
+        <source>Trash</source>
+        <translation>Cestino</translation>
     </message>
 </context>
 <context>

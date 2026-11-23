@@ -11,6 +11,7 @@
 #include "loginflow.h"
 #include "notesapi.h"
 #include "notescache.h"
+#include "qownnotesapi.h"
 #include "types.h"
 
 class NotesModel;
@@ -41,6 +42,28 @@ class Session : public QObject
     Q_PROPERTY(int conflictCount READ conflictCount NOTIFY conflictsChanged)
     // How many notes the server is holding shut, by a lock or by a permission.
     Q_PROPERTY(int lockedCount READ lockedCount NOTIFY lockedChanged)
+    // Whether the server carries the QOwnNotes app, which the features that
+    // need it are shown by. Asked of the server once an account is known and
+    // kept nowhere: it is a fact about this server rather than a setting.
+    Q_PROPERTY(bool qownNotes READ qownNotes NOTIFY qownNotesChanged)
+    // Whether the tags of the note folder can be read on this server, which
+    // takes both the app and a server able to open the database it keeps them
+    // in. Everything about tags is drawn and asked for behind this alone.
+    Q_PROPERTY(bool tagsAvailable READ tagsAvailable NOTIFY tagsAvailableChanged)
+    // Whether the notes deleted from the folder can be looked at on this
+    // server, which takes the QOwnNotes app and Nextcloud's own Deleted
+    // files app. The way into the trash is drawn behind this alone.
+    Q_PROPERTY(bool trashAvailable READ trashAvailable NOTIFY trashAvailableChanged)
+    // Whether the trash is being read or written to. It is the trash page's
+    // own indicator and is kept apart from busy, which the notes own.
+    Q_PROPERTY(bool trashBusy READ trashBusy NOTIFY trashBusyChanged)
+    // Whether a note has a history to read on this server, which takes the
+    // QOwnNotes app and Nextcloud's own Versions app. The way into it is
+    // drawn behind this alone.
+    Q_PROPERTY(bool versionsAvailable READ versionsAvailable NOTIFY versionsAvailableChanged)
+    // Whether the versions of a note are being read, for the page that
+    // lists them. The notes keep busy to themselves.
+    Q_PROPERTY(bool versionsBusy READ versionsBusy NOTIFY versionsBusyChanged)
 
 public:
     explicit Session(Config *config, NotesModel *notes, QObject *parent = nullptr);
@@ -72,6 +95,12 @@ public:
     void setViewMode(const QString &mode);
     int conflictCount() const { return m_conflicts.size(); }
     int lockedCount() const { return m_locked.size(); }
+    bool qownNotes() const { return m_qownNotes; }
+    bool tagsAvailable() const { return m_tagsAvailable; }
+    bool trashAvailable() const { return m_trashAvailable; }
+    bool trashBusy() const { return m_trashBusy; }
+    bool versionsAvailable() const { return m_versionsAvailable; }
+    bool versionsBusy() const { return m_versionsBusy; }
 
     Q_INVOKABLE void startLogin(const QString &serverUrl);
     Q_INVOKABLE void cancelLogin();
@@ -85,8 +114,11 @@ public:
     // note's name and is kept apart from the content: it is saved as it is
     // given, so a note is never renamed by what is written in it. An empty
     // title alone falls back to the first line.
-    Q_INVOKABLE void saveNote(int noteId, const QString &title, const QString &content,
-                              const QString &category, bool favorite);
+    // Answers with the id the note was saved under, which for a new note is
+    // the temporary one it borrows until the server names it, so the caller
+    // can go on to say something else about the note it has just written.
+    Q_INVOKABLE int saveNote(int noteId, const QString &title, const QString &content,
+                             const QString &category, bool favorite);
     // The body a share makes, as plain text and as a link. Neither writes
     // anything: the note is the editor's to save, as one typed by hand is.
     // An empty answer means the share held nothing worth writing down.
@@ -113,6 +145,38 @@ public:
     // one it has never seen has no version to fall back on.
     Q_INVOKABLE void discardLocal(int noteId);
 
+    // The tags of the note folder as plain rows, each the path of a tag and
+    // how many notes carry it, the way the notes themselves are handed over.
+    Q_INVOKABLE QVariantList tags() const;
+    // Every tagged note by id, each with its tags as paths, for the pages
+    // that filter the notes by one.
+    Q_INVOKABLE QVariantMap noteTags() const;
+    Q_INVOKABLE QStringList tagsOfNote(int noteId) const;
+    // Sets the tags of one note to exactly these paths. The change is kept
+    // here at once and offered to the server after, so a note tagged with no
+    // server in reach keeps its tags and sends them later.
+    Q_INVOKABLE void setNoteTags(int noteId, const QStringList &paths);
+
+    // The notes the server is holding in its trash. They are read when they
+    // are asked for rather than with the notes: the trash is the server's
+    // own listing, and nothing here is kept on the device.
+    Q_INVOKABLE void loadTrash();
+    Q_INVOKABLE QVariantList trashedNotes() const;
+    // Puts one back where it was deleted from, named the way the trash lists
+    // it, and pulls afterwards so the note itself comes home.
+    Q_INVOKABLE void restoreNote(const QString &originalLocation, double deleted);
+
+    // The versions the server is keeping of one note, newest first and the
+    // current one left out. They are read when the page that lists them is
+    // opened: it is the server's record, and nothing of it is kept here.
+    Q_INVOKABLE void loadVersions(int noteId);
+    Q_INVOKABLE QVariantList noteVersions() const;
+
+    // Every folder below the note folder, as the server last listed it. The
+    // categories of the notes are drawn whatever this answers: it is what
+    // adds the folders holding no note, which nothing else can name.
+    Q_INVOKABLE QStringList folders() const;
+
 signals:
     void readyChanged();
     void configuredChanged();
@@ -135,6 +199,24 @@ signals:
     void notesChanged();
     void conflictsChanged();
     void lockedChanged();
+    void qownNotesChanged();
+    void tagsAvailableChanged();
+    // The tags, the links between them and the notes, or what is owed on one
+    // of them have moved, so the pages take them again.
+    void tagsChanged();
+    void trashAvailableChanged();
+    void trashBusyChanged();
+    // The trash as the server last listed it has changed, by a read or by a
+    // note leaving it.
+    void trashChanged();
+    // The folders of the note folder have been read again, so the views take
+    // them again.
+    void foldersChanged();
+    void versionsAvailableChanged();
+    void versionsBusyChanged();
+    // The versions held for a note have been read, or dropped for another
+    // note's.
+    void versionsChanged();
     // Something the user is owed an explanation of, but that is not an error:
     // it goes its own way rather than through errorMessage, which would hold
     // a second identical notice back.
@@ -145,6 +227,52 @@ private:
     void setError(const QString &error);
     void applyCredentials();
     void applyApiSettings();
+    // Asks the server what it carries and holds back anything the notes are
+    // owed until it answers, the answer being what says where to send them.
+    void probeServer();
+    // Takes the probe's answer: the flag the pages read, the path the notes
+    // go to, and whatever was waiting on it.
+    void onProbed(const ServerApps &apps);
+    void flushProbeWaiters();
+    void setQownNotes(bool present);
+    void setTagsAvailable(bool available);
+    void setTrashAvailable(bool available);
+    void setTrashBusy(bool busy);
+    void setVersionsAvailable(bool available);
+    void setVersionsBusy(bool busy);
+    // Reads the tag tree and the links between tags and notes, in that order:
+    // a link names a tag by id, so the tree has to be there to read it by.
+    // Nothing is asked where the server carries no tags, and a read goes out
+    // on its own client, so one that stalls leaves the notes alone.
+    void refreshTags();
+    void onTagsReady(const QString &etag, bool writable, const QVector<NoteTag> &tags);
+    void onTagLinksReady(const QString &etag, const QVector<TagLink> &links);
+    // Sends the tags of the next note that owes them. A note the server has
+    // never seen is passed over: its tags go out once it has been named.
+    void pushOwedTags();
+    void onNoteTagsSet(qint64 noteId);
+    // Lets go of what was owed on the note the links just read answer for.
+    void settleOwedTags();
+    void onNoteTagsStale(qint64 noteId);
+    void onTagsFailed(const QString &error);
+    // Reads the folder tree, which only the QOwnNotes app can answer for. It
+    // follows a pull the way the tags do, and needs no second app: a server
+    // carrying the one has folders to list.
+    void refreshFolders();
+    void onFoldersReady(const QStringList &paths);
+    void onVersionsReady(qint64 noteId, const QVector<NoteVersion> &versions);
+    void onVersionsFailed(const QString &error);
+    // Lets go of the history held for a note, for a server that keeps none
+    // and for an account being left.
+    void forgetVersions();
+    // Asks for the history that is wanted, where none is being read already.
+    void sendVersionRequest();
+    void onTrashReady(const QVector<TrashedNote> &notes);
+    void onTrashRestored(qint64 noteId);
+    void onTrashFailed(const QString &error);
+    // Forgets the note that has just left the trash, so the list is right
+    // before the server has been asked about it again.
+    void dropRestored();
     void applySyncTimer();
     void syncIfStartupWanted();
     void reloadModels();
@@ -196,6 +324,7 @@ private:
     NotesModel *m_notes;
     LoginFlow m_login;
     NotesApi m_api;
+    QownNotesApi m_qown;
     NotesCache m_cache;
     QTimer m_syncTimer;
     // What is still owed to the server in this run.
@@ -233,6 +362,69 @@ private:
     // The sync a launch asks for is wanted once, not again every time the
     // credentials are applied.
     bool m_syncedOnStart;
+    // Whether the QOwnNotes app answered for itself on this server, which is
+    // false until a probe says otherwise.
+    bool m_qownNotes;
+    // Whether that app can read the tags of the note folder. Kept beside the
+    // flag above rather than folded into it: the app may be there and the
+    // tags still out of reach, and what is drawn then is a note without them.
+    bool m_tagsAvailable;
+    // Whether a tag request is in flight. One goes out at a time, a read of
+    // the tree being followed by a read of the links and then by whatever
+    // tags are owed.
+    bool m_tagRequest;
+    // The note whose tags are being written, or 0 while the tags are only
+    // being read. A read that fails is not worth a word; a write is.
+    qint64 m_tagNoteInFlight;
+    // The tags that went out with that write. The answer is taken against
+    // them rather than against the row as it now stands: a note tagged again
+    // while the write travelled is owed what was chosen second, and clearing
+    // the row blindly would lose it, as settling a written note blindly
+    // would lose a newer edit.
+    QStringList m_tagsSent;
+    // The note whose tags the server has taken but whose links have not been
+    // read back yet. What was owed on it is held until they are: dropping it
+    // the moment the write landed would leave the note showing the tags it
+    // had before, for as long as the read takes, so a tag just added would
+    // be seen to vanish and come back.
+    qint64 m_tagSettled;
+    // Whether the server keeps a trash for the note folder.
+    bool m_trashAvailable;
+    // The trash as the server last listed it. Held in memory alone, as the
+    // conflicts are: it is a listing of the server's rather than anything of
+    // this device's, and a page that is not open has no use for it.
+    QVector<TrashedNote> m_trash;
+    bool m_trashBusy;
+    // The note being put back, so the row can be taken out of the list the
+    // moment the server says it is a note again.
+    TrashedNote m_restoring;
+    // Whether a note has a history to read on this server.
+    bool m_versionsAvailable;
+    // The versions of one note, held while its page is open and no longer:
+    // they are the server's record of the note, and nothing here keeps one.
+    QVector<NoteVersion> m_versions;
+    // The note those versions belong to, so an answer for a note the user
+    // has left is not drawn over another note's history.
+    qint64 m_versionsNote;
+    // The note whose history is wanted and the one it was asked for. They
+    // differ where a page was opened while an answer was still travelling:
+    // that answer is dropped and the one wanted is asked for after it.
+    qint64 m_versionsWanted;
+    qint64 m_versionsAsked;
+    bool m_versionsBusy;
+    // Whether the tags have already been read again for a change the server
+    // said was built on an older version of them. One such retry is enough:
+    // a second refusal is the database moving faster than the app can answer.
+    bool m_tagRetried;
+    // Whether the probe for these credentials has answered. Until it has,
+    // nothing is sent: the answer says which path the notes are served under,
+    // and a request made before it would ask the wrong app.
+    bool m_probeAnswered;
+    // A sync and an owed edit that arrived while the probe was out. They are
+    // run once it answers rather than dropped, since what was waiting on it
+    // was only the path, not the server.
+    bool m_syncWhenProbed;
+    bool m_owedWhileProbing;
 };
 
 #endif

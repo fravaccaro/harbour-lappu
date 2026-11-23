@@ -3,6 +3,96 @@
 
 #include <QString>
 
+// One tag of the QOwnNotes tag tree, flattened onto its path: the names from
+// the top level joined with slashes, which is both how a tag is shown and how
+// it is named back to the server. The tree is not kept as a tree because
+// nothing here nests one: a tag is a filter, and a path tells two apart.
+struct NoteTag
+{
+    qint64 id;
+    QString path;
+
+    NoteTag()
+        : id(0)
+    {
+    }
+};
+
+// What the server carries, as its capabilities answered for it. The whole of
+// the answer travels together because every part of it is settled by the one
+// request, and a feature nothing has confirmed is left out of the way: an
+// unreachable server is a server carrying none of this.
+struct ServerApps
+{
+    bool present;
+    // Where the app serves its APIs. Empty unless the app is there.
+    QString apiBase;
+    // Whether the tags of the note folder can be read at all.
+    bool tags;
+    // Whether Nextcloud's Deleted files app is on for this user, which is
+    // what gives the note folder a trash to look in.
+    bool trash;
+    // Whether Nextcloud's Versions app is on for this user, without which a
+    // note has no history to read.
+    bool versions;
+
+    ServerApps()
+        : present(false)
+        , tags(false)
+        , trash(false)
+        , versions(false)
+    {
+    }
+};
+
+// One note carrying one tag. A link the server could not place on a note of
+// its own is left out, there being no note here for it to belong to.
+struct TagLink
+{
+    qint64 tagId;
+    qint64 noteId;
+
+    TagLink()
+        : tagId(0)
+        , noteId(0)
+    {
+    }
+};
+
+// One note the server is holding in its trash. It is named by where it was
+// and when it went, which is the pair a restore is asked for by: a deleted
+// note has no id of its own until it is a note again.
+struct TrashedNote
+{
+    QString title;
+    QString fileName;
+    QString subFolderPath;
+    QString originalLocation;
+    // Seconds since the epoch, as the server reports the deletion.
+    qint64 deleted;
+
+    TrashedNote()
+        : deleted(0)
+    {
+    }
+};
+
+// One previous version of a note: when the server took it, and the whole
+// note as it read then. The server's own wording of the time and its diff
+// are not kept - the time is said in the phone's language, and a version is
+// shown as a note rather than as a change.
+struct NoteVersion
+{
+    // Seconds since the epoch, as the server reports the version.
+    qint64 timestamp;
+    QString text;
+
+    NoteVersion()
+        : timestamp(0)
+    {
+    }
+};
+
 // One note as the device keeps it.
 struct LocalNote
 {

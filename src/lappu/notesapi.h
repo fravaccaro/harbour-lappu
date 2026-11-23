@@ -25,9 +25,22 @@ public:
 
     explicit NotesApi(QObject *parent = nullptr);
 
+    // The sentence a password the server will not take earns. It is said from
+    // here wherever it is met, the account rather than the notes being what
+    // was refused: every client of the same server meets the same answer.
+    static QString passwordRefusedError();
+    // Where the Notes app serves this API, which is where the notes are asked
+    // for unless the server says they live somewhere else.
+    static QString notesAppRoot();
+
     void setServer(const QString &serverUrl);
     void setCredentials(const QString &user, const QString &password);
     void setIgnoreSslErrors(bool ignore);
+    // The path this API is served under, which is the Notes app's own until a
+    // server that carries the QOwnNotes app names the one it publishes. Both
+    // serve the same API, so nothing but the prefix differs. An empty root
+    // puts the Notes app back.
+    void setNotesRoot(const QString &root);
 
     // Asks for every note, content included, as the Notes API hands them out
     // in a single answer.
@@ -69,9 +82,13 @@ private:
     void reportConflict(const QByteArray &body);
     void reportRefusal(int status);
     void reportStatus(int status);
+    QString notesPath() const;
+    QString notePath(qint64 id) const;
 
     HttpClient m_http;
     QString m_server;
+    // Carries its trailing slash, so a path is made by appending to it.
+    QString m_notesRoot;
     Operation m_operation;
     qint64 m_pendingId;
 };

@@ -8,14 +8,17 @@
 
 namespace {
 
-QString notesPath()
+// A root is appended to, so it is kept with a slash at either end whatever
+// shape it arrived in.
+QString rootWithSlashes(const QString &root)
 {
-    return QStringLiteral("/index.php/apps/notes/api/v1/notes");
-}
+    QString path = root;
+    if (!path.startsWith(QLatin1Char('/')))
+        path.prepend(QLatin1Char('/'));
+    if (!path.endsWith(QLatin1Char('/')))
+        path.append(QLatin1Char('/'));
 
-QString notePath(qint64 id)
-{
-    return notesPath() + QLatin1Char('/') + QString::number(id);
+    return path;
 }
 
 LocalNote noteFrom(const QJsonObject &object)
@@ -78,7 +81,7 @@ QByteArray ifMatchValue(const QString &etag)
 QString statusError(int status)
 {
     if (status == 401)
-        return QObject::tr("The server refused the password. Sign in again.");
+        return NotesApi::passwordRefusedError();
     if (status == 403)
         return QObject::tr("The note is read-only on the server.");
     if (status == 404)
@@ -110,12 +113,25 @@ bool writeSucceeded(int status)
 
 NotesApi::NotesApi(QObject *parent)
     : QObject(parent)
+    , m_notesRoot(notesAppRoot())
     , m_operation(Idle)
     , m_pendingId(0)
 {
     m_http.setUserAgent(QStringLiteral("Lappu"));
     connect(&m_http, &HttpClient::finished, this, &NotesApi::onFinished);
     connect(&m_http, &HttpClient::failed, this, &NotesApi::onFailed);
+}
+
+// QObject::tr rather than this class's own, so the sentence stays the one the
+// translations already carry from when it was said inside statusError().
+QString NotesApi::passwordRefusedError()
+{
+    return QObject::tr("The server refused the password. Sign in again.");
+}
+
+QString NotesApi::notesAppRoot()
+{
+    return QStringLiteral("/index.php/apps/notes/api/v1/");
 }
 
 void NotesApi::setServer(const QString &serverUrl)
@@ -131,6 +147,21 @@ void NotesApi::setCredentials(const QString &user, const QString &password)
 void NotesApi::setIgnoreSslErrors(bool ignore)
 {
     m_http.setIgnoreSslErrors(ignore);
+}
+
+void NotesApi::setNotesRoot(const QString &root)
+{
+    m_notesRoot = root.isEmpty() ? notesAppRoot() : rootWithSlashes(root);
+}
+
+QString NotesApi::notesPath() const
+{
+    return m_notesRoot + QStringLiteral("notes");
+}
+
+QString NotesApi::notePath(qint64 id) const
+{
+    return notesPath() + QLatin1Char('/') + QString::number(id);
 }
 
 void NotesApi::send(const QByteArray &method, const QString &path, const QByteArray &body,

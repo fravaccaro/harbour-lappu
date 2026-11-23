@@ -26,6 +26,7 @@ SOURCES += \
     src/lappu/notesapi.cpp \
     src/lappu/notescache.cpp \
     src/lappu/notesmodel.cpp \
+    src/lappu/qownnotesapi.cpp \
     src/lappu/secretsstore.cpp \
     src/lappu/session.cpp \
     src/lappu/sharedtext.cpp \
@@ -38,6 +39,7 @@ HEADERS += \
     src/lappu/notesapi.h \
     src/lappu/notescache.h \
     src/lappu/notesmodel.h \
+    src/lappu/qownnotesapi.h \
     src/lappu/secretsstore.h \
     src/lappu/session.h \
     src/lappu/sharedtext.h \
@@ -66,6 +68,7 @@ DISTFILES += \
     qml/components/ConflictVersion.qml \
     qml/components/EditHistory.qml \
     qml/components/FilterItem.qml \
+    qml/components/IconField.qml \
     qml/components/LappuNotification.qml \
     qml/components/LappuSupportDialog.qml \
     qml/components/MarkdownCode.qml \
@@ -77,13 +80,16 @@ DISTFILES += \
     qml/components/NotesPullDownMenu.qml \
     qml/components/ScrollHint.qml \
     qml/components/ShareReceiver.qml \
+    qml/components/TagChip.qml \
+    qml/components/TagChips.qml \
+    qml/components/TagEditor.qml \
     qml/components/ToolbarStop.qml \
     qml/cover/CoverPage.qml \
     qml/cover/cover-note.png \
+    qml/icons/icon-m-tag.svg \
     qml/notes/NoteFormat.js \
     qml/notes/NotesStore.qml \
     qml/pages/AboutPage.qml \
-    qml/pages/CategoriesPage.qml \
     qml/pages/CategoryPickerPage.qml \
     qml/pages/ConflictPage.qml \
     qml/pages/LockedNotesPage.qml \
@@ -91,8 +97,12 @@ DISTFILES += \
     qml/pages/NoteEditPage.qml \
     qml/pages/NotePage.qml \
     qml/pages/NotesPage.qml \
+    qml/pages/NoteVersionPage.qml \
+    qml/pages/NoteVersionsPage.qml \
     qml/pages/SettingsPage.qml \
     qml/pages/StartPage.qml \
     qml/pages/TranslationsPage.qml \
+    qml/pages/TrashPage.qml \
+    qml/pages/ViewsPage.qml \
     qml/pages/WebLoginPage.qml \
     translations/harbour-lappu.ts

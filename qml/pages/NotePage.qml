@@ -16,6 +16,9 @@ Page {
     // is anything to discard from.
     property bool dirty
     property int modified
+    // The tags of the note, as paths. They are not part of the note, so they
+    // are read beside it and only where the server carries them.
+    property var tags: []
 
     function load() {
         var note = app.notes.noteById(page.noteId);
@@ -23,6 +26,7 @@ Page {
             return ;
 
         applyNote(note);
+        page.tags = Lappu.tagsOfNote(page.noteId);
     }
 
     function applyNote(note) {
@@ -60,6 +64,9 @@ Page {
         });
     }
 
+    // Named so a page pushed above it can come back to the note rather than
+    // to whatever it was opened from, as the editor is named.
+    objectName: "notePage"
     allowedOrientations: Orientation.All
     Component.onCompleted: page.load()
     onStatusChanged: {
@@ -95,6 +102,16 @@ Page {
             MenuItem {
                 text: app.notes.pinnedNoteId === page.noteId ? qsTr("Unpin from cover") : qsTr("Pin to cover")
                 onClicked: app.togglePin(page.noteId)
+            }
+
+            // A note the server has never seen has no history to read, and a
+            // server keeping none is not asked for one.
+            MenuItem {
+                visible: Lappu.versionsAvailable && page.noteId > 0
+                text: qsTr("Previous versions")
+                onClicked: pageStack.push(Qt.resolvedUrl("NoteVersionsPage.qml"), {
+                    "noteId": page.noteId
+                })
             }
 
             MenuItem {
@@ -144,6 +161,13 @@ Page {
                 text: qsTr("A change to this note has not reached the server yet.")
             }
 
+            TagChips {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                visible: Lappu.tagsAvailable && page.tags.length > 0
+                tags: page.tags
+            }
+
             NoteBody {
                 width: parent.width
                 visible: page.content !== ""
@@ -185,6 +209,9 @@ Page {
     Connections {
         target: Lappu
         onNotesChanged: page.load()
+        // The tags arrive apart from the notes, a read of them following the
+        // pull, so the note takes them when they do.
+        onTagsChanged: page.tags = Lappu.tagsOfNote(page.noteId)
     }
 
 }

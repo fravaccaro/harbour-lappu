@@ -9,9 +9,9 @@ nav_order: 3
 
 **New note** in the pulley menu of the notes list opens an empty note; **Edit**, in the menu of a note or on the note itself, opens one that already exists. Either way the page is a dialog: the change is kept when you accept it with **Add** or **Save**, and dropped when you navigate back.
 
-Above the text sit the star of the note, beside its title, and the category below, so neither needs a second visit.
+Above the text sit the star of the note, beside its title, the category below it, and the tags below that where the server carries them, so none of them needs a second visit.
 
-While the keyboard is open the page gives the writing what room it can: the name of the page, the star and the category fold away as the keyboard rises, and come back when it is closed. **Add** or **Save** stays where it is throughout.
+While the keyboard is open the page gives the writing what room it can: the name of the page, the star, the category and the tags fold away as the keyboard rises, and come back when it is closed. **Add** or **Save** stays where it is throughout.
 
 ## A note from another app
 
@@ -94,7 +94,7 @@ Typing is gathered into steps rather than recorded letter by letter, so one undo
 
 ## Reading a note
 
-The name of the note stands at the top of the page, with a star after it when the note is a favourite, as in the list.
+The name of the note stands at the top of the page, with a star after it when the note is a favourite, as in the list. The tags the note carries are drawn as chips under it, on a server that has them.
 
 The note page draws the Markdown rather than showing the markers: emphasis and strikethrough as written, bullets as bullets, and a link as a link.
 
@@ -118,11 +118,25 @@ A note the server marks read-only says so and cannot be edited. An empty note sa
 
 A tick is a change like any other and goes to the server straight away. If the server will not take it - a locked file is the usual reason - you are told why, and the tick waits on the phone until the next refresh can send it; see [Sync, files and permissions](files).
 
+## Previous versions
+
+Where the server keeps a history of the notes - the QOwnNotes app with Nextcloud's own Versions app under it - the note's pulley menu carries **Previous versions**. It lists the earlier versions Nextcloud is holding of that note, newest first, each named by how long ago the server took it with the date under it and the opening of what it said. The note as it stands now is not among them: it is the note you just came from.
+
+Tapping one opens it as a note rather than as a list of changes - the Markdown drawn the way the note page draws it, so you read the note as it stood then. Its tasks are not tappable and its links are offered rather than followed, as a link anywhere else is.
+
+**Restore this version** writes that text back over the note. It is an ordinary edit: it goes to the server like anything else written here, the name, the category and the star are left as they are, and the text it replaced becomes a version of its own, so nothing is lost by putting an old one back.
+
+The list is read from the server each time the page opens, and the pulley's **Refresh** asks again. Nothing of it is kept on the phone, so a history cannot be read with no server in reach.
+
 ## Categories and favourites
 
-**Category** opens a picker holding the categories the notes already use, with room to type a new one. A note created from inside a category starts in that category.
+**Category** opens a picker holding the folders of the note folder, drawn as the tree they are, with room to type a new one. A note created from inside a category starts in that category.
 
-Nextcloud writes a nested category with slashes in it, and Lappu shows it the same way with the separator spelled out.
+A category is a folder, so a nested one is written with slashes - `Work/Meetings` - and typing a name that has never been used puts the note in a folder of that name. In the picker a nested folder is listed under the one it lies in and named by its own last part; on a server with the QOwnNotes app, folders holding no note yet are offered there too. The whole path is what the picker's field holds and what the note itself is labelled with.
+
+**Tags** stand below the category on a server that carries them - see [Notes and views](notes) for what makes a server one. The tags the note already has are drawn as chips, each with a cross that takes it off; the tags the note folder holds and this note does not carry are offered as outlined chips below them, and a tap adds one. **New tag** makes a tag the folder has never had: type its name, or a name with slashes in it to nest it under another, as `Work/Projects` does.
+
+Tags are not part of the note, so they are not written to the note's file: they go to the tag database the QOwnNotes apps share, and only when you accept the dialog. A tag set with no server in reach waits on the phone like any other change and is sent by the next refresh.
 
 The **star** at the end of the Title field marks the note a favourite, the same star the notes list draws beside the name. It folds away with the keyboard, and the title takes the room it stood in. Tapping it fills it in or empties it, and like everything else on the page it is only written when you accept the dialog; the menu of a note offers the same thing without opening the editor.
 

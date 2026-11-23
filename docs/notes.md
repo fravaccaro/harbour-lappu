@@ -1,11 +1,11 @@
 ---
 layout: default
-title: Notes and categories
+title: Notes and views
 parent: Using Lappu
 nav_order: 2
 ---
 
-# Notes and categories
+# Notes and views
 
 The first page is the notes themselves. Each row carries the title of the note, how long ago it was last changed, and the opening of the body; a favourite is marked with a star, and in the **All** view a note that belongs to a category says which one. Tapping a row opens the note; tapping and holding it opens a menu to favourite it, pin it to the cover, edit it or delete it.
 
@@ -17,18 +17,40 @@ A row above the notes appears when a note changed on the phone and on the server
 
 Pull the list down for **About**, **Settings**, **Refresh**, **Search** and **New note**. New note sits at the handle, nearest the thumb.
 
-## Categories
+## Views
 
-Swipe left from the notes for the categories. Four kinds of view live there:
+Swipe left from the notes for **Views**, the ways the notes are narrowed down. Four kinds live there:
 
 * **All** - every note
 * **Favorites** - the notes marked with a star
 * **Uncategorized** - the notes that belong to no category
-* One entry per category the notes actually use, with the number of notes in it
+* One entry per category, with the number of notes in it
 
-Each entry carries its own count. The categories are read from the notes rather than kept separately, so a category exists for as long as a note names it and disappears when the last note leaves it. A category whose name has slashes in it - Nextcloud writes nested categories that way - is shown with the separator spelled out.
+A category is a folder of the note folder on the server, and the categories are drawn as the tree they are: a folder inside another is listed under it, set in from the edge and named by its own last part rather than by its whole path. A folder you have notes in puts the folders above it on the list too, even where those hold no note themselves.
 
-Choosing a view takes you back to the notes with the title at the top changed to match. Creating a note from inside a category gives the new note that category to start with.
+Each entry carries its own count, counted on the phone. Choosing a folder shows the notes that are **directly in it**; the notes of the folders under it have their own entries.
+
+Which folders there are is read from the notes, so one exists for as long as a note names it. On a server with the **QOwnNotes** app installed, the folders are asked for as well, and then a folder holding no note at all is a view like any other - the place to put the next note, rather than something you have to type the name of.
+
+Choosing a view takes you back to the notes with the title at the top changed to match. Creating a note from inside a category gives the new note that category to start with. Tags make a fifth kind of view on a server that has them, and are listed under the categories on the same page.
+
+**Trash** appears under Uncategorized on a server that keeps one, and is a place rather than a view: it opens a page of its own instead of narrowing the notes. See [The trash](#the-trash) below.
+
+## Tags
+
+A note belongs to one category but can carry any number of tags. Tags are a feature of the **QOwnNotes** app for Nextcloud rather than of the Notes app, so everything about them is there only on a server that carries that app and can read the tag database of the note folder. Everywhere else Lappu says nothing about tags at all.
+
+They are listed on the same page, under the categories, one entry per tag with the number of notes carrying it. Choosing one takes you back to the notes showing only those, with the title at the top changed to match, exactly as a category does.
+
+The tags are the note folder's own, the same ones QOwnNotes shows on the desktop and on Android, so a tag made in any of them is a tag here. A tag nested under another is written with slashes - `Work/Projects` - and is shown with the separator spelled out.
+
+## The trash
+
+A deleted note is not always gone: where Nextcloud keeps deleted files, the notes among them can be looked at from **Trash** on the views page. Like tags, this needs the **QOwnNotes** app, and it needs the **Deleted files** app on top of it; where either is missing there is no Trash entry at all.
+
+The page lists the deleted notes with the date each went, and the folder it was deleted from where that was not the note folder itself. It is read when you open it and nothing of it is kept on the phone, so **Refresh** in the pulley menu is how you see what somebody has deleted or emptied since.
+
+A deleted note cannot be opened - there is nothing to open it into until it is a note again - so tapping a row opens its menu. **Restore** puts it back where it was deleted from, with the tags it carried, and the notes are refreshed so that it comes home to the list. Emptying the trash is Nextcloud's own business and is not done from here.
 
 ## Searching
 

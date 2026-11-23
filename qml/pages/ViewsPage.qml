@@ -25,6 +25,11 @@ Page {
         pageStack.navigateBack();
     }
 
+    function selectTag(path) {
+        app.notes.setFilter("tag", path);
+        pageStack.navigateBack();
+    }
+
     allowedOrientations: Orientation.All
 
     SilicaListView {
@@ -60,7 +65,7 @@ Page {
             width: listView.width
 
             PageHeader {
-                title: qsTr("Categories")
+                title: qsTr("Views")
             }
 
             FilterItem {
@@ -87,6 +92,17 @@ Page {
                 onClicked: page.selectUncategorized()
             }
 
+            // The trash is a place of the server's rather than a view of the
+            // notes here, so it opens a page instead of narrowing the list,
+            // and says nothing of its size until it has been read.
+            FilterItem {
+                width: parent.width
+                name: qsTr("Trash")
+                countVisible: false
+                visible: Lappu.trashAvailable
+                onClicked: pageStack.push(Qt.resolvedUrl("TrashPage.qml"))
+            }
+
             SectionHeader {
                 visible: listView.count > 0
                 text: qsTr("Categories")
@@ -94,40 +110,39 @@ Page {
 
         }
 
-        delegate: ListItem {
-            id: item
+        // The folders stand as a tree, each named by its own last step and
+        // set in under the one it lies in, so a nested folder is read as the
+        // place it is rather than as a path.
+        delegate: FilterItem {
+            width: listView.width
+            name: app.notes.leafLabel(model.name)
+            count: model.count
+            depth: model.depth
+            selected: app.notes.filterKind === "category" && app.notes.filterCategory === model.name
+            onClicked: page.selectCategory(model.name)
+        }
 
-            readonly property bool selected: app.notes.filterKind === "category" && app.notes.filterCategory === name
+        // The tags of the note folder stand under the categories rather than
+        // on a page of their own: both are ways of narrowing the notes, and
+        // a tag is chosen the same way a category is. They are only here at
+        // all on a server that carries them.
+        footer: Column {
+            width: listView.width
 
-            contentHeight: Theme.itemSizeSmall
-            onClicked: page.selectCategory(name)
-
-            Label {
-                truncationMode: TruncationMode.Fade
-                color: item.selected || item.highlighted ? Theme.highlightColor : Theme.primaryColor
-                text: app.notes.categoryLabel(name)
-
-                anchors {
-                    left: parent.left
-                    leftMargin: Theme.horizontalPageMargin
-                    right: countLabel.left
-                    rightMargin: Theme.paddingMedium
-                    verticalCenter: parent.verticalCenter
-                }
-
+            SectionHeader {
+                visible: Lappu.tagsAvailable && app.notes.tags.count > 0
+                text: qsTr("Tags")
             }
 
-            Label {
-                id: countLabel
+            Repeater {
+                model: Lappu.tagsAvailable ? app.notes.tags : 0
 
-                color: Theme.secondaryColor
-                font.pixelSize: Theme.fontSizeSmall
-                text: count
-
-                anchors {
-                    right: parent.right
-                    rightMargin: Theme.horizontalPageMargin
-                    verticalCenter: parent.verticalCenter
+                FilterItem {
+                    width: listView.width
+                    name: app.notes.tagLabel(model.path)
+                    count: model.count
+                    selected: app.notes.filterKind === "tag" && app.notes.filterTag === model.path
+                    onClicked: page.selectTag(model.path)
                 }
 
             }

@@ -44,41 +44,6 @@
     </message>
 </context>
 <context>
-    <name>CategoriesPage</name>
-    <message>
-        <source>About</source>
-        <translation>About</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation>Settings</translation>
-    </message>
-    <message>
-        <source>Refresh</source>
-        <translation>Refresh</translation>
-    </message>
-    <message>
-        <source>Categories</source>
-        <translation>Categories</translation>
-    </message>
-    <message>
-        <source>All</source>
-        <translation>All</translation>
-    </message>
-    <message>
-        <source>Favorites</source>
-        <translation>Favorites</translation>
-    </message>
-    <message>
-        <source>Uncategorized</source>
-        <translation>Uncategorized</translation>
-    </message>
-    <message>
-        <source>No categories</source>
-        <translation>No categories</translation>
-    </message>
-</context>
-<context>
     <name>CategoryPickerPage</name>
     <message>
         <source>Set</source>
@@ -485,6 +450,52 @@
         <source>A change to this note has not reached the server yet.</source>
         <translation>A change to this note has not reached the server yet.</translation>
     </message>
+    <message>
+        <source>Previous versions</source>
+        <translation>Previous versions</translation>
+    </message>
+</context>
+<context>
+    <name>NoteVersionPage</name>
+    <message>
+        <source>Restoring</source>
+        <translation>Restoring</translation>
+    </message>
+    <message>
+        <source>Restore this version</source>
+        <translation>Restore this version</translation>
+    </message>
+    <message>
+        <source>Earlier version</source>
+        <translation>Earlier version</translation>
+    </message>
+    <message>
+        <source>As it read then</source>
+        <translation>As it read then</translation>
+    </message>
+</context>
+<context>
+    <name>NoteVersionsPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation>Refresh</translation>
+    </message>
+    <message>
+        <source>Previous versions</source>
+        <translation>Previous versions</translation>
+    </message>
+    <message>
+        <source>Previous versions of this note saved on Nextcloud. Your current version isn't listed here.</source>
+        <translation>Previous versions of this note saved on Nextcloud. Your current version isn't listed here.</translation>
+    </message>
+    <message>
+        <source>No previous versions</source>
+        <translation>No previous versions</translation>
+    </message>
+    <message>
+        <source>A version is kept each time the note is changed on the server.</source>
+        <translation>A version is kept each time the note is changed on the server.</translation>
+    </message>
 </context>
 <context>
     <name>NotesApi</name>
@@ -543,14 +554,6 @@
 </context>
 <context>
     <name>NotesPullDownMenu</name>
-    <message>
-        <source>About</source>
-        <translation>About</translation>
-    </message>
-    <message>
-        <source>Settings</source>
-        <translation>Settings</translation>
-    </message>
     <message>
         <source>Refresh</source>
         <translation>Refresh</translation>
@@ -841,6 +844,58 @@
         <source>%1 is read-only on the server. The change is waiting.</source>
         <translation>%1 is read-only on the server. The change is waiting.</translation>
     </message>
+    <message>
+        <source>The server cannot read the tags of the note folder.</source>
+        <translation>The server cannot read the tags of the note folder.</translation>
+    </message>
+    <message>
+        <source>The tags of the note folder are read-only.</source>
+        <translation>The tags of the note folder are read-only.</translation>
+    </message>
+    <message>
+        <source>The tags of the note folder are locked on the server. The change is waiting.</source>
+        <translation>The tags of the note folder are locked on the server. The change is waiting.</translation>
+    </message>
+    <message>
+        <source>The server is taking too many tag changes. Try again shortly.</source>
+        <translation>The server is taking too many tag changes. Try again shortly.</translation>
+    </message>
+    <message>
+        <source>The server would not change the tags.</source>
+        <translation>The server would not change the tags.</translation>
+    </message>
+    <message>
+        <source>The server keeps no trash for the notes.</source>
+        <translation>The server keeps no trash for the notes.</translation>
+    </message>
+    <message>
+        <source>The note folder is read-only, so nothing can be put back into it.</source>
+        <translation>The note folder is read-only, so nothing can be put back into it.</translation>
+    </message>
+    <message>
+        <source>The server no longer has that deleted note.</source>
+        <translation>The server no longer has that deleted note.</translation>
+    </message>
+    <message>
+        <source>The server is taking too many restores. Try again shortly.</source>
+        <translation>The server is taking too many restores. Try again shortly.</translation>
+    </message>
+    <message>
+        <source>The server would not open its trash.</source>
+        <translation>The server would not open its trash.</translation>
+    </message>
+    <message>
+        <source>The server keeps no previous versions of the notes.</source>
+        <translation>The server keeps no previous versions of the notes.</translation>
+    </message>
+    <message>
+        <source>The server no longer has that note.</source>
+        <translation>The server no longer has that note.</translation>
+    </message>
+    <message>
+        <source>The server would not say what the note said before.</source>
+        <translation>The server would not say what the note said before.</translation>
+    </message>
 </context>
 <context>
     <name>Session</name>
@@ -851,6 +906,18 @@
     <message>
         <source>%1 was deleted on the server. The change made here is kept as a new note.</source>
         <translation>%1 was deleted on the server. The change made here is kept as a new note.</translation>
+    </message>
+    <message>
+        <source>The tags changed on the server. The tags of %1 are waiting.</source>
+        <translation>The tags changed on the server. The tags of %1 are waiting.</translation>
+    </message>
+    <message>
+        <source>The tags of the note folder are read-only on the server.</source>
+        <translation>The tags of the note folder are read-only on the server.</translation>
+    </message>
+    <message>
+        <source>The note was put back.</source>
+        <translation>The note was put back.</translation>
     </message>
 </context>
 <context>
@@ -986,6 +1053,32 @@
     </message>
 </context>
 <context>
+    <name>TagChips</name>
+    <message>
+        <source>None</source>
+        <translation>None</translation>
+    </message>
+</context>
+<context>
+    <name>TagEditor</name>
+    <message>
+        <source>Tags</source>
+        <translation>Tags</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>None</translation>
+    </message>
+    <message>
+        <source>New tag</source>
+        <translation>New tag</translation>
+    </message>
+    <message>
+        <source>work, urgent, ideas...</source>
+        <translation>work, urgent, ideas...</translation>
+    </message>
+</context>
+<context>
     <name>TranslationsPage</name>
     <message>
         <source>Translations</source>
@@ -994,6 +1087,84 @@
     <message>
         <source>Request a new language or contribute to existing languages on the Transifex project page.</source>
         <translation>Request a new language or contribute to existing languages on the Transifex project page.</translation>
+    </message>
+</context>
+<context>
+    <name>TrashPage</name>
+    <message>
+        <source>Refresh</source>
+        <translation>Refresh</translation>
+    </message>
+    <message>
+        <source>Trash</source>
+        <translation>Trash</translation>
+    </message>
+    <message>
+        <source>These notes were deleted and are being kept by Nextcloud. Putting one back returns it to the folder it was deleted from, with its tags.</source>
+        <translation>These notes were deleted and are being kept by Nextcloud. Putting one back returns it to the folder it was deleted from, with its tags.</translation>
+    </message>
+    <message>
+        <source>Deleted %1</source>
+        <translation>Deleted %1</translation>
+    </message>
+    <message>
+        <source>In %1</source>
+        <translation>In %1</translation>
+    </message>
+    <message>
+        <source>Restore</source>
+        <translation>Restore</translation>
+    </message>
+    <message>
+        <source>The trash is empty</source>
+        <translation>The trash is empty</translation>
+    </message>
+    <message>
+        <source>A note deleted from the folder is kept here until Nextcloud lets go of it.</source>
+        <translation>A note deleted from the folder is kept here until Nextcloud lets go of it.</translation>
+    </message>
+</context>
+<context>
+    <name>ViewsPage</name>
+    <message>
+        <source>About</source>
+        <translation>About</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation>Settings</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>Refresh</translation>
+    </message>
+    <message>
+        <source>Categories</source>
+        <translation>Categories</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>All</translation>
+    </message>
+    <message>
+        <source>Favorites</source>
+        <translation>Favorites</translation>
+    </message>
+    <message>
+        <source>Uncategorized</source>
+        <translation>Uncategorized</translation>
+    </message>
+    <message>
+        <source>Tags</source>
+        <translation>Tags</translation>
+    </message>
+    <message>
+        <source>Views</source>
+        <translation>Views</translation>
+    </message>
+    <message>
+        <source>Trash</source>
+        <translation>Trash</translation>
     </message>
 </context>
 <context>

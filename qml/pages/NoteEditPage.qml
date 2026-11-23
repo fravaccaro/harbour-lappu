@@ -14,6 +14,9 @@ Dialog {
     property string category
     property bool favorite: false
     property string inheritCategory
+    // The tags of the note, as paths. They are not part of the note and are
+    // not saved with it: the server keeps them beside the note folder.
+    property var tags: []
     // The keyboard takes half the screen, so the page gives up what it can
     // spare while it is open: its own name, the star and the category.
     readonly property bool writing: Qt.inputMethod.visible
@@ -25,6 +28,15 @@ Dialog {
         dialog.accepted.connect(function() {
             page.category = dialog.category;
         });
+    }
+
+    // The note is saved first, since a note the server has never seen is
+    // given the id its tags are kept under here.
+    function save() {
+        var id = app.notes.saveNote(page.noteId, titleField.text, bodyField.text, page.category, page.favorite);
+        if (Lappu.tagsAvailable)
+            app.notes.saveTags(id, tagEditor.tags);
+
     }
 
     allowedOrientations: Orientation.All
@@ -40,7 +52,7 @@ Dialog {
         editHistory.reset(bodyField.text, bodyField.cursorPosition);
     }
     canAccept: true
-    onAccepted: app.notes.saveNote(page.noteId, titleField.text, bodyField.text, page.category, page.favorite)
+    onAccepted: page.save()
 
     EditHistory {
         id: editHistory
@@ -161,7 +173,70 @@ Dialog {
                     enabled: !page.writing
                     label: qsTr("Category")
                     value: page.category === "" ? qsTr("Uncategorized") : app.notes.categoryLabel(page.category)
+                    // The icon stands where the one beside the tags does, so
+                    // the two rows read as the pair they are. The text is
+                    // moved over by as much, rather than running under it.
+                    labelMargin: leftMargin + Theme.iconSizeMedium + Theme.paddingMedium
+                    // Room for an icon the row was not drawn around.
+                    minimumContentHeight: Theme.itemSizeMedium + Theme.paddingSmall
                     onClicked: page.pickCategory()
+
+                    // A category is a folder on the server, which is what the
+                    // theme's own folder icon says without a word.
+                    Icon {
+                        source: "image://theme/icon-m-file-folder"
+
+                        anchors {
+                            left: parent.left
+                            leftMargin: Theme.horizontalPageMargin
+                            verticalCenter: parent.verticalCenter
+                        }
+
+                    }
+
+                }
+
+            }
+
+            // The tags stand in a slot of their own beside the category, and
+            // close the same way while the keyboard is up - unless it is a
+            // tag being typed, which is the one thing the keyboard would
+            // then be hiding.
+            Item {
+                id: tagSlot
+
+                readonly property bool folded: page.writing && !tagEditor.editing
+
+                width: parent.width
+                height: tagSlot.folded ? 0 : tagEditor.height
+                clip: true
+                // A server without tags draws none of them, rather than
+                // keeping a field nobody can see but the keyboard can find.
+                visible: Lappu.tagsAvailable
+                opacity: tagSlot.folded ? 0 : 1
+
+                Behavior on height {
+                    NumberAnimation {
+                        duration: 200
+                        easing.type: Easing.InOutQuad
+                    }
+
+                }
+
+                Behavior on opacity {
+                    FadeAnimation {
+                    }
+
+                }
+
+                TagEditor {
+                    id: tagEditor
+
+                    width: parent.width
+                    // Seeded once rather than bound: what the user takes off
+                    // a note must not snap back to what it carried.
+                    Component.onCompleted: tagEditor.tags = page.tags
+                    suggestions: app.notes.tagPaths()
                 }
 
             }

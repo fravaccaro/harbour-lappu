@@ -19,6 +19,18 @@ Automatic refresh runs **only while Lappu is running**. Sailfish OS wakes nothin
 
 Signing in refreshes whatever the startup setting says, because a new account has nothing to show until it does.
 
+## Which app the notes come from
+
+The notes are kept by one of two Nextcloud apps, and Lappu asks the server which it has rather than being told. A server with the **QOwnNotes** app installed has its notes read and written there; any other server uses the **Notes** app, which is the ordinary case. Nothing about refreshing, saving or sharing changes either way, and there is no setting for it: the first thing Lappu asks a server after signing in is what it carries, and the first refresh follows the answer.
+
+A server with that app is also asked for its **folders**. The Notes app knows a folder only by the notes in it, so an empty one cannot be mentioned at all; the QOwnNotes app lists them, and Lappu adds them to the views and to the category picker. Nothing is created, renamed or deleted from here - a folder is made by putting a note in it, as before.
+
+The same answer says whether the server keeps a **trash** for the notes, which takes Nextcloud's Deleted files app as well as the QOwnNotes one. Where it does, the deleted notes can be listed and put back from the views page; where it does not, nothing of the sort is shown or asked for. Nothing is deleted on the server any differently for it: the trash is Nextcloud's, and a note Lappu deletes goes into it like a file deleted anywhere else.
+
+It says too whether the server keeps a **history** of the notes, which needs Nextcloud's own Versions app under the QOwnNotes one. Where it does, a note's pulley menu offers [its previous versions](editing#previous-versions); where it does not, nothing of the sort is shown or asked for. The history is the server's own, kept by Nextcloud for every file it holds, so Lappu neither makes versions nor prunes them - putting an old one back is simply an edit.
+
+The same answer says whether the server has **tags**. They are kept in a database of the note folder rather than in the notes, so they travel on their own: a refresh reads them after the notes, and a tag set here is sent to that database and not written into the note's file. A tag that could not be sent waits on the phone like any other change. Where the server has no tags, Lappu neither shows them nor asks for them.
+
 ## What a refresh does
 
 A refresh **sends what is owed before it fetches anything**. Saving a note, favouriting it or deleting it writes the change to the copy on the phone straight away and marks that note as owed; the refresh offers the owed notes to the server first, then pulls the server's notes over the result.

@@ -6,7 +6,16 @@ QtObject {
 
     property string filterKind: "all"
     property string filterCategory: ""
+    // The tag the notes are being filtered by, as its path.
+    property string filterTag: ""
     property string searchText: ""
+    // The tags of every tagged note, by id. Kept as a plain map rather than
+    // in the rows, which hold one value per field.
+    property var noteTags: ({
+    })
+    // The folders the server listed, as paths. Empty wherever the server
+    // cannot be asked, which leaves the categories to the notes alone.
+    property var serverFolders: []
     // The session keeps the order, so it is still there after a restart.
     property string sortMode: Lappu.sortMode
     property bool busy: false
@@ -33,8 +42,37 @@ QtObject {
     categories: ListModel {
     }
 
+    property ListModel tags
+
+    tags: ListModel {
+    }
+
     function categoryLabel(category) {
         return Format.categoryLabel(category);
+    }
+
+    // A folder is named by its own last step where the tree above it is
+    // drawn, and by its whole path where it stands alone, as in a title.
+    function leafLabel(category) {
+        return Format.leafName(category);
+    }
+
+    function tagLabel(path) {
+        return Format.pathLabel(path);
+    }
+
+    // Answered from the map the store holds rather than asked of the session
+    // note by note: the filter runs over every note each time the list is
+    // rebuilt, which is no place for a query apiece.
+    function noteHasTag(noteId, path) {
+        var carried = noteTags[noteId];
+        return carried ? carried.indexOf(path) >= 0 : false;
+    }
+
+    function tagPaths() {
+        var paths = [];
+        for (var i = 0; i < tags.count; ++i) paths.push(tags.get(i).path)
+        return paths;
     }
 
     function starredTitle(title, favorite) {
@@ -50,6 +88,9 @@ QtObject {
 
         if (filterKind === "category")
             return categoryLabel(filterCategory);
+
+        if (filterKind === "tag")
+            return tagLabel(filterTag);
 
         return qsTr("All");
     }
@@ -121,6 +162,9 @@ QtObject {
             return false;
 
         if (filterKind === "category" && note.category !== filterCategory)
+            return false;
+
+        if (filterKind === "tag" && !noteHasTag(note.noteId, filterTag))
             return false;
 
         return searchHits(note);
@@ -217,11 +261,27 @@ QtObject {
         return -1;
     }
 
+    // Every folder there is to show: the ones the notes name, the ones those
+    // lie under, and the ones the server listed - which is where a folder
+    // holding no note comes from, nothing here being able to name one.
     function namedCategories(map) {
+        var seen = {
+        };
+        for (var key in map) addPath(seen, key)
+        for (var i = 0; i < serverFolders.length; ++i) addPath(seen, serverFolders[i])
         var names = [];
-        for (var key in map) names.push(key)
-        names.sort();
+        for (var path in seen) names.push(path)
+        names.sort(Format.comparePaths);
         return names;
+    }
+
+    function addPath(seen, path) {
+        if (path === "")
+            return ;
+
+        var above = Format.ancestorsOf(path);
+        for (var i = 0; i < above.length; ++i) seen[above[i]] = true
+        seen[path] = true;
     }
 
     function rebuildCategories() {
@@ -230,7 +290,8 @@ QtObject {
         categories.clear();
         for (var i = 0; i < names.length; ++i) categories.append({
             "name": names[i],
-            "count": map[names[i]]
+            "count": map[names[i]] || 0,
+            "depth": Format.depthOf(names[i])
         })
     }
 
@@ -252,6 +313,12 @@ QtObject {
         return names;
     }
 
+    function rebuildTags() {
+        var rows = Lappu.tags();
+        tags.clear();
+        for (var i = 0; i < rows.length; ++i) tags.append(rows[i])
+    }
+
     function refreshLists() {
         rebuildCategories();
         reloadVisible();
@@ -260,9 +327,13 @@ QtObject {
         applyPinned();
     }
 
-    function setFilter(kind, category) {
+    // One name is passed whatever is being filtered by, and the view it does
+    // not belong to is cleared, so a tag view does not keep the category the
+    // one before it was showing.
+    function setFilter(kind, name) {
         filterKind = kind;
-        filterCategory = category || "";
+        filterCategory = kind === "category" ? (name || "") : "";
+        filterTag = kind === "tag" ? (name || "") : "";
         listTitle = filterTitle();
         reloadVisible();
     }
@@ -343,9 +414,17 @@ QtObject {
     }
 
     // The title is the note's name and is passed in rather than worked out, so
-    // an edit that was not meant to rename the note does not.
+    // an edit that was not meant to rename the note does not. The id the note
+    // was saved under is answered with, which for a new note is the one it
+    // borrows until the server names it.
     function saveNote(noteId, title, content, category, favorite) {
-        Lappu.saveNote(noteId, title, content, category, favorite);
+        return Lappu.saveNote(noteId, title, content, category, favorite);
+    }
+
+    // The tags of a note are not part of it: they live in the tag database of
+    // the note folder, so they are set on their own and not by a save.
+    function saveTags(noteId, paths) {
+        Lappu.setNoteTags(noteId, paths);
     }
 
     // Takes the notes the session keeps, each already keyed the way the rows
@@ -354,6 +433,23 @@ QtObject {
         allNotes.clear();
         for (var i = 0; i < list.length; ++i) allNotes.append(list[i])
         refreshLists();
+    }
+
+    // The tags travel apart from the notes, so they are taken apart from
+    // them: a tag set here and a tag read from the server both arrive this
+    // way, and the notes on show follow either.
+    function ingestTags() {
+        noteTags = Lappu.noteTags();
+        rebuildTags();
+        reloadVisible();
+    }
+
+    // The folders arrive apart from the notes as well, and say only which
+    // ones there are: the notes on show and the counts beside each folder
+    // are worked out here either way.
+    function ingestFolders() {
+        serverFolders = Lappu.folders();
+        rebuildCategories();
     }
 
     onSearchTextChanged: reloadVisible()
